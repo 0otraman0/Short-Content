@@ -96,7 +96,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `render.py`
 - **Requirements**: C1, R5.1, R5.2, R5.6, R5.8
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Call `render.py` directly with test audio and subtitle files to generate `output.mp4`; verify 1080x1920 vertical format and audio sync.
 
 ### T3.3: Background Render Task, Progress Tracking & UI Integration
