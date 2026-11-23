@@ -60,7 +60,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `pacing.py`, `tests/test_pacing.py`
 - **Requirements**: R2.1, R2.2, R2.3, R2.4, R2.5, R2.7, R2.10
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Run `pytest tests/test_pacing.py` (or `python -m unittest tests/test_pacing.py`) and ensure all tags and preset parameters pass.
 
 ### T2.2: TTS Engine with `edge-tts` & Voice Locking
