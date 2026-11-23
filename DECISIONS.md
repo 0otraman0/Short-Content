@@ -28,3 +28,7 @@
 ## D7. Windows Compatibility & Startup
 - **Choice**: Use Python `pathlib.Path` exclusively (no hardcoded `/` or `\\`), with `start.bat` automating venv creation, dependency installation, FFmpeg check via winget, and browser launch.
 - **Reason**: Strict Windows 10/11 environment requirement (C1, C3).
+
+## D8. Gemini AI Model Selection: Gemini 3.1 Flash Lite
+- **Choice**: Set `gemini.model: "gemini-3.1-flash-lite"` in `config.yaml`.
+- **Reason**: Configured per user request for rapid script generation, lower latency, and optimal resource consumption on the free tier quota. Model identifier is dynamic and resolved from `config.yaml` as per SPEC constraint.

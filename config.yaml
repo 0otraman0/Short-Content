@@ -11,7 +11,7 @@ tts:
 # Gemini AI Settings
 gemini:
   # Available free model name from Google AI Studio
-  model: "gemini-2.5-flash"
+  model: "gemini-3.1-flash-lite"
 
 # Pacing Presets (multipliers and default pause values)
 pacing_presets:

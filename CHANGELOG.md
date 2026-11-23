@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Configuration
+- **Config**: Updated Gemini AI model in `config.yaml` to `gemini-3.1-flash-lite` and appended architectural decision D8 in `DECISIONS.md`.
+
 ## [2026-11-23] - Phase 1
 - **T1.1**: Implemented project storage backend in `main.py` (CRUD endpoints `/api/projects`, duplicate, delete, and autosave update). Verified folder creation, `project.json` persistence, and input sanitization via automated test `tests/test_projects.py`. Test passed.
 
