@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-23] - Phase 4
+- **T4.3**: Implemented Auto-Pace feature (`POST /api/gemini/auto-pace`) and Auto-Pace review dialog in UI. Gemini analyzes raw scripts to insert pacing tags (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) following Shorts storytelling dynamics (fast hook, slow buildup, pause before reveal, whisper for secrets). Verified with automated test in `tests/test_gemini_api.py`. Test passed.
 - **T4.2**: Added Gemini Writing Assistant API endpoints in `main.py` (`POST /api/gemini/suggest-next`, `POST /api/gemini/rewrite`, `POST /api/gemini/outline`) and full UI integration in `static/index.html` & `static/app.js`. Implemented 3 interactive modals: Suggestion Picker (select from 3 continuous paragraphs), Before/After Rewrite Review Dialog (compare original vs rewritten and apply), and Outline Builder (generate full draft from topic/duration). Added automated test suite `tests/test_gemini_api.py`. Test passed.
 - **T4.1**: Implemented `gemini_client.py` using official `google-genai` Python SDK with `v1beta` endpoint routing, model configuration in `config.yaml` (`gemini-3.5-flash-lite`), and automatic model fallback. Enforced R3.4 system instructions (English, no fake stats/dates, [VERIFY] flag for uncertain details, punchy speakable sentences). Added helpers for writing assistant (`suggest_next_paragraphs`, `rewrite_draft`, `outline_topic`, `auto_pace`). Verified 4/4 tests passing in `tests/test_gemini.py`. Test passed.
 

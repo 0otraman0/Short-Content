@@ -264,6 +264,33 @@
         </div>
     </div>
 
+    <!-- Auto-Pace Review Modal (R2.8) -->
+    <div id="auto-pace-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>⚡ So sánh nhịp đọc (Auto-Pace)</h3>
+                <button id="btn-close-auto-pace-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Gemini đã phân tích kịch bản và chèn các thẻ nhịp điệu (nhanh mở đầu, chậm dần cao trào, nghỉ trước bí mật):</p>
+                <div class="diff-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <h4 style="margin-bottom: 8px; color: var(--text-muted);">Kịch bản gốc:</h4>
+                        <textarea id="auto-pace-original" readonly style="width: 100%; height: 260px; font-size: 0.9rem; padding: 10px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 8px; color: var(--accent);">Kịch bản đã thêm nhịp điệu:</h4>
+                        <textarea id="auto-pace-result" style="width: 100%; height: 260px; font-size: 0.9rem; padding: 10px; background: var(--bg-surface); border: 1px solid var(--accent); color: var(--text-primary); border-radius: 6px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-auto-pace" class="btn-secondary">Hủy</button>
+                <button id="btn-apply-auto-pace" class="btn-primary">Áp dụng nhịp điệu này</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Client Script -->
     <script src="/static/app.js"></script>
 </body>

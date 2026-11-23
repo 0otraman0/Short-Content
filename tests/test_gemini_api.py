@@ -62,5 +62,25 @@ class TestGeminiAPI(unittest.TestCase):
         self.assertIn("draft", data)
         self.assertGreater(len(data["draft"]), 20)
 
+    def test_auto_pace_api(self):
+        # Empty script validation
+        res_err = self.client.post("/api/gemini/auto-pace", json={"script": ""})
+        self.assertEqual(res_err.status_code, 400)
+
+        # Valid auto-pace
+        res = self.client.post("/api/gemini/auto-pace", json={
+            "script": "Greenland sharks live 400 years. But how do they survive in freezing water? Their secret is patience."
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data.get("success"))
+        self.assertIn("original", data)
+        self.assertIn("paced", data)
+        # Check that at least some pacing markup was inserted
+        paced_text = data["paced"]
+        has_tag = any(tag in paced_text for tag in ["[pause", "[slow]", "[fast]", "*", "[whisper]"])
+        self.assertTrue(has_tag)
+        print("\nAuto-paced Script Result:\n", paced_text)
+
 if __name__ == "__main__":
     unittest.main()

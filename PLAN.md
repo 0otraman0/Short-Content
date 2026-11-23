@@ -124,7 +124,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.8
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Send raw script to auto-pace; inspect inserted markup; verify user can preview and accept/reject in UI.
 
 ---

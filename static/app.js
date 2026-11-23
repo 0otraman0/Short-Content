@@ -91,6 +91,15 @@ const DOM = {
     btnCloseOutlineModal: document.getElementById('btn-close-outline-modal'),
     btnCancelOutline: document.getElementById('btn-cancel-outline'),
 
+    // Auto-Pace Modal (R2.8)
+    btnAutoPace: document.getElementById('btn-auto-pace'),
+    autoPaceModal: document.getElementById('auto-pace-modal'),
+    autoPaceOriginal: document.getElementById('auto-pace-original'),
+    autoPaceResult: document.getElementById('auto-pace-result'),
+    btnCloseAutoPaceModal: document.getElementById('btn-close-auto-pace-modal'),
+    btnCancelAutoPace: document.getElementById('btn-cancel-auto-pace'),
+    btnApplyAutoPace: document.getElementById('btn-apply-auto-pace'),
+
     // Tabs
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content')
@@ -896,6 +905,52 @@ function handleApplyOutline() {
     DOM.outlineModal.classList.add('hidden');
 }
 
+async function handleAutoPace() {
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi thêm nhịp.');
+        return;
+    }
+
+    const origText = DOM.btnAutoPace.innerHTML;
+    DOM.btnAutoPace.disabled = true;
+    DOM.btnAutoPace.innerHTML = '⚡ Đang phân tích nhịp...';
+
+    try {
+        const res = await fetch('/api/gemini/auto-pace', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể tự động thêm nhịp điệu');
+        }
+
+        const data = await res.json();
+        DOM.autoPaceOriginal.value = data.original || script;
+        DOM.autoPaceResult.value = data.paced || '';
+
+        DOM.autoPaceModal.classList.remove('hidden');
+    } catch (err) {
+        alert('Lỗi thêm nhịp điệu: ' + err.message);
+    } finally {
+        DOM.btnAutoPace.disabled = false;
+        DOM.btnAutoPace.innerHTML = origText;
+    }
+}
+
+function handleApplyAutoPace() {
+    const paced = DOM.autoPaceResult.value.trim();
+    if (paced) {
+        DOM.scriptEditor.value = paced;
+        updateStatsDisplay();
+        scheduleAutosave();
+    }
+    DOM.autoPaceModal.classList.add('hidden');
+}
+
 // ==========================================
 // 9. Utility Functions
 // ==========================================
@@ -1005,6 +1060,19 @@ async function init() {
     }
     if (DOM.btnCancelOutline) {
         DOM.btnCancelOutline.addEventListener('click', () => DOM.outlineModal.classList.add('hidden'));
+    }
+
+    if (DOM.btnAutoPace) {
+        DOM.btnAutoPace.addEventListener('click', handleAutoPace);
+    }
+    if (DOM.btnCloseAutoPaceModal) {
+        DOM.btnCloseAutoPaceModal.addEventListener('click', () => DOM.autoPaceModal.classList.add('hidden'));
+    }
+    if (DOM.btnCancelAutoPace) {
+        DOM.btnCancelAutoPace.addEventListener('click', () => DOM.autoPaceModal.classList.add('hidden'));
+    }
+    if (DOM.btnApplyAutoPace) {
+        DOM.btnApplyAutoPace.addEventListener('click', handleApplyAutoPace);
     }
 
     if (DOM.presetSelector) {

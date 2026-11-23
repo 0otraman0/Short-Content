@@ -540,3 +540,18 @@ async def api_outline(payload: OutlineRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi AI dựng khung: {str(e)}")
 
+class AutoPaceRequest(BaseModel):
+    script: str
+
+@app.post("/api/gemini/auto-pace")
+async def api_auto_pace(payload: AutoPaceRequest):
+    """R2.8: Insert pacing markup into script based on narrative structure."""
+    script = payload.script.strip()
+    if not script:
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung kịch bản cần thêm nhịp.")
+    try:
+        paced = await auto_pace(script)
+        return {"success": True, "original": script, "paced": paced}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi AI tự thêm nhịp: {str(e)}")
+
