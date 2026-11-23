@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,6 +11,24 @@ from fastapi.staticfiles import StaticFiles
 # Load environment variables
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
+
+def ensure_ffmpeg() -> bool:
+    """Ensure ffmpeg is in PATH, checking common WinGet install directories if needed."""
+    if shutil.which("ffmpeg"):
+        return True
+    
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        winget_pkg = Path(local_app_data) / "Microsoft" / "WinGet" / "Packages"
+        if winget_pkg.exists():
+            for p in winget_pkg.glob("Gyan.FFmpeg*/**/bin/ffmpeg.exe"):
+                bin_dir = str(p.parent)
+                os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+                return True
+    return False
+
+# Ensure FFmpeg is found and added to process PATH
+ensure_ffmpeg()
 
 app = FastAPI(title="Shorts Video Generator")
 

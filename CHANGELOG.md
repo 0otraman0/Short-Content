@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Bug Fix
+- **Fix (FFmpeg Path Detection)**: Added automatic discovery of WinGet-installed FFmpeg (`Gyan.FFmpeg`) in `main.py` (`ensure_ffmpeg()`) and `start.bat`. This resolves the issue where newly installed FFmpeg from winget was not immediately recognized in existing command/PowerShell sessions before terminal restart. Added `tests/test_ffmpeg.py` reproducer/test.
+
 ## [2026-11-23] - Phase 0
 - **T0.3**: Created Windows launcher `start.bat` (automated venv setup, dependency installation, FFmpeg winget detection, directory initialization, browser auto-launch) and comprehensive Vietnamese `README.md` guide. Test passed.
 - **T0.2**: Implemented FastAPI backend in `main.py` and single-page dark UI shell (`static/index.html`, `static/style.css`). Added `/api/status` endpoint with NVIDIA GPU detection (`h264_nvenc`), FFmpeg availability check, and assets status. Created `requirements.txt`. Test passed.

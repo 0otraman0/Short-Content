@@ -35,6 +35,17 @@ echo [3/5] Kiem tra va cai dat thu vien trong requirements.txt...
 pip install -r requirements.txt --quiet
 
 :: 4. Kiem tra FFmpeg
+:: Tu dong tim FFmpeg tu WinGet neu chua co trong PATH cua session hien tai
+if defined LOCALAPPDATA (
+    for /d %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg*") do (
+        for /d %%B in ("%%D\*\bin") do (
+            if exist "%%B\ffmpeg.exe" (
+                set "PATH=%%B;!PATH!"
+            )
+        )
+    )
+)
+
 where ffmpeg >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
