@@ -68,11 +68,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `tts.py`, `config.yaml`, `requirements.txt`
 - **Requirements**: C2, Tech stack, R2.6
 - **Owner**: Builder
-- **Status**: doing
-- **Where I stopped**:
-  - *What is done*: Completed T2.1 (`pacing.py` and 8 unit tests in `tests/test_pacing.py`). All pacing markup parsing, presets (Mystery, Hype, Calm), and sentence pause logic are fully tested and committed.
-  - *What is left*: Add `edge-tts` to `requirements.txt`, create `tts.py` with `TTSProvider` and `EdgeTTSProvider`, implement English male voice selection and locking to `config.yaml`, synthesize segments, generate silence between segments, concatenate audio via FFmpeg, and normalize loudness (`loudnorm`).
-  - *Exact next step*: Add `edge-tts` to `requirements.txt`, write `tts.py` implementing the segment audio generation and FFmpeg concat/loudnorm pipeline, and write test script to verify synthesized audio.
+- **Status**: done
 - **How to test**: Run test synthesis on a marked-up text snippet; inspect output audio file for correct pacing pauses and loudness normalization.
 
 ### T2.3: TTS Integration & "Nghe thử" UI Button
