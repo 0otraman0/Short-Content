@@ -40,7 +40,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`
 - **Requirements**: R6.1, R6.2
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Send API requests (GET/POST/DELETE `/api/projects`) to create, read, duplicate, and delete projects. Verify folder and `project.json` creation on disk.
 
 ### T1.2: Script Editor UI, Word Counter, Autosave & Cheatsheet
