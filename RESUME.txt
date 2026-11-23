@@ -1,0 +1,16 @@
+1. Làm tiếp sau khi hết token hoặc mở chat mới
+Resume the project. Read AGENTS.md, SPEC.md, PLAN.md, DECISIONS.md and 
+CHANGELOG.md. Tell me in Vietnamese in 5 lines: which tasks are done, which one is 
+in progress, and what the next task is. Then do ONLY the next task and stop.
+
+2. Khi gặp lỗi
+Bug: [mô tả ngắn hoặc dán nguyên thông báo lỗi].
+Act as Builder. First find the cause and tell me in Vietnamese. Write a test that 
+reproduces it, then make the smallest possible fix, only in the files related to the 
+failing task. Do not rewrite other code. Log it in CHANGELOG.md and commit.
+
+3. Khi muốn thêm hoặc đổi tính năng
+Change request: [bạn muốn gì].
+Act as Planner only. Tell me which R items in SPEC.md this affects and which files 
+in the code. Propose the SPEC.md and PLAN.md changes and wait for my OK. Do not 
+write code yet.
