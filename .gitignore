@@ -43,6 +43,8 @@ htmlcov/
 # User Data & Generated Projects
 projects/*
 !projects/.gitkeep
+static/cache/*
+!static/cache/.gitkeep
 
 # User Media Assets
 assets/minecraft/*

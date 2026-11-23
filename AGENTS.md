@@ -22,3 +22,8 @@ Before any work, read in this order: SPEC.md, PLAN.md, DECISIONS.md. If PLAN.md 
 - After each task: update PLAN.md status, add a line to CHANGELOG.md, make a git commit, then summarize in Vietnamese in 3-5 lines and tell me how to test it.
 - Windows only: use pathlib, no bash-only commands.
 - Free tools only. The only external API allowed is Gemini (free key in .env).
+
+## Reading budget
+- Do NOT read CHANGELOG.md or DECISIONS.md at the start. Read them only when a task needs them.
+- Read only the "doing" task (or the next "todo" task) in PLAN.md, and only the R items it lists in SPEC.md.
+- Read code files only if they are in the task's file list.
