@@ -1,7 +1,5 @@
 1. Làm tiếp sau khi hết token hoặc mở chat mới
-Resume the project. Read AGENTS.md, SPEC.md, PLAN.md, DECISIONS.md and 
-CHANGELOG.md. Tell me in Vietnamese in 5 lines: which tasks are done, which one is 
-in progress, and what the next task is. Then do ONLY the next task and stop.
+Resume. Read STATE.md only, tell me in 3 lines where we are, then do the next task and stop.
 
 2. Khi gặp lỗi
 Bug: [mô tả ngắn hoặc dán nguyên thông báo lỗi].

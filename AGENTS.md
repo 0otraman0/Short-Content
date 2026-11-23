@@ -1,9 +1,10 @@
 # AGENTS.md - read this first, every session
 
 You have no memory between sessions. The files in this repo are your memory.
-Before any work, read in this order: SPEC.md, PLAN.md, DECISIONS.md. If PLAN.md does not exist yet, create it (see below).
+At the start of a session read ONLY STATE.md (AGENTS.md loads automatically). Then read just the task you are about to do in PLAN.md and the R items it lists in SPEC.md. Do not read anything else unless the task needs it.
 
 ## Files
+- STATE.md = current state snapshot (max 15 lines). Read first.
 - SPEC.md = what to build (numbered requirements R1, R2...). Source of truth. NEVER edit unless I explicitly say so.
 - PLAN.md = tasks T1, T2... Each task: goal, files it may touch, requirements covered (R#), owner role, status (todo/doing/done/blocked), how to test it.
 - DECISIONS.md = technical choices and the reason. Append only.
@@ -27,3 +28,7 @@ Before any work, read in this order: SPEC.md, PLAN.md, DECISIONS.md. If PLAN.md 
 - Do NOT read CHANGELOG.md or DECISIONS.md at the start. Read them only when a task needs them.
 - Read only the "doing" task (or the next "todo" task) in PLAN.md, and only the R items it lists in SPEC.md.
 - Read code files only if they are in the task's file list.
+
+## STATE.md
+After EVERY task (and when I say "token is running low"), overwrite STATE.md with the current state, max 15 lines. This file is the only thing a new chat must read first.
+At the start of a session read ONLY STATE.md (AGENTS.md loads automatically). Then read just the task you are about to do in PLAN.md and the R items it lists in SPEC.md. Do not read anything else unless the task needs it.
