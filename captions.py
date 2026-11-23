@@ -17,6 +17,19 @@ from typing import List, Optional
 # Disable Windows symlink warning for huggingface hub cache
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
+# Monkey-patch PyAV av.open to maintain compatibility with faster-whisper across all av versions (av >= 14 removed metadata_errors)
+try:
+    import av
+    _orig_av_open = av.open
+
+    def _safe_av_open(*args, **kwargs):
+        kwargs.pop("metadata_errors", None)
+        return _orig_av_open(*args, **kwargs)
+
+    av.open = _safe_av_open
+except Exception:
+    pass
+
 from faster_whisper import WhisperModel
 
 @dataclass

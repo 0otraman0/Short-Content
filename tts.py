@@ -248,6 +248,7 @@ async def synthesize_narration(
     Returns (output_path, duration_seconds).
     """
     ensure_ffmpeg()
+    output_path = Path(output_path)
     chosen_voice = voice or get_locked_voice()
     active_provider = provider or EdgeTTSProvider()
 

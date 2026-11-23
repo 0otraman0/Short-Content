@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Bug Fix
+- **Fix (PyAV av.open compatibility)**: Resolved `TypeError: open() got an unexpected keyword argument 'metadata_errors'` when transcribing audio with `faster-whisper` in environments running newer PyAV (`av >= 14`, specifically `av 19.0.2` in `venv`). Added backwards-compatible monkey-patch for `av.open` in `captions.py` and unit test in `tests/test_av_compat.py`.
+
 ## [2026-11-23] - Phase 3
 - **T3.3**: Built background rendering pipeline in `main.py` (`POST /api/projects/{id}/render`, `GET /render-status/{job_id}`, `GET /video`), modal progress tracking (TTS -> Whisper -> FFmpeg), duration warning check (<60s / >180s), and embedded video player with MP4 download button in `static/index.html` & `static/app.js`. Full end-to-end integration verified via automated test `tests/test_render_pipeline.py`. Test passed.
 - **T3.2**: Implemented core FFmpeg video rendering engine in `render.py`. Features: auto-detection of hardware encoder (`h264_nvenc` vs `libx264`), 1080x1920 30fps vertical video composition with dark placeholder background, Windows filter path escaping, .ass subtitle burning, AAC audio muxing, and YouTube Shorts MP4 export (`+faststart`). Added unit test suite `tests/test_render.py` passing 3/3 tests. Test passed.
@@ -21,6 +24,9 @@ All finished tasks and notable updates are logged here.
 ## [2026-11-23] - Phase 1
 - **T1.2**: Built complete client logic in `static/app.js`, updated `static/index.html` and `static/style.css`. Features implemented: live word count and duration estimation (~150 WPM + `[pause X]` duration), random target length generator (60-180s), debounced autosave (1.5s) to `project.json`, project sidebar list with open/duplicate/delete, and clickable interactive pacing cheatsheet inserting markup at cursor. Test passed.
 - **T1.1**: Implemented project storage backend in `main.py` (CRUD endpoints `/api/projects`, duplicate, delete, and autosave update). Verified folder creation, `project.json` persistence, and input sanitization via automated test `tests/test_projects.py`. Test passed.
+
+## [2026-11-23] - Bug Fix
+- **Fix (PyAV av.open compatibility)**: Resolved `TypeError: open() got an unexpected keyword argument 'metadata_errors'` when transcribing audio with `faster-whisper` in environments running newer PyAV (`av >= 14`, specifically `av 19.0.2` in `venv`). Added backwards-compatible monkey-patch for `av.open` in `captions.py` and unit test in `tests/test_av_compat.py`.
 
 ## [2026-11-23] - Phase 3
 - **T3.3**: Built background rendering pipeline in `main.py` (`POST /api/projects/{id}/render`, `GET /render-status/{job_id}`, `GET /video`), modal progress tracking (TTS -> Whisper -> FFmpeg), duration warning check (<60s / >180s), and embedded video player with MP4 download button in `static/index.html` & `static/app.js`. Full end-to-end integration verified via automated test `tests/test_render_pipeline.py`. Test passed.
