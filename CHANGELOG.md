@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [Unreleased] - In Progress
+- **T2.2 (doing)**: Edge-TTS engine with voice locking and FFmpeg audio concat/loudnorm pipeline in progress.
+
 ## [2026-11-23] - Phase 2
 - **T2.1**: Implemented `pacing.py` to tokenize and parse script pacing markup (`[pause]`, `[slow]`, `[fast]`, `*emphasis*`, `[whisper]`), supporting presets (Mystery, Hype, Calm) and natural sentence pauses. Created automated test suite `tests/test_pacing.py` with 8 passing unit tests. Test passed.
 
