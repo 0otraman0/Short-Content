@@ -478,3 +478,65 @@ async def get_sources(project_id: str):
     if not sources_file.exists():
         raise HTTPException(status_code=404, detail="Nguồn tham khảo chưa được tạo.")
     return FileResponse(sources_file, media_type="text/plain", filename=f"{project_id}_sources.txt")
+
+# ==========================================
+# Gemini Writing Assistant Endpoints (R3)
+# ==========================================
+
+from gemini_client import (
+    suggest_next_paragraphs,
+    rewrite_draft,
+    outline_topic,
+    auto_pace,
+)
+
+class SuggestNextRequest(BaseModel):
+    script: str
+    notes: Optional[str] = ""
+
+class RewriteRequest(BaseModel):
+    script: str
+    notes: Optional[str] = ""
+    target_duration: Optional[int] = None
+
+class OutlineRequest(BaseModel):
+    topic: str
+    notes: Optional[str] = ""
+    target_duration: Optional[int] = 90
+
+@app.post("/api/gemini/suggest-next")
+async def api_suggest_next(payload: SuggestNextRequest):
+    """R3.1: Suggest 3 alternative paragraphs continuing the script."""
+    script = payload.script.strip()
+    if not script:
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung hiện tại để gợi ý tiếp.")
+    try:
+        suggestions = await suggest_next_paragraphs(script, payload.notes or "")
+        return {"success": True, "suggestions": suggestions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi AI gợi ý: {str(e)}")
+
+@app.post("/api/gemini/rewrite")
+async def api_rewrite(payload: RewriteRequest):
+    """R3.2: Rewrite and polish draft keeping facts and spoken rhythm."""
+    script = payload.script.strip()
+    if not script:
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung cần viết lại.")
+    try:
+        rewritten = await rewrite_draft(script, payload.notes or "", payload.target_duration)
+        return {"success": True, "original": script, "rewritten": rewritten}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi AI viết lại: {str(e)}")
+
+@app.post("/api/gemini/outline")
+async def api_outline(payload: OutlineRequest):
+    """R3.3: Generate outline and draft from a topic or fact."""
+    topic = payload.topic.strip()
+    if not topic:
+        raise HTTPException(status_code=400, detail="Chủ đề hoặc sự thật đang trống. Vui lòng nhập chủ đề.")
+    try:
+        draft = await outline_topic(topic, payload.notes or "", payload.target_duration or 90)
+        return {"success": True, "draft": draft}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi AI dựng khung: {str(e)}")
+

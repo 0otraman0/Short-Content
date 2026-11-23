@@ -8,7 +8,7 @@ tts:
 
 # Gemini AI Settings
 gemini:
-  model: gemini-3.5-flash-lite
+  model: gemini-flash-lite-latest
 
 # Pacing Presets (multipliers and default pause values)
 pacing_presets:

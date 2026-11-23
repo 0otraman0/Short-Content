@@ -59,6 +59,38 @@ const DOM = {
     btnDownloadSubtitles: document.getElementById('btn-download-subtitles'),
     btnDownloadSources: document.getElementById('btn-download-sources'),
 
+    // Gemini Writing Assistant
+    aiNotes: document.getElementById('ai-notes'),
+    btnSuggestNext: document.getElementById('btn-suggest-next'),
+    btnRewriteScript: document.getElementById('btn-rewrite-script'),
+    btnOutlineDraft: document.getElementById('btn-outline-draft'),
+
+    // Suggestions Modal
+    suggestionsModal: document.getElementById('suggestions-modal'),
+    suggestionsList: document.getElementById('suggestions-list'),
+    btnCloseSuggestionsModal: document.getElementById('btn-close-suggestions-modal'),
+    btnCancelSuggestions: document.getElementById('btn-cancel-suggestions'),
+
+    // Rewrite Modal
+    rewriteModal: document.getElementById('rewrite-modal'),
+    rewriteOriginal: document.getElementById('rewrite-original'),
+    rewriteResult: document.getElementById('rewrite-result'),
+    btnCloseRewriteModal: document.getElementById('btn-close-rewrite-modal'),
+    btnCancelRewrite: document.getElementById('btn-cancel-rewrite'),
+    btnApplyRewrite: document.getElementById('btn-apply-rewrite'),
+
+    // Outline Modal
+    outlineModal: document.getElementById('outline-modal'),
+    outlineTopic: document.getElementById('outline-topic'),
+    outlineDuration: document.getElementById('outline-duration'),
+    outlineLoading: document.getElementById('outline-loading'),
+    outlineResultSection: document.getElementById('outline-result-section'),
+    outlineResult: document.getElementById('outline-result'),
+    btnGenerateOutline: document.getElementById('btn-generate-outline'),
+    btnApplyOutline: document.getElementById('btn-apply-outline'),
+    btnCloseOutlineModal: document.getElementById('btn-close-outline-modal'),
+    btnCancelOutline: document.getElementById('btn-cancel-outline'),
+
     // Tabs
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content')
@@ -692,7 +724,180 @@ function closeExportModal() {
 }
 
 // ==========================================
-// 8. Utility Functions
+// 8. Gemini Writing Assistant Actions (R3)
+// ==========================================
+
+async function handleSuggestNext() {
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung hiện tại để Gemini gợi ý đoạn tiếp theo.');
+        return;
+    }
+
+    const notes = DOM.aiNotes ? DOM.aiNotes.value.trim() : '';
+    const origText = DOM.btnSuggestNext.innerHTML;
+    DOM.btnSuggestNext.disabled = true;
+    DOM.btnSuggestNext.innerHTML = '<strong>⏳ Đang suy nghĩ...</strong><small>Gemini đang tạo 3 ý tưởng nối tiếp</small>';
+
+    try {
+        const res = await fetch('/api/gemini/suggest-next', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script, notes })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể tạo gợi ý từ Gemini');
+        }
+
+        const data = await res.json();
+        const suggestions = data.suggestions || [];
+
+        DOM.suggestionsList.innerHTML = '';
+        suggestions.forEach((text, idx) => {
+            const card = document.createElement('div');
+            card.className = 'btn-card';
+            card.style.textAlign = 'left';
+            card.style.cursor = 'pointer';
+            card.style.border = '1px solid var(--border-color)';
+            card.innerHTML = `
+                <div style="font-weight: 600; color: var(--accent); margin-bottom: 6px;">Lựa chọn ${idx + 1}:</div>
+                <div style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); margin-bottom: 8px;">${escapeHtml(text)}</div>
+                <button class="btn-primary" style="font-size: 0.8rem; padding: 4px 10px;">➕ Chèn đoạn này</button>
+            `;
+
+            card.addEventListener('click', () => {
+                const current = DOM.scriptEditor.value.trim();
+                DOM.scriptEditor.value = current ? `${current}\n\n${text}` : text;
+                updateStatsDisplay();
+                scheduleAutosave();
+                DOM.suggestionsModal.classList.add('hidden');
+            });
+
+            DOM.suggestionsList.appendChild(card);
+        });
+
+        DOM.suggestionsModal.classList.remove('hidden');
+    } catch (err) {
+        alert('Lỗi gợi ý: ' + err.message);
+    } finally {
+        DOM.btnSuggestNext.disabled = false;
+        DOM.btnSuggestNext.innerHTML = origText;
+    }
+}
+
+async function handleRewriteScript() {
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung trước khi yêu cầu viết lại.');
+        return;
+    }
+
+    const notes = DOM.aiNotes ? DOM.aiNotes.value.trim() : '';
+    const targetDuration = state.currentProject ? state.currentProject.target_duration : 90;
+    const origText = DOM.btnRewriteScript.innerHTML;
+    DOM.btnRewriteScript.disabled = true;
+    DOM.btnRewriteScript.innerHTML = '<strong>⏳ Đang viết lại...</strong><small>Đang tối ưu cấu trúc và nhịp kể</small>';
+
+    try {
+        const res = await fetch('/api/gemini/rewrite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script, notes, target_duration: targetDuration })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể viết lại kịch bản');
+        }
+
+        const data = await res.json();
+        DOM.rewriteOriginal.value = data.original || script;
+        DOM.rewriteResult.value = data.rewritten || '';
+
+        DOM.rewriteModal.classList.remove('hidden');
+    } catch (err) {
+        alert('Lỗi viết lại: ' + err.message);
+    } finally {
+        DOM.btnRewriteScript.disabled = false;
+        DOM.btnRewriteScript.innerHTML = origText;
+    }
+}
+
+function handleApplyRewrite() {
+    const rewritten = DOM.rewriteResult.value.trim();
+    if (rewritten) {
+        DOM.scriptEditor.value = rewritten;
+        updateStatsDisplay();
+        scheduleAutosave();
+    }
+    DOM.rewriteModal.classList.add('hidden');
+}
+
+function handleOpenOutlineModal() {
+    const sel = DOM.scriptEditor.value.substring(DOM.scriptEditor.selectionStart, DOM.scriptEditor.selectionEnd).trim();
+    DOM.outlineTopic.value = sel || '';
+    DOM.outlineLoading.classList.add('hidden');
+    DOM.outlineResultSection.classList.add('hidden');
+    DOM.btnApplyOutline.classList.add('hidden');
+    DOM.outlineModal.classList.remove('hidden');
+}
+
+async function handleGenerateOutline() {
+    const topic = DOM.outlineTopic.value.trim();
+    if (!topic) {
+        alert('Vui lòng nhập chủ đề hoặc sự thật cần tạo kịch bản.');
+        return;
+    }
+
+    const notes = DOM.aiNotes ? DOM.aiNotes.value.trim() : '';
+    const duration = parseInt(DOM.outlineDuration.value) || 90;
+
+    DOM.outlineLoading.classList.remove('hidden');
+    DOM.outlineResultSection.classList.add('hidden');
+    DOM.btnApplyOutline.classList.add('hidden');
+    DOM.btnGenerateOutline.disabled = true;
+
+    try {
+        const res = await fetch('/api/gemini/outline', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, notes, target_duration: duration })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể dựng khung kịch bản');
+        }
+
+        const data = await res.json();
+        DOM.outlineResult.value = data.draft || '';
+        DOM.outlineResultSection.classList.remove('hidden');
+        DOM.btnApplyOutline.classList.remove('hidden');
+    } catch (err) {
+        alert('Lỗi tạo khung: ' + err.message);
+    } finally {
+        DOM.outlineLoading.classList.add('hidden');
+        DOM.btnGenerateOutline.disabled = false;
+    }
+}
+
+function handleApplyOutline() {
+    const draft = DOM.outlineResult.value.trim();
+    if (draft) {
+        const proceed = DOM.scriptEditor.value.trim() === '' || confirm('Thay thế nội dung kịch bản hiện tại bằng kịch bản vừa dựng?');
+        if (proceed) {
+            DOM.scriptEditor.value = draft;
+            updateStatsDisplay();
+            scheduleAutosave();
+        }
+    }
+    DOM.outlineModal.classList.add('hidden');
+}
+
+// ==========================================
+// 9. Utility Functions
 // ==========================================
 
 function escapeHtml(str) {
@@ -760,6 +965,46 @@ async function init() {
     }
     if (DOM.btnCloseExport) {
         DOM.btnCloseExport.addEventListener('click', closeExportModal);
+    }
+
+    // AI Assistant Event Listeners (R3)
+    if (DOM.btnSuggestNext) {
+        DOM.btnSuggestNext.addEventListener('click', handleSuggestNext);
+    }
+    if (DOM.btnCloseSuggestionsModal) {
+        DOM.btnCloseSuggestionsModal.addEventListener('click', () => DOM.suggestionsModal.classList.add('hidden'));
+    }
+    if (DOM.btnCancelSuggestions) {
+        DOM.btnCancelSuggestions.addEventListener('click', () => DOM.suggestionsModal.classList.add('hidden'));
+    }
+
+    if (DOM.btnRewriteScript) {
+        DOM.btnRewriteScript.addEventListener('click', handleRewriteScript);
+    }
+    if (DOM.btnCloseRewriteModal) {
+        DOM.btnCloseRewriteModal.addEventListener('click', () => DOM.rewriteModal.classList.add('hidden'));
+    }
+    if (DOM.btnCancelRewrite) {
+        DOM.btnCancelRewrite.addEventListener('click', () => DOM.rewriteModal.classList.add('hidden'));
+    }
+    if (DOM.btnApplyRewrite) {
+        DOM.btnApplyRewrite.addEventListener('click', handleApplyRewrite);
+    }
+
+    if (DOM.btnOutlineDraft) {
+        DOM.btnOutlineDraft.addEventListener('click', handleOpenOutlineModal);
+    }
+    if (DOM.btnGenerateOutline) {
+        DOM.btnGenerateOutline.addEventListener('click', handleGenerateOutline);
+    }
+    if (DOM.btnApplyOutline) {
+        DOM.btnApplyOutline.addEventListener('click', handleApplyOutline);
+    }
+    if (DOM.btnCloseOutlineModal) {
+        DOM.btnCloseOutlineModal.addEventListener('click', () => DOM.outlineModal.classList.add('hidden'));
+    }
+    if (DOM.btnCancelOutline) {
+        DOM.btnCancelOutline.addEventListener('click', () => DOM.outlineModal.classList.add('hidden'));
     }
 
     if (DOM.presetSelector) {

@@ -184,6 +184,86 @@
         </div>
     </div>
 
+    <!-- Suggest Next Paragraphs Modal (R3.1) -->
+    <div id="suggestions-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>💡 Gợi ý đoạn tiếp theo (3 lựa chọn)</h3>
+                <button id="btn-close-suggestions-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Bấm vào một lựa chọn bên dưới để chèn tiếp vào kịch bản:</p>
+                <div id="suggestions-list" class="suggestions-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-suggestions" class="btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewrite Review Modal Before/After (R3.2) -->
+    <div id="rewrite-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>✍️ So sánh & Viết lại bài đang dở</h3>
+                <button id="btn-close-rewrite-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="diff-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <h4 style="margin-bottom: 8px; color: var(--text-muted);">Bản gốc:</h4>
+                        <textarea id="rewrite-original" readonly style="width: 100%; height: 260px; font-size: 0.9rem; padding: 10px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 8px; color: var(--accent);">Bản viết lại (Tối ưu giọng đọc):</h4>
+                        <textarea id="rewrite-result" style="width: 100%; height: 260px; font-size: 0.9rem; padding: 10px; background: var(--bg-surface); border: 1px solid var(--accent); color: var(--text-primary); border-radius: 6px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-rewrite" class="btn-secondary">Hủy</button>
+                <button id="btn-apply-rewrite" class="btn-primary">Áp dụng bản viết lại này</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outline Draft Modal (R3.3) -->
+    <div id="outline-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>🏗️ Dựng khung kịch bản từ đầu</h3>
+                <button id="btn-close-outline-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label for="outline-topic" style="display: block; font-weight: 500; margin-bottom: 6px;">Chủ đề hoặc sự thật:</label>
+                    <input type="text" id="outline-topic" placeholder="VD: Greenland sharks live 400 years in the freezing Arctic..." style="width: 100%; padding: 8px 12px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);">
+                </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label for="outline-duration" style="display: block; font-weight: 500; margin-bottom: 6px;">Mục tiêu thời lượng:</label>
+                    <select id="outline-duration" class="preset-dropdown" style="width: 100%;">
+                        <option value="60">60 giây (~130 - 170 từ)</option>
+                        <option value="90" selected>90 giây (~200 - 250 từ)</option>
+                        <option value="120">120 giây (~260 - 330 từ)</option>
+                        <option value="180">180 giây (~400 - 500 từ)</option>
+                    </select>
+                </div>
+                <div id="outline-loading" class="hidden" style="text-align: center; padding: 20px; color: var(--accent);">
+                    ⏳ Đang dựng dàn ý và soạn kịch bản với Gemini...
+                </div>
+                <div id="outline-result-section" class="hidden">
+                    <label for="outline-result" style="display: block; font-weight: 500; margin-bottom: 6px; color: var(--accent);">Kịch bản phác thảo:</label>
+                    <textarea id="outline-result" style="width: 100%; height: 220px; font-size: 0.9rem; padding: 10px; background: var(--bg-surface); border: 1px solid var(--accent); color: var(--text-primary); border-radius: 6px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-outline" class="btn-secondary">Đóng</button>
+                <button id="btn-generate-outline" class="btn-secondary">Tạo kịch bản</button>
+                <button id="btn-apply-outline" class="btn-primary hidden">Đưa vào trình soạn thảo</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Client Script -->
     <script src="/static/app.js"></script>
 </body>

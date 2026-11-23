@@ -34,9 +34,8 @@ SYSTEM_INSTRUCTION_WRITING = (
 )
 
 FALLBACK_MODELS = [
+    "gemini-flash-lite-latest",
     "gemini-3.5-flash-lite",
-    "gemini-3.7-flash",
-    "gemini-3.1-flash-lite",
 ]
 
 def load_config() -> dict:
@@ -51,7 +50,7 @@ def load_config() -> dict:
 def get_configured_model() -> str:
     """Read configured model from config.yaml with default fallback."""
     cfg = load_config()
-    return cfg.get("gemini", {}).get("model", "gemini-3.5-flash-lite")
+    return cfg.get("gemini", {}).get("model", "gemini-flash-lite-latest")
 
 def get_gemini_client() -> Any:
     """Initialize and return google-genai Client using API key from .env."""
@@ -69,7 +68,7 @@ async def generate_text(
     prompt: str,
     system_instruction: Optional[str] = SYSTEM_INSTRUCTION_WRITING,
     model: Optional[str] = None,
-    max_retries: int = 2,
+    max_retries: int = 3,
 ) -> str:
     """
     Generate text using Gemini with automatic retry on rate limits or service unavailability.
@@ -109,9 +108,10 @@ async def generate_text(
             except Exception as e:
                 err_str = str(e)
                 last_error = e
-                # If unavailable (503), timed out, or rate-limited (429), quickly try next model
+                # If unavailable (503), timed out, or rate-limited (429), back off before retry
                 if attempt < max_retries - 1:
-                    await asyncio.sleep(1.0)
+                    wait_time = (attempt + 1) * 2.5
+                    await asyncio.sleep(wait_time)
                     continue
                 break
 

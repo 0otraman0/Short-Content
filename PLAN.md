@@ -116,7 +116,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R3.1, R3.2, R3.3, R3.4
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Test each assistant action in UI, check before/after diff dialog, and accept suggested text into editor.
 
 ### T4.3: Auto-Pace Feature
