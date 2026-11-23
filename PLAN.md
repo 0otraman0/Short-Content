@@ -28,7 +28,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `start.bat`, `README.md`
 - **Requirements**: C3, R7.1
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Execute `start.bat` in Windows terminal; verify environment setups and browser opens to app.
 
 ---
