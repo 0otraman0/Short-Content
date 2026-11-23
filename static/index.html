@@ -32,6 +32,12 @@
                     <span id="save-status" class="save-status">Đã lưu</span>
                 </div>
                 <div class="top-actions">
+                    <select id="preset-selector" class="preset-dropdown" title="Chọn preset nhịp điệu">
+                        <option value="mystery">Nhịp: Huyền bí (Mystery)</option>
+                        <option value="hype">Nhịp: Sôi nổi (Hype)</option>
+                        <option value="calm">Nhịp: Trầm tĩnh (Calm)</option>
+                    </select>
+                    <button id="btn-select-voice" class="btn-secondary" title="Xem hoặc chọn lại giọng đọc nam">🎙️ Giọng đọc</button>
                     <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
                     <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
@@ -64,8 +70,9 @@
 
                 <!-- Audio preview player -->
                 <div id="audio-preview-bar" class="audio-bar hidden">
-                    <span>Nghe thử:</span>
+                    <span id="audio-preview-label">🔊 Nghe thử:</span>
                     <audio id="audio-player" controls></audio>
+                    <button id="btn-close-audio" class="btn-icon" title="Đóng trình phát">✕</button>
                 </div>
             </div>
         </main>
@@ -109,6 +116,26 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- Voice Selection Modal -->
+    <div id="voice-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>🎙️ Chọn và khóa giọng đọc nam</h3>
+                <button id="btn-close-voice-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Theo SPEC: Sử dụng 1 giọng đọc nam tiếng Anh cố định cho toàn bộ kênh YouTube. Bạn có thể chọn và khóa giọng tại đây:</p>
+                <div id="voice-options-list" class="voice-options-list">
+                    <div class="empty-state">Đang tải danh sách giọng đọc...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-voice" class="btn-secondary">Hủy</button>
+                <button id="btn-save-voice" class="btn-primary">Khóa giọng đọc này</button>
+            </div>
+        </div>
     </div>
 
     <!-- Main Client Script -->

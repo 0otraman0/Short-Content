@@ -254,7 +254,14 @@ def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
             else:
                 result.append(seg)
         elif isinstance(seg, SpeechSegment):
-            if seg.text.strip():
+            clean_text = seg.text.strip()
+            if not clean_text:
+                continue
+            # If segment has no speakable words (only punctuation like '.' or '?')
+            if not re.search(r"\w", clean_text):
+                if result and isinstance(result[-1], SpeechSegment):
+                    result[-1].text = (result[-1].text + clean_text).strip()
+            else:
                 result.append(seg)
 
     # Trim trailing pause

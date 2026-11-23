@@ -25,6 +25,22 @@ const DOM = {
     targetDurationDisplay: document.getElementById('target-duration-display'),
     btnRandomLength: document.getElementById('btn-random-length'),
     cheatsheetContent: document.querySelector('.cheatsheet-content'),
+    presetSelector: document.getElementById('preset-selector'),
+    btnSelectVoice: document.getElementById('btn-select-voice'),
+    btnPreviewAudio: document.getElementById('btn-preview-audio'),
+
+    // Audio Preview
+    audioPreviewBar: document.getElementById('audio-preview-bar'),
+    audioPreviewLabel: document.getElementById('audio-preview-label'),
+    audioPlayer: document.getElementById('audio-player'),
+    btnCloseAudio: document.getElementById('btn-close-audio'),
+
+    // Voice Modal
+    voiceModal: document.getElementById('voice-modal'),
+    voiceOptionsList: document.getElementById('voice-options-list'),
+    btnCloseVoiceModal: document.getElementById('btn-close-voice-modal'),
+    btnCancelVoice: document.getElementById('btn-cancel-voice'),
+    btnSaveVoice: document.getElementById('btn-save-voice'),
 
     // Tabs
     tabButtons: document.querySelectorAll('.tab-btn'),
@@ -185,6 +201,9 @@ async function loadProject(id) {
         state.currentProject = proj;
         DOM.projectTitleInput.value = proj.title || 'Dự án chưa đặt tên';
         DOM.scriptEditor.value = proj.script || '';
+        if (DOM.presetSelector) {
+            DOM.presetSelector.value = proj.pacing_preset || 'mystery';
+        }
         setTargetDuration(proj.target_duration || 90);
         updateStatsDisplay();
 
@@ -276,7 +295,8 @@ async function executeAutosave() {
         const payload = {
             title: DOM.projectTitleInput.value.trim() || 'Dự án chưa đặt tên',
             script: DOM.scriptEditor.value,
-            target_duration: state.currentProject.target_duration || 90
+            target_duration: state.currentProject.target_duration || 90,
+            pacing_preset: DOM.presetSelector ? DOM.presetSelector.value : 'mystery'
         };
 
         const res = await fetch(`/api/projects/${state.currentProject.id}`, {
@@ -388,7 +408,158 @@ async function checkSystemStatus() {
 }
 
 // ==========================================
-// 6. Utility Functions
+// 6. TTS Audio Preview & Voice Management
+// ==========================================
+
+async function handleAudioPreview() {
+    const textarea = DOM.scriptEditor;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    let targetText = "";
+    if (start !== end) {
+        // Highlighted text
+        targetText = textarea.value.substring(start, end).trim();
+    } else {
+        // Paragraph around cursor or full text if short
+        const fullText = textarea.value.trim();
+        if (!fullText) {
+            alert('Vui lòng nhập hoặc bôi đen một đoạn kịch bản cần nghe thử.');
+            return;
+        }
+
+        // Find current paragraph around cursor
+        const beforeCursor = textarea.value.substring(0, start);
+        const afterCursor = textarea.value.substring(start);
+        const paraStart = beforeCursor.lastIndexOf('\n') + 1;
+        const paraEndRel = afterCursor.indexOf('\n');
+        const paraEnd = paraEndRel === -1 ? textarea.value.length : start + paraEndRel;
+
+        targetText = textarea.value.substring(paraStart, paraEnd).trim();
+        if (!targetText) {
+            targetText = fullText.split('\n\n')[0].trim();
+        }
+    }
+
+    if (!targetText) {
+        alert('Vui lòng bôi đen một đoạn văn bản để nghe thử.');
+        return;
+    }
+
+    const originalBtnText = DOM.btnPreviewAudio.textContent;
+    DOM.btnPreviewAudio.disabled = true;
+    DOM.btnPreviewAudio.textContent = '⏳ Đang tổng hợp...';
+
+    try {
+        const preset = DOM.presetSelector ? DOM.presetSelector.value : 'mystery';
+        const res = await fetch('/api/tts/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: targetText,
+                preset: preset
+            })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Lỗi từ máy chủ TTS');
+        }
+
+        const data = await res.json();
+        if (data.audio_url) {
+            DOM.audioPreviewBar.classList.remove('hidden');
+            DOM.audioPreviewLabel.textContent = `🔊 Nghe thử (${data.duration.toFixed(1)}s):`;
+            DOM.audioPlayer.src = data.audio_url;
+            DOM.audioPlayer.play().catch(e => console.log('Autoplay blocked:', e));
+        }
+    } catch (err) {
+        alert('Lỗi nghe thử: ' + err.message);
+    } finally {
+        DOM.btnPreviewAudio.disabled = false;
+        DOM.btnPreviewAudio.textContent = originalBtnText;
+    }
+}
+
+let selectedVoiceId = null;
+
+async function openVoiceModal() {
+    DOM.voiceModal.classList.remove('hidden');
+    DOM.voiceOptionsList.innerHTML = '<div class="empty-state">Đang tải danh sách giọng đọc nam tiếng Anh...</div>';
+
+    try {
+        const res = await fetch('/api/tts/voices');
+        if (!res.ok) throw new Error('Không thể tải danh sách giọng đọc');
+        const data = await res.json();
+
+        selectedVoiceId = data.current_voice || 'en-US-ChristopherNeural';
+        DOM.voiceOptionsList.innerHTML = '';
+
+        if (!data.voices || data.voices.length === 0) {
+            DOM.voiceOptionsList.innerHTML = '<div class="empty-state">Không tìm thấy giọng đọc nào.</div>';
+            return;
+        }
+
+        data.voices.forEach(v => {
+            const item = document.createElement('div');
+            item.className = 'voice-item';
+            if (v.id === selectedVoiceId) {
+                item.classList.add('selected');
+            }
+
+            item.innerHTML = `
+                <input type="radio" name="voice_radio" value="${v.id}" ${v.id === selectedVoiceId ? 'checked' : ''}>
+                <div class="voice-info">
+                    <div class="voice-name">${escapeHtml(v.name)}</div>
+                    <div class="voice-sub">${escapeHtml(v.locale)} • ${escapeHtml(v.id)}</div>
+                </div>
+            `;
+
+            item.addEventListener('click', () => {
+                selectedVoiceId = v.id;
+                DOM.voiceOptionsList.querySelectorAll('.voice-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                item.querySelector('input').checked = true;
+            });
+
+            DOM.voiceOptionsList.appendChild(item);
+        });
+    } catch (err) {
+        DOM.voiceOptionsList.innerHTML = `<div class="empty-state" style="color:var(--danger)">Lỗi: ${err.message}</div>`;
+    }
+}
+
+function closeVoiceModal() {
+    DOM.voiceModal.classList.add('hidden');
+}
+
+async function saveSelectedVoice() {
+    if (!selectedVoiceId) return;
+
+    DOM.btnSaveVoice.disabled = true;
+    DOM.btnSaveVoice.textContent = 'Đang lưu...';
+
+    try {
+        const res = await fetch('/api/tts/lock-voice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voice: selectedVoiceId })
+        });
+        if (!res.ok) throw new Error('Không thể lưu giọng đọc');
+
+        closeVoiceModal();
+        checkSystemStatus();
+        alert(`Đã khóa giọng đọc: ${selectedVoiceId}`);
+    } catch (err) {
+        alert('Lỗi khóa giọng đọc: ' + err.message);
+    } finally {
+        DOM.btnSaveVoice.disabled = false;
+        DOM.btnSaveVoice.textContent = 'Khóa giọng đọc này';
+    }
+}
+
+// ==========================================
+// 7. Utility Functions
 // ==========================================
 
 function escapeHtml(str) {
@@ -424,6 +595,38 @@ async function init() {
     // Event Listeners
     DOM.btnNewProject.addEventListener('click', createNewProject);
     DOM.btnRandomLength.addEventListener('click', randomTargetDuration);
+
+    if (DOM.btnPreviewAudio) {
+        DOM.btnPreviewAudio.addEventListener('click', handleAudioPreview);
+    }
+    if (DOM.btnCloseAudio) {
+        DOM.btnCloseAudio.addEventListener('click', () => {
+            DOM.audioPlayer.pause();
+            DOM.audioPreviewBar.classList.add('hidden');
+        });
+    }
+
+    if (DOM.btnSelectVoice) {
+        DOM.btnSelectVoice.addEventListener('click', openVoiceModal);
+    }
+    if (DOM.btnCloseVoiceModal) {
+        DOM.btnCloseVoiceModal.addEventListener('click', closeVoiceModal);
+    }
+    if (DOM.btnCancelVoice) {
+        DOM.btnCancelVoice.addEventListener('click', closeVoiceModal);
+    }
+    if (DOM.btnSaveVoice) {
+        DOM.btnSaveVoice.addEventListener('click', saveSelectedVoice);
+    }
+
+    if (DOM.presetSelector) {
+        DOM.presetSelector.addEventListener('change', () => {
+            if (state.currentProject) {
+                state.currentProject.pacing_preset = DOM.presetSelector.value;
+                scheduleAutosave();
+            }
+        });
+    }
 
     DOM.scriptEditor.addEventListener('input', () => {
         updateStatsDisplay();

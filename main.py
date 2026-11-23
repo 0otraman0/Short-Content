@@ -18,7 +18,11 @@ from pydantic import BaseModel, Field
 BASE_DIR = Path(__file__).resolve().parent
 PROJECTS_DIR = BASE_DIR / "projects"
 PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_DIR = BASE_DIR / "static" / "cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 load_dotenv(BASE_DIR / ".env")
+
+from tts import EdgeTTSProvider, get_locked_voice, lock_voice, synthesize_narration
 
 def ensure_ffmpeg() -> bool:
     """Ensure ffmpeg is in PATH, checking common WinGet install directories if needed."""
@@ -267,4 +271,65 @@ async def delete_project(project_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Không thể xóa thư mục dự án: {str(e)}")
     return {"success": True, "message": "Đã xóa dự án thành công.", "id": project_id}
+
+# ==========================================
+# TTS Preview & Voice Configuration
+# ==========================================
+
+class TTSPreviewRequest(BaseModel):
+    text: str
+    preset: Optional[str] = "mystery"
+    voice: Optional[str] = None
+
+class LockVoiceRequest(BaseModel):
+    voice: str
+
+@app.get("/api/tts/voices")
+async def get_voices():
+    """List available English male voices from edge-tts and return currently locked voice."""
+    provider = EdgeTTSProvider()
+    try:
+        voices = await provider.list_english_male_voices()
+    except Exception as e:
+        voices = []
+    locked = get_locked_voice()
+    return {"current_voice": locked, "voices": voices}
+
+@app.post("/api/tts/lock-voice")
+async def save_locked_voice(payload: LockVoiceRequest):
+    """Lock chosen voice into config.yaml permanently."""
+    voice_name = payload.voice.strip()
+    if not voice_name:
+        raise HTTPException(status_code=400, detail="Mã giọng đọc không hợp lệ.")
+    success = lock_voice(voice_name)
+    if not success:
+        raise HTTPException(status_code=500, detail="Không thể lưu giọng đọc vào config.yaml.")
+    return {"success": True, "voice": voice_name}
+
+@app.post("/api/tts/preview")
+async def preview_tts(payload: TTSPreviewRequest):
+    """Synthesize selected paragraph or text with pacing markup for instant in-browser playback."""
+    text = payload.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Vui lòng bôi đen hoặc nhập đoạn văn bản cần nghe thử.")
+
+    preview_id = f"preview_{uuid.uuid4().hex[:8]}"
+    output_file = CACHE_DIR / f"{preview_id}.mp3"
+
+    try:
+        out_path, duration = await synthesize_narration(
+            script=text,
+            output_path=output_file,
+            preset_name=payload.preset or "mystery",
+            voice=payload.voice,
+        )
+        return {
+            "success": True,
+            "audio_url": f"/static/cache/{preview_id}.mp3",
+            "duration": duration,
+            "preview_id": preview_id,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi tạo giọng đọc thử nghiệm: {str(e)}")
+
 

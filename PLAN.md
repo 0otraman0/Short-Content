@@ -76,7 +76,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.6, R2.7, R2.9
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Highlight a paragraph in the editor, click "Nghe thử", verify audio player renders and plays the generated speech in the browser.
 
 ---

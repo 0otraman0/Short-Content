@@ -14,6 +14,7 @@ import asyncio
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -261,9 +262,14 @@ async def synthesize_narration(
 
         for seg in segments:
             if isinstance(seg, SpeechSegment):
+                clean_text = seg.text.strip()
+                # Skip segments with no speakable characters to prevent edge-tts empty audio errors
+                if not re.search(r"\w", clean_text):
+                    continue
+
                 part_file = temp_dir / f"speech_{seg_index:04d}.mp3"
                 await active_provider.synthesize_segment(
-                    text=seg.text,
+                    text=clean_text,
                     output_file=part_file,
                     voice=chosen_voice,
                     rate=seg.rate,
