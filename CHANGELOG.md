@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Phase 4
+- **T4.1**: Implemented `gemini_client.py` using official `google-genai` Python SDK with `v1beta` endpoint routing, model configuration in `config.yaml` (`gemini-3.5-flash-lite`), and automatic model fallback. Enforced R3.4 system instructions (English, no fake stats/dates, [VERIFY] flag for uncertain details, punchy speakable sentences). Added helpers for writing assistant (`suggest_next_paragraphs`, `rewrite_draft`, `outline_topic`, `auto_pace`). Verified 4/4 tests passing in `tests/test_gemini.py`. Test passed.
+
 ## [2026-11-23] - Phase 3
 - **T3.2**: Replaced video rendering with export pipeline in `main.py` and web UI. Implemented `POST /api/projects/{id}/export`, polling `GET /export-status/{job_id}`, and download endpoints (`/narration`, `/subtitles`, `/sources`). UI updated with "Xuất Audio & Phụ đề" button, export progress tracking modal, and direct download cards for `narration.mp3`, `subtitles.srt`, and `sources.txt`. Removed legacy `render.py` and video tests. Created and passed integration test `tests/test_export_pipeline.py`. Test passed.
 - **T3.1**: Updated `captions.py` to generate standard `.srt` subtitle files with full natural phrases (5-8 words per line) and precision millisecond timestamps (`HH:MM:SS,mmm --> HH:MM:SS,mmm`). Updated test suite `tests/test_captions.py` with 4/4 passing unit tests. Test passed.

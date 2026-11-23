@@ -108,7 +108,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `gemini_client.py`, `requirements.txt`
 - **Requirements**: C2, C4, R3.4
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Run standalone test script calling Gemini API to verify response formatting and error handling.
 
 ### T4.2: Writing Assistant UI Side Panel
