@@ -2,8 +2,11 @@
 setlocal enabledelayedexpansion
 title YouTube Shorts Generator
 
+:: Chuyen den dung thu muc chua file batch khi nhap dup tu Explorer
+cd /d "%~dp0"
+
 echo ======================================================
-echo    YOUTUBE SHORTS GENERATOR (MINECRAFT & FACTS)
+echo    YOUTUBE SHORTS GENERATOR - MINECRAFT VA FACTS
 echo ======================================================
 echo.
 
@@ -18,9 +21,9 @@ if %errorlevel% neq 0 (
 
 :: 2. Kiem tra va tao Virtual Environment
 if not exist "venv\Scripts\activate.bat" (
-    echo [1/5] Dang tao moi virtual environment (venv)...
+    echo [1/5] Dang tao moi virtual environment: venv...
     python -m venv venv
-    if %errorlevel% neq 0 (
+    if !errorlevel! neq 0 (
         echo [LOI] Khong the tao virtual environment.
         pause
         exit /b 1
@@ -76,4 +79,9 @@ start "" http://127.0.0.1:8000
 
 echo [5/5] May chu dang chay. Nhan Ctrl+C de dung ung dung.
 echo.
-uvicorn main:app --host 127.0.0.1 --port 8000
+python -m uvicorn main:app --host 127.0.0.1 --port 8000
+if %errorlevel% neq 0 (
+    echo.
+    echo [LOI] May chu gap loi hoac bi tat dot ngot.
+    pause
+)

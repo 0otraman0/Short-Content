@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Bug Fix
+- **Fix (start.bat Windows Compatibility)**: Fixed batch file parsing errors (`... was unexpected at this time`) caused by unescaped parentheses `(venv)` inside `if` block and `&` in title. Added `cd /d "%~dp0"` to guarantee correct working directory when double-clicked from File Explorer, converted line endings to CRLF (`\r\n`), and added fallback error pause.
+
 ## [2026-11-23] - Configuration
 - **Config**: Updated Gemini AI model in `config.yaml` to `gemini-3.1-flash-lite` and appended architectural decision D8 in `DECISIONS.md`.
 
