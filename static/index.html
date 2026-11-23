@@ -138,6 +138,40 @@
         </div>
     </div>
 
+    <!-- Render Progress & Preview Modal -->
+    <div id="render-modal" class="modal-overlay hidden">
+        <div class="modal-card render-card">
+            <div class="modal-header">
+                <h3 id="render-modal-title">🚀 Tiến trình tạo video</h3>
+                <button id="btn-close-render-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="render-progress-section">
+                    <p id="render-step-label" class="step-label">Đang chuẩn bị...</p>
+                    <div class="progress-track">
+                        <div id="render-progress-bar" class="progress-fill" style="width: 5%;"></div>
+                    </div>
+                    <div class="progress-meta">
+                        <span id="render-progress-percent">5%</span>
+                        <span id="render-duration-info"></span>
+                    </div>
+                    <div id="render-warning-box" class="warning-alert hidden"></div>
+                </div>
+
+                <!-- Completed Video Player -->
+                <div id="render-result-section" class="hidden">
+                    <div class="video-preview-wrapper">
+                        <video id="rendered-video-player" controls preload="metadata"></video>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="btn-download-video" class="btn-success hidden" download="shorts_output.mp4">⬇️ Tải video (.mp4)</a>
+                <button id="btn-cancel-render" class="btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Client Script -->
     <script src="/static/app.js"></script>
 </body>

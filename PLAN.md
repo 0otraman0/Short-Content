@@ -104,7 +104,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R5.1, R5.2, R5.6, R5.7, R5.8
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Click "Tạo video" on a project; verify progress bar updates through stages and video is displayed upon completion.
 
 ---

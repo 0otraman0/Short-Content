@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 import yaml
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -22,7 +22,10 @@ CACHE_DIR = BASE_DIR / "static" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 load_dotenv(BASE_DIR / ".env")
 
+import asyncio
 from tts import EdgeTTSProvider, get_locked_voice, lock_voice, synthesize_narration
+from captions import transcribe_and_build_ass
+from render import render_video_with_placeholder, get_media_duration
 
 def ensure_ffmpeg() -> bool:
     """Ensure ffmpeg is in PATH, checking common WinGet install directories if needed."""
@@ -331,5 +334,141 @@ async def preview_tts(payload: TTSPreviewRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi tạo giọng đọc thử nghiệm: {str(e)}")
+
+# ==========================================
+# Video Render Pipeline & Background Tasks
+# ==========================================
+
+render_jobs: Dict[str, dict] = {}
+
+async def run_render_pipeline(project_id: str, job_id: str):
+    """Orchestrate background rendering: TTS Narration -> Whisper Subtitles -> FFmpeg Video."""
+    job = render_jobs[job_id]
+    job["status"] = "processing"
+
+    try:
+        folder = get_project_folder(project_id)
+        json_file = folder / "project.json"
+        if not json_file.exists():
+            raise ValueError("Không tìm thấy file project.json của dự án.")
+
+        project_data = json.loads(json_file.read_text(encoding="utf-8"))
+        script = project_data.get("script", "").strip()
+        if not script:
+            raise ValueError("Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo video.")
+
+        preset = project_data.get("pacing_preset", "mystery")
+        voice = get_locked_voice()
+
+        # Step 1: Narration TTS synthesis
+        job["step"] = "Đang tổng hợp giọng đọc và nhịp điệu (TTS)..."
+        job["progress"] = 15
+
+        audio_file = folder / "narration.mp3"
+        out_audio, duration = await synthesize_narration(
+            script=script,
+            output_path=audio_file,
+            preset_name=preset,
+            voice=voice,
+        )
+        job["duration"] = round(duration, 2)
+        job["progress"] = 40
+
+        if duration < 60 or duration > 180:
+            job["warning"] = f"Thời lượng video là {duration:.1f}s (khuyến nghị Shorts: 60 - 180 giây)."
+
+        # Step 2: Faster-Whisper Subtitle generation (.ass)
+        job["step"] = "Đang trích xuất thời gian từng từ và tạo phụ đề (Whisper)..."
+        job["progress"] = 50
+
+        ass_file = folder / "subtitles.ass"
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, transcribe_and_build_ass, audio_file, ass_file)
+        job["progress"] = 70
+
+        # Step 3: FFmpeg Video Rendering (1080x1920 30fps)
+        job["step"] = "Đang render video 9:16 và burn phụ đề (FFmpeg)..."
+        job["progress"] = 75
+
+        output_mp4 = folder / "output.mp4"
+        await loop.run_in_executor(
+            None,
+            render_video_with_placeholder,
+            audio_file,
+            output_mp4,
+            ass_file,
+            duration,
+            1080,
+            1920,
+            30,
+        )
+        job["progress"] = 95
+
+        # Step 4: Finalize project.json
+        project_data["status"] = "rendered"
+        project_data["audio_file"] = "narration.mp3"
+        project_data["subtitles_file"] = "subtitles.ass"
+        project_data["video_file"] = "output.mp4"
+        project_data["actual_duration"] = round(duration, 2)
+        project_data["updated_at"] = datetime.now().isoformat()
+        json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        job["step"] = "Hoàn tất! Video đã sẵn sàng."
+        job["progress"] = 100
+        job["status"] = "completed"
+        job["video_url"] = f"/api/projects/{project_id}/video"
+
+    except Exception as e:
+        job["status"] = "failed"
+        job["error"] = str(e)
+        job["step"] = f"Lỗi render: {str(e)}"
+
+@app.post("/api/projects/{project_id}/render")
+async def start_render_video(project_id: str, background_tasks: BackgroundTasks):
+    """Start video rendering pipeline in a background thread."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+
+    project_data = json.loads(json_file.read_text(encoding="utf-8"))
+    script = project_data.get("script", "").strip()
+    if not script:
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo video.")
+
+    job_id = f"job_{uuid.uuid4().hex[:8]}"
+    render_jobs[job_id] = {
+        "job_id": job_id,
+        "project_id": project_id,
+        "status": "pending",
+        "progress": 5,
+        "step": "Đang chuẩn bị tiến trình render...",
+        "duration": None,
+        "warning": None,
+        "video_url": None,
+        "error": None,
+    }
+
+    # Dispatch to background task
+    background_tasks.add_task(run_render_pipeline, project_id, job_id)
+
+    return {"job_id": job_id, "status": "started", "project_id": project_id}
+
+@app.get("/api/projects/{project_id}/render-status/{job_id}")
+async def get_render_status(project_id: str, job_id: str):
+    """Poll rendering progress and status."""
+    if job_id not in render_jobs:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ render.")
+    return render_jobs[job_id]
+
+@app.get("/api/projects/{project_id}/video")
+async def get_rendered_video(project_id: str):
+    """Stream or download the finished output.mp4."""
+    folder = get_project_folder(project_id)
+    video_file = folder / "output.mp4"
+    if not video_file.exists():
+        raise HTTPException(status_code=404, detail="Video chưa được render hoặc không tồn tại.")
+    return FileResponse(video_file, media_type="video/mp4", filename=f"{project_id}_output.mp4")
+
 
 

@@ -42,6 +42,22 @@ const DOM = {
     btnCancelVoice: document.getElementById('btn-cancel-voice'),
     btnSaveVoice: document.getElementById('btn-save-voice'),
 
+    // Video Render & Modal
+    btnRenderVideo: document.getElementById('btn-render-video'),
+    renderModal: document.getElementById('render-modal'),
+    renderModalTitle: document.getElementById('render-modal-title'),
+    btnCloseRenderModal: document.getElementById('btn-close-render-modal'),
+    btnCancelRender: document.getElementById('btn-cancel-render'),
+    renderProgressSection: document.getElementById('render-progress-section'),
+    renderStepLabel: document.getElementById('render-step-label'),
+    renderProgressBar: document.getElementById('render-progress-bar'),
+    renderProgressPercent: document.getElementById('render-progress-percent'),
+    renderDurationInfo: document.getElementById('render-duration-info'),
+    renderWarningBox: document.getElementById('render-warning-box'),
+    renderResultSection: document.getElementById('render-result-section'),
+    renderedVideoPlayer: document.getElementById('rendered-video-player'),
+    btnDownloadVideo: document.getElementById('btn-download-video'),
+
     // Tabs
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content')
@@ -201,7 +217,17 @@ async function loadProject(id) {
         state.currentProject = proj;
         DOM.projectTitleInput.value = proj.title || 'Dự án chưa đặt tên';
         DOM.scriptEditor.value = proj.script || '';
-        if (DOM.presetSelector) {
+        if (DOM.btnRenderVideo) {
+        DOM.btnRenderVideo.addEventListener('click', handleStartRender);
+    }
+    if (DOM.btnCloseRenderModal) {
+        DOM.btnCloseRenderModal.addEventListener('click', closeRenderModal);
+    }
+    if (DOM.btnCancelRender) {
+        DOM.btnCancelRender.addEventListener('click', closeRenderModal);
+    }
+
+    if (DOM.presetSelector) {
             DOM.presetSelector.value = proj.pacing_preset || 'mystery';
         }
         setTargetDuration(proj.target_duration || 90);
@@ -559,7 +585,132 @@ async function saveSelectedVoice() {
 }
 
 // ==========================================
-// 7. Utility Functions
+// 7. Video Render Pipeline & Modal Controls
+// ==========================================
+
+let renderPollTimer = null;
+
+async function handleStartRender() {
+    if (!state.currentProject) {
+        alert('Vui lòng chọn hoặc tạo một dự án trước.');
+        return;
+    }
+
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo video.');
+        return;
+    }
+
+    // Check estimated duration
+    const { duration } = calculateStats(script);
+    if (duration < 60 || duration > 180) {
+        const proceed = confirm(
+            `Thời lượng kịch bản ước tính là ${duration}s (khuyến nghị cho YouTube Shorts là từ 60 đến 180 giây).\n\nBạn có muốn tiếp tục tạo video không?`
+        );
+        if (!proceed) return;
+    }
+
+    // Ensure latest changes are saved first
+    await executeAutosave();
+
+    // Open render modal & reset state
+    DOM.renderModal.classList.remove('hidden');
+    DOM.renderProgressSection.classList.remove('hidden');
+    DOM.renderResultSection.classList.add('hidden');
+    DOM.btnDownloadVideo.classList.add('hidden');
+    DOM.renderWarningBox.classList.add('hidden');
+
+    DOM.renderStepLabel.textContent = 'Đang khởi động tiến trình...';
+    DOM.renderProgressBar.style.width = '5%';
+    DOM.renderProgressPercent.textContent = '5%';
+    DOM.renderDurationInfo.textContent = '';
+
+    try {
+        const res = await fetch(`/api/projects/${state.currentProject.id}/render`, {
+            method: 'POST'
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể bắt đầu render');
+        }
+
+        const data = await res.json();
+        const jobId = data.job_id;
+
+        // Poll render status
+        pollRenderProgress(state.currentProject.id, jobId);
+    } catch (err) {
+        DOM.renderStepLabel.textContent = 'Lỗi: ' + err.message;
+        DOM.renderProgressBar.style.background = 'var(--danger)';
+    }
+}
+
+function pollRenderProgress(projectId, jobId) {
+    clearInterval(renderPollTimer);
+
+    renderPollTimer = setInterval(async () => {
+        try {
+            const res = await fetch(`/api/projects/${projectId}/render-status/${jobId}`);
+            if (!res.ok) throw new Error('Mất kết nối với tiến trình render');
+            const job = await res.json();
+
+            // Update progress
+            DOM.renderProgressBar.style.width = `${job.progress || 5}%`;
+            DOM.renderProgressPercent.textContent = `${job.progress || 5}%`;
+            DOM.renderStepLabel.textContent = job.step || 'Đang xử lý...';
+
+            if (job.duration) {
+                DOM.renderDurationInfo.textContent = `Thời lượng: ${job.duration.toFixed(1)}s`;
+            }
+
+            if (job.warning) {
+                DOM.renderWarningBox.textContent = '⚠️ ' + job.warning;
+                DOM.renderWarningBox.classList.remove('hidden');
+            }
+
+            // Completed
+            if (job.status === 'completed') {
+                clearInterval(renderPollTimer);
+                DOM.renderStepLabel.textContent = '🎉 Video đã tạo thành công!';
+                DOM.renderProgressBar.style.width = '100%';
+                DOM.renderProgressPercent.textContent = '100%';
+
+                // Show player
+                if (job.video_url) {
+                    DOM.renderResultSection.classList.remove('hidden');
+                    DOM.renderedVideoPlayer.src = job.video_url + '?t=' + Date.now();
+                    DOM.btnDownloadVideo.href = job.video_url;
+                    DOM.btnDownloadVideo.classList.remove('hidden');
+                }
+
+                // Refresh sidebar projects
+                renderProjectsList();
+            }
+
+            // Failed
+            if (job.status === 'failed') {
+                clearInterval(renderPollTimer);
+                DOM.renderStepLabel.textContent = '❌ ' + (job.error || 'Quá trình render thất bại');
+                DOM.renderProgressBar.style.background = 'var(--danger)';
+            }
+        } catch (err) {
+            console.error('Polling error:', err);
+        }
+    }, 1000);
+}
+
+function closeRenderModal() {
+    clearInterval(renderPollTimer);
+    if (DOM.renderedVideoPlayer) {
+        DOM.renderedVideoPlayer.pause();
+    }
+    DOM.renderModal.classList.add('hidden');
+}
+
+// ==========================================
+// 8. Utility Functions
 // ==========================================
 
 function escapeHtml(str) {
@@ -617,6 +768,16 @@ async function init() {
     }
     if (DOM.btnSaveVoice) {
         DOM.btnSaveVoice.addEventListener('click', saveSelectedVoice);
+    }
+
+    if (DOM.btnRenderVideo) {
+        DOM.btnRenderVideo.addEventListener('click', handleStartRender);
+    }
+    if (DOM.btnCloseRenderModal) {
+        DOM.btnCloseRenderModal.addEventListener('click', closeRenderModal);
+    }
+    if (DOM.btnCancelRender) {
+        DOM.btnCancelRender.addEventListener('click', closeRenderModal);
     }
 
     if (DOM.presetSelector) {

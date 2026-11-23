@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-23] - Phase 3
+- **T3.3**: Built background rendering pipeline in `main.py` (`POST /api/projects/{id}/render`, `GET /render-status/{job_id}`, `GET /video`), modal progress tracking (TTS -> Whisper -> FFmpeg), duration warning check (<60s / >180s), and embedded video player with MP4 download button in `static/index.html` & `static/app.js`. Full end-to-end integration verified via automated test `tests/test_render_pipeline.py`. Test passed.
 - **T3.2**: Implemented core FFmpeg video rendering engine in `render.py`. Features: auto-detection of hardware encoder (`h264_nvenc` vs `libx264`), 1080x1920 30fps vertical video composition with dark placeholder background, Windows filter path escaping, .ass subtitle burning, AAC audio muxing, and YouTube Shorts MP4 export (`+faststart`). Added unit test suite `tests/test_render.py` passing 3/3 tests. Test passed.
 - **T3.1**: Implemented word-level transcription and ASS subtitle generation in `captions.py` using `faster-whisper`. Configured 1080x1920 vertical video safe-area styling (Arial Black 72pt, black outline, bottom-margin 860), 2-4 word chunking, and dynamic active-word color highlights (`{\c&H0000FFFF&}`). Created unit test suite `tests/test_captions.py` passing 5/5 tests. Test passed.
 
@@ -22,6 +23,7 @@ All finished tasks and notable updates are logged here.
 - **T1.1**: Implemented project storage backend in `main.py` (CRUD endpoints `/api/projects`, duplicate, delete, and autosave update). Verified folder creation, `project.json` persistence, and input sanitization via automated test `tests/test_projects.py`. Test passed.
 
 ## [2026-11-23] - Phase 3
+- **T3.3**: Built background rendering pipeline in `main.py` (`POST /api/projects/{id}/render`, `GET /render-status/{job_id}`, `GET /video`), modal progress tracking (TTS -> Whisper -> FFmpeg), duration warning check (<60s / >180s), and embedded video player with MP4 download button in `static/index.html` & `static/app.js`. Full end-to-end integration verified via automated test `tests/test_render_pipeline.py`. Test passed.
 - **T3.2**: Implemented core FFmpeg video rendering engine in `render.py`. Features: auto-detection of hardware encoder (`h264_nvenc` vs `libx264`), 1080x1920 30fps vertical video composition with dark placeholder background, Windows filter path escaping, .ass subtitle burning, AAC audio muxing, and YouTube Shorts MP4 export (`+faststart`). Added unit test suite `tests/test_render.py` passing 3/3 tests. Test passed.
 - **T3.1**: Implemented word-level transcription and ASS subtitle generation in `captions.py` using `faster-whisper`. Configured 1080x1920 vertical video safe-area styling (Arial Black 72pt, black outline, bottom-margin 860), 2-4 word chunking, and dynamic active-word color highlights (`{\c&H0000FFFF&}`). Created unit test suite `tests/test_captions.py` passing 5/5 tests. Test passed.
 
