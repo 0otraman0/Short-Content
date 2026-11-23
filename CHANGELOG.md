@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Phase 3
+- **T3.1**: Updated `captions.py` to generate standard `.srt` subtitle files with full natural phrases (5-8 words per line) and precision millisecond timestamps (`HH:MM:SS,mmm --> HH:MM:SS,mmm`). Updated test suite `tests/test_captions.py` with 4/4 passing unit tests. Test passed.
+
 ## [2026-11-23] - Change Request: Scope Streamlined to Audio + SRT + Sources
 - **Scope Change**: Approved change request to remove video rendering, GPU encoding dependencies, and Minecraft footage handling. The tool now focuses on: Gemini script writing, Fact-checking, Pacing markup, and exporting `narration.mp3` (or `.wav`) + standard `subtitles.srt` (5-8 words per line) + `sources.txt` into the project folder.
 - Updated `SPEC.md`, `DECISIONS.md` (Decision D9), `config.yaml`, and restructured `PLAN.md` into 6 streamlined phases.

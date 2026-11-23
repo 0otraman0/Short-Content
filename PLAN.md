@@ -88,7 +88,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `captions.py`, `tests/test_captions.py`
 - **Requirements**: R5.3
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Transcribe test audio with `captions.py`, verify `.srt` output format, timing syntax, and line word-count constraint (5-8 words per block).
 
 ### T3.2: Export Pipeline & UI Integration (Audio + SRT + Sources)
