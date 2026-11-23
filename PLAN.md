@@ -20,7 +20,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `requirements.txt`, `main.py`, `static/index.html`, `static/style.css`
 - **Requirements**: C1, C3, R7
 - **Owner**: Builder
-- **Status**: doing
+- **Status**: done
 - **How to test**: Run `uvicorn main:app --reload`, open `http://127.0.0.1:8000` in browser, verify page loads with dark theme and Vietnamese headers.
 
 ### T0.3: Windows Launcher `start.bat` & Vietnamese Setup Guide

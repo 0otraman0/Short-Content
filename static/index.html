@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Shorts Maker - Khoa học & Sự thật</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar: Danh sách dự án -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎬 Dự án</h2>
+                <button id="btn-new-project" class="btn-primary" title="Tạo dự án mới">+ Mới</button>
+            </div>
+            <div id="projects-list" class="projects-list">
+                <div class="empty-state">Chưa có dự án nào</div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="system-status">
+                    <span class="status-dot"></span> Đang kiểm tra hệ thống...
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content: Trình soạn thảo kịch bản -->
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="project-title-bar">
+                    <input type="text" id="project-title-input" value="Dự án chưa đặt tên" placeholder="Nhập tên dự án...">
+                    <span id="save-status" class="save-status">Đã lưu</span>
+                </div>
+                <div class="top-actions">
+                    <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
+                    <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
+                    <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
+                    <button id="btn-render-video" class="btn-success" title="Xuất video hoàn chỉnh">🚀 Tạo video</button>
+                </div>
+            </header>
+
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <div class="stats-badge">
+                        <span>Số từ: <strong id="word-count">0</strong></span>
+                        <span class="divider">|</span>
+                        <span>Ước tính: <strong id="est-duration">0s</strong></span>
+                        <span class="divider">|</span>
+                        <span id="target-duration-display" class="target-chip">Mục tiêu: 60s - 180s</span>
+                    </div>
+                    <details class="cheatsheet-dropdown">
+                        <summary>📖 Hướng dẫn nhịp điệu (Pacing markup)</summary>
+                        <div class="cheatsheet-content">
+                            <p><code>[pause 0.5]</code>: Nghỉ 0.5 giây</p>
+                            <p><code>[slow]văn bản[/slow]</code>: Đọc chậm hơn (-15%)</p>
+                            <p><code>[fast]văn bản[/fast]</code>: Đọc nhanh hơn (+12%)</p>
+                            <p><code>*từ quan trọng*</code>: Nhấn giọng mạnh hơn</p>
+                            <p><code>[whisper]bí mật[/whisper]</code>: Thì thầm huyền bí</p>
+                        </div>
+                    </details>
+                </div>
+
+                <textarea id="script-editor" placeholder="Viết hoặc dán kịch bản tiếng Anh vào đây... (Ví dụ: Greenland sharks live longer than most trees. But how do they survive freezing Arctic waters for 400 years?)"></textarea>
+
+                <!-- Audio preview player -->
+                <div id="audio-preview-bar" class="audio-bar hidden">
+                    <span>Nghe thử:</span>
+                    <audio id="audio-player" controls></audio>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel: Trợ lý viết Gemini & Fact Check -->
+        <aside class="assistant-panel">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="gemini-tab">🤖 Trợ lý AI</button>
+                <button class="tab-btn" data-tab="factcheck-tab">🔍 Kiểm chứng</button>
+            </div>
+
+            <!-- Tab Trợ lý viết -->
+            <div id="gemini-tab" class="tab-content active">
+                <div class="ai-box">
+                    <label for="ai-notes">Ghi chú cho AI:</label>
+                    <input type="text" id="ai-notes" placeholder="VD: Tập trung vào chi tiết bất ngờ...">
+                </div>
+                <div class="ai-actions">
+                    <button id="btn-suggest-next" class="btn-card">
+                        <strong>💡 Gợi ý đoạn tiếp theo</strong>
+                        <small>Đưa ra 3 ý tưởng nối tiếp câu chuyện</small>
+                    </button>
+                    <button id="btn-rewrite-script" class="btn-card">
+                        <strong>✍️ Viết lại bài đang dở</strong>
+                        <small>Tối ưu nhịp kể chuyện lôi cuốn, hook mạnh</small>
+                    </button>
+                    <button id="btn-outline-draft" class="btn-card">
+                        <strong>🏗️ Dựng khung từ đầu</strong>
+                        <small>Từ ý tưởng tạo dàn bài Hook - Thân bài - Cao trào</small>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Fact Check -->
+            <div id="factcheck-tab" class="tab-content">
+                <div class="factcheck-header">
+                    <button id="btn-check-facts" class="btn-primary full-width">Kiểm chứng nguồn tin</button>
+                </div>
+                <div id="claims-list" class="claims-list">
+                    <p class="empty-hint">Bấm "Kiểm chứng nguồn tin" để bóc tách và tra cứu các luận điểm trong kịch bản.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</body>
+</html>
