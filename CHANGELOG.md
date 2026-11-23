@@ -2,6 +2,10 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Change Request: Scope Streamlined to Audio + SRT + Sources
+- **Scope Change**: Approved change request to remove video rendering, GPU encoding dependencies, and Minecraft footage handling. The tool now focuses on: Gemini script writing, Fact-checking, Pacing markup, and exporting `narration.mp3` (or `.wav`) + standard `subtitles.srt` (5-8 words per line) + `sources.txt` into the project folder.
+- Updated `SPEC.md`, `DECISIONS.md` (Decision D9), `config.yaml`, and restructured `PLAN.md` into 6 streamlined phases.
+
 ## [2026-11-23] - Bug Fix
 - **Fix (PyAV av.open compatibility)**: Resolved `TypeError: open() got an unexpected keyword argument 'metadata_errors'` when transcribing audio with `faster-whisper` in environments running newer PyAV (`av >= 14`, specifically `av 19.0.2` in `venv`). Added backwards-compatible monkey-patch for `av.open` in `captions.py` and unit test in `tests/test_av_compat.py`.
 

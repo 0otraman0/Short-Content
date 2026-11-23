@@ -32,3 +32,7 @@
 ## D8. Gemini AI Model Selection: Gemini 3.1 Flash Lite
 - **Choice**: Set `gemini.model: "gemini-3.1-flash-lite"` in `config.yaml`.
 - **Reason**: Configured per user request for rapid script generation, lower latency, and optimal resource consumption on the free tier quota. Model identifier is dynamic and resolved from `config.yaml` as per SPEC constraint.
+
+## D9. Removal of Video Rendering & Adoption of Audio + SRT Export
+- **Choice**: Removed FFmpeg video encoding pipeline (and Minecraft footage requirements). The application now focuses purely on: script writing with Gemini, fact-checking, pacing markup, and exporting `narration.mp3` (or `.wav`) + standard `subtitles.srt` (5-8 words per line) + `sources.txt` into the project folder.
+- **Reason**: Requested by user to streamline the workflow and decouple video editing. Users import the exported narration audio and SRT subtitles directly into their preferred video editor (CapCut, Premiere, DaVinci, etc.). Eliminates heavy video rendering load, GPU dependencies, and Minecraft footage management.
