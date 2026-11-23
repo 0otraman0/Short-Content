@@ -14,3 +14,17 @@ Change request: [bạn muốn gì].
 Act as Planner only. Tell me which R items in SPEC.md this affects and which files 
 in the code. Propose the SPEC.md and PLAN.md changes and wait for my OK. Do not 
 write code yet.
+
+4. Kiểm tra chạy lệnh 
+git status
+git log -1
+
+5. Hết token ở dòng chat tài khoản
+Token is running low. Update PLAN.md, DECISIONS.md and CHANGELOG.md so they 
+exactly match the current state of the code. For the task in progress, add a "Where 
+I stopped" note: what is done, what is left, and the exact next step. Then commit.
+
+6. Các phần chú ý khi chuyển sang tài khoản khác
+"Resume the project": đọc file, báo cáo, làm task kế tiếp.
+"Bug": báo lỗi, sửa nhỏ nhất.
+"Change request": đổi yêu cầu thì sửa SPEC.md trước.
