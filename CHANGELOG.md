@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Phase 5
+- **T5.1**: Created `factcheck.py` to extract atomic factual claims from narration scripts, stripping pacing tags, and classify each claim into exactly two labels: "ĐÃ CHỨNG MINH" (with credible academic/scientific reference URLs and evidence summary) or "CHƯA RÕ" (with specific reason). Implemented `rewrite_claim_safely` for mitigating unproven claims. Added automated test suite `tests/test_factcheck.py`. Test passed.
+
 ## [2026-11-23] - Phase 4
 - **T4.3**: Implemented Auto-Pace feature (`POST /api/gemini/auto-pace`) and Auto-Pace review dialog in UI. Gemini analyzes raw scripts to insert pacing tags (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) following Shorts storytelling dynamics (fast hook, slow buildup, pause before reveal, whisper for secrets). Verified with automated test in `tests/test_gemini_api.py`. Test passed.
 - **T4.2**: Added Gemini Writing Assistant API endpoints in `main.py` (`POST /api/gemini/suggest-next`, `POST /api/gemini/rewrite`, `POST /api/gemini/outline`) and full UI integration in `static/index.html` & `static/app.js`. Implemented 3 interactive modals: Suggestion Picker (select from 3 continuous paragraphs), Before/After Rewrite Review Dialog (compare original vs rewritten and apply), and Outline Builder (generate full draft from topic/duration). Added automated test suite `tests/test_gemini_api.py`. Test passed.

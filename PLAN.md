@@ -136,7 +136,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `factcheck.py`, `requirements.txt`
 - **Requirements**: R4.1, R4.2, R4.3, R4.4
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Run factcheck on sample script; verify parsed JSON list of claims, labels, source URLs, and summaries.
 
 ### T5.2: Fact Check UI Panel & Claim Rewriting
