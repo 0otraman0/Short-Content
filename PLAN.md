@@ -96,7 +96,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`, `tests/test_export_pipeline.py`
 - **Requirements**: R5.1, R5.2, R5.4, R5.5, R5.6, R5.7
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Trigger export on a project, check progress modal, verify `narration.mp3`, `subtitles.srt`, and `sources.txt` are created in project folder, and download links work in UI.
 
 ---

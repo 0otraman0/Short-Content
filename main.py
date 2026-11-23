@@ -24,8 +24,7 @@ load_dotenv(BASE_DIR / ".env")
 
 import asyncio
 from tts import EdgeTTSProvider, get_locked_voice, lock_voice, synthesize_narration
-from captions import transcribe_and_build_ass
-from render import render_video_with_placeholder, get_media_duration
+from captions import transcribe_to_srt
 
 def ensure_ffmpeg() -> bool:
     """Ensure ffmpeg is in PATH, checking common WinGet install directories if needed."""
@@ -45,7 +44,7 @@ def ensure_ffmpeg() -> bool:
 # Ensure FFmpeg is found and added to process PATH
 ensure_ffmpeg()
 
-app = FastAPI(title="Shorts Video Generator")
+app = FastAPI(title="Shorts Narration Tool")
 
 # Mount static files
 static_dir = BASE_DIR / "static"
@@ -63,10 +62,10 @@ def detect_gpu() -> dict:
         )
         if res.returncode == 0 and res.stdout.strip():
             gpu_info = res.stdout.strip().split("\n")[0]
-            return {"has_gpu": True, "details": gpu_info, "encoder": "h264_nvenc"}
+            return {"has_gpu": True, "details": gpu_info}
     except Exception:
         pass
-    return {"has_gpu": False, "details": "CPU mode (libx264)", "encoder": "libx264"}
+    return {"has_gpu": False, "details": "CPU mode"}
 
 def check_ffmpeg() -> bool:
     """Check if ffmpeg executable exists in PATH."""
@@ -98,19 +97,11 @@ async def system_status():
     gpu = detect_gpu()
     ffmpeg_installed = check_ffmpeg()
     config = load_config()
-    
-    # Check assets folders
-    minecraft_dir = BASE_DIR / "assets" / "minecraft"
-    music_dir = BASE_DIR / "assets" / "music"
-    has_clips = minecraft_dir.exists() and any(minecraft_dir.glob("*.mp4"))
-    has_music = music_dir.exists() and any(music_dir.glob("*.mp3"))
 
     return {
         "status": "ready",
         "gpu": gpu,
         "ffmpeg": ffmpeg_installed,
-        "has_minecraft_clips": has_clips,
-        "has_background_music": has_music,
         "config": {
             "voice": config.get("tts", {}).get("voice", "Chưa chọn"),
             "model": config.get("gemini", {}).get("model", "Chưa đặt"),
@@ -194,7 +185,8 @@ async def create_project(payload: Optional[ProjectCreate] = None):
         "updated_at": now,
         "claims": [],
         "audio_file": None,
-        "video_file": None,
+        "subtitles_file": None,
+        "sources_file": None,
     }
     
     json_file = folder / "project.json"
@@ -259,7 +251,8 @@ async def duplicate_project(project_id: str):
     new_data["updated_at"] = now
     new_data["status"] = "draft"
     new_data["audio_file"] = None
-    new_data["video_file"] = None
+    new_data["subtitles_file"] = None
+    new_data["sources_file"] = None
     
     new_json = new_folder / "project.json"
     new_json.write_text(json.dumps(new_data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -336,14 +329,14 @@ async def preview_tts(payload: TTSPreviewRequest):
         raise HTTPException(status_code=500, detail=f"Lỗi tạo giọng đọc thử nghiệm: {str(e)}")
 
 # ==========================================
-# Video Render Pipeline & Background Tasks
+# Export Pipeline (Audio + SRT + Sources)
 # ==========================================
 
-render_jobs: Dict[str, dict] = {}
+export_jobs: Dict[str, dict] = {}
 
-async def run_render_pipeline(project_id: str, job_id: str):
-    """Orchestrate background rendering: TTS Narration -> Whisper Subtitles -> FFmpeg Video."""
-    job = render_jobs[job_id]
+async def run_export_pipeline(project_id: str, job_id: str):
+    """Orchestrate export: TTS Narration → Whisper SRT Subtitles → sources.txt."""
+    job = export_jobs[job_id]
     job["status"] = "processing"
 
     try:
@@ -355,14 +348,14 @@ async def run_render_pipeline(project_id: str, job_id: str):
         project_data = json.loads(json_file.read_text(encoding="utf-8"))
         script = project_data.get("script", "").strip()
         if not script:
-            raise ValueError("Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo video.")
+            raise ValueError("Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi xuất.")
 
         preset = project_data.get("pacing_preset", "mystery")
         voice = get_locked_voice()
 
-        # Step 1: Narration TTS synthesis
-        job["step"] = "Đang tổng hợp giọng đọc và nhịp điệu (TTS)..."
-        job["progress"] = 15
+        # Step 1 (20%): TTS narration synthesis
+        job["step"] = "Đang tổng hợp giọng đọc (TTS)..."
+        job["progress"] = 20
 
         audio_file = folder / "narration.mp3"
         out_audio, duration = await synthesize_narration(
@@ -374,58 +367,59 @@ async def run_render_pipeline(project_id: str, job_id: str):
         job["duration"] = round(duration, 2)
         job["progress"] = 40
 
-        if duration < 60 or duration > 180:
-            job["warning"] = f"Thời lượng video là {duration:.1f}s (khuyến nghị Shorts: 60 - 180 giây)."
+        # Step 2 (60%): faster-whisper SRT subtitle generation
+        job["step"] = "Đang tạo phụ đề SRT (faster-whisper)..."
+        job["progress"] = 60
 
-        # Step 2: Faster-Whisper Subtitle generation (.ass)
-        job["step"] = "Đang trích xuất thời gian từng từ và tạo phụ đề (Whisper)..."
-        job["progress"] = 50
-
-        ass_file = folder / "subtitles.ass"
+        srt_file = folder / "subtitles.srt"
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, transcribe_and_build_ass, audio_file, ass_file)
-        job["progress"] = 70
+        await loop.run_in_executor(None, transcribe_to_srt, audio_file, srt_file)
+        job["progress"] = 80
 
-        # Step 3: FFmpeg Video Rendering (1080x1920 30fps)
-        job["step"] = "Đang render video 9:16 và burn phụ đề (FFmpeg)..."
-        job["progress"] = 75
+        # Step 3 (90%): Write sources.txt from claims or placeholder
+        job["step"] = "Đang tạo sources.txt..."
+        job["progress"] = 90
 
-        output_mp4 = folder / "output.mp4"
-        await loop.run_in_executor(
-            None,
-            render_video_with_placeholder,
-            audio_file,
-            output_mp4,
-            ass_file,
-            duration,
-            1080,
-            1920,
-            30,
-        )
-        job["progress"] = 95
+        sources_file = folder / "sources.txt"
+        claims = project_data.get("claims", [])
+        if claims:
+            lines = ["Nguồn tham khảo / Sources\n"]
+            for i, claim in enumerate(claims, 1):
+                label = claim.get("label", "CHƯA RÕ")
+                text_c = claim.get("text", "")
+                urls = claim.get("urls", [])
+                lines.append(f"{i}. [{label}] {text_c}")
+                for url in urls:
+                    lines.append(f"   {url}")
+            sources_file.write_text("\n".join(lines), encoding="utf-8")
+        else:
+            sources_file.write_text(
+                "Nguồn tham khảo / Sources\n"
+                "(Chưa có nguồn được kiểm chứng. Hãy sử dụng tính năng Kiểm chứng để thêm nguồn.)\n",
+                encoding="utf-8",
+            )
 
-        # Step 4: Finalize project.json
-        project_data["status"] = "rendered"
+        # Step 4 (100%): Finalize project.json
+        project_data["status"] = "exported"
         project_data["audio_file"] = "narration.mp3"
-        project_data["subtitles_file"] = "subtitles.ass"
-        project_data["video_file"] = "output.mp4"
+        project_data["subtitles_file"] = "subtitles.srt"
+        project_data["sources_file"] = "sources.txt"
         project_data["actual_duration"] = round(duration, 2)
         project_data["updated_at"] = datetime.now().isoformat()
         json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-        job["step"] = "Hoàn tất! Video đã sẵn sàng."
+        job["step"] = "Hoàn tất! Gói xuất đã sẵn sàng."
         job["progress"] = 100
         job["status"] = "completed"
-        job["video_url"] = f"/api/projects/{project_id}/video"
 
     except Exception as e:
         job["status"] = "failed"
         job["error"] = str(e)
-        job["step"] = f"Lỗi render: {str(e)}"
+        job["step"] = f"Lỗi xuất: {str(e)}"
 
-@app.post("/api/projects/{project_id}/render")
-async def start_render_video(project_id: str, background_tasks: BackgroundTasks):
-    """Start video rendering pipeline in a background thread."""
+@app.post("/api/projects/{project_id}/export")
+async def start_export(project_id: str, background_tasks: BackgroundTasks):
+    """Start export pipeline (audio + SRT + sources) in a background task."""
     folder = get_project_folder(project_id)
     json_file = folder / "project.json"
     if not json_file.exists():
@@ -434,41 +428,53 @@ async def start_render_video(project_id: str, background_tasks: BackgroundTasks)
     project_data = json.loads(json_file.read_text(encoding="utf-8"))
     script = project_data.get("script", "").strip()
     if not script:
-        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo video.")
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi xuất.")
 
     job_id = f"job_{uuid.uuid4().hex[:8]}"
-    render_jobs[job_id] = {
+    export_jobs[job_id] = {
         "job_id": job_id,
         "project_id": project_id,
         "status": "pending",
         "progress": 5,
-        "step": "Đang chuẩn bị tiến trình render...",
+        "step": "Đang chuẩn bị tiến trình xuất...",
         "duration": None,
-        "warning": None,
-        "video_url": None,
         "error": None,
     }
 
-    # Dispatch to background task
-    background_tasks.add_task(run_render_pipeline, project_id, job_id)
+    background_tasks.add_task(run_export_pipeline, project_id, job_id)
 
     return {"job_id": job_id, "status": "started", "project_id": project_id}
 
-@app.get("/api/projects/{project_id}/render-status/{job_id}")
-async def get_render_status(project_id: str, job_id: str):
-    """Poll rendering progress and status."""
-    if job_id not in render_jobs:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ render.")
-    return render_jobs[job_id]
+@app.get("/api/projects/{project_id}/export-status/{job_id}")
+async def get_export_status(project_id: str, job_id: str):
+    """Poll export progress and status."""
+    if job_id not in export_jobs:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ xuất.")
+    return export_jobs[job_id]
 
-@app.get("/api/projects/{project_id}/video")
-async def get_rendered_video(project_id: str):
-    """Stream or download the finished output.mp4."""
+@app.get("/api/projects/{project_id}/narration")
+async def get_narration(project_id: str):
+    """Download narration.mp3 for a project."""
     folder = get_project_folder(project_id)
-    video_file = folder / "output.mp4"
-    if not video_file.exists():
-        raise HTTPException(status_code=404, detail="Video chưa được render hoặc không tồn tại.")
-    return FileResponse(video_file, media_type="video/mp4", filename=f"{project_id}_output.mp4")
+    audio_file = folder / "narration.mp3"
+    if not audio_file.exists():
+        raise HTTPException(status_code=404, detail="Narration audio chưa được tạo.")
+    return FileResponse(audio_file, media_type="audio/mpeg", filename=f"{project_id}_narration.mp3")
 
+@app.get("/api/projects/{project_id}/subtitles")
+async def get_subtitles(project_id: str):
+    """Download subtitles.srt for a project."""
+    folder = get_project_folder(project_id)
+    srt_file = folder / "subtitles.srt"
+    if not srt_file.exists():
+        raise HTTPException(status_code=404, detail="Phụ đề SRT chưa được tạo.")
+    return FileResponse(srt_file, media_type="text/plain", filename=f"{project_id}_subtitles.srt")
 
-
+@app.get("/api/projects/{project_id}/sources")
+async def get_sources(project_id: str):
+    """Download sources.txt for a project."""
+    folder = get_project_folder(project_id)
+    sources_file = folder / "sources.txt"
+    if not sources_file.exists():
+        raise HTTPException(status_code=404, detail="Nguồn tham khảo chưa được tạo.")
+    return FileResponse(sources_file, media_type="text/plain", filename=f"{project_id}_sources.txt")

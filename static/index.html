@@ -41,7 +41,7 @@
                     <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
                     <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
-                    <button id="btn-render-video" class="btn-success" title="Xuất video hoàn chỉnh">🚀 Tạo video</button>
+                    <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio & Phụ đề</button>
                 </div>
             </header>
 
@@ -138,36 +138,48 @@
         </div>
     </div>
 
-    <!-- Render Progress & Preview Modal -->
-    <div id="render-modal" class="modal-overlay hidden">
+    <!-- Export Progress & Download Modal -->
+    <div id="export-modal" class="modal-overlay hidden">
         <div class="modal-card render-card">
             <div class="modal-header">
-                <h3 id="render-modal-title">🚀 Tiến trình tạo video</h3>
-                <button id="btn-close-render-modal" class="btn-icon">✕</button>
+                <h3 id="export-modal-title">📦 Xuất Audio & Phụ đề</h3>
+                <button id="btn-close-export-modal" class="btn-icon">✕</button>
             </div>
             <div class="modal-body">
-                <div id="render-progress-section">
-                    <p id="render-step-label" class="step-label">Đang chuẩn bị...</p>
+                <div id="export-progress-section">
+                    <p id="export-step-label" class="step-label">Đang chuẩn bị...</p>
                     <div class="progress-track">
-                        <div id="render-progress-bar" class="progress-fill" style="width: 5%;"></div>
+                        <div id="export-progress-bar" class="progress-fill" style="width: 5%;"></div>
                     </div>
                     <div class="progress-meta">
-                        <span id="render-progress-percent">5%</span>
-                        <span id="render-duration-info"></span>
+                        <span id="export-progress-percent">5%</span>
+                        <span id="export-duration-info"></span>
                     </div>
-                    <div id="render-warning-box" class="warning-alert hidden"></div>
+                    <div id="export-warning-box" class="warning-alert hidden"></div>
                 </div>
 
-                <!-- Completed Video Player -->
-                <div id="render-result-section" class="hidden">
-                    <div class="video-preview-wrapper">
-                        <video id="rendered-video-player" controls preload="metadata"></video>
+                <!-- Export Results Section -->
+                <div id="export-result-section" class="hidden" style="margin-top: 1.5rem;">
+                    <h4>🎉 Gói xuất đã sẵn sàng!</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Tất cả các tệp đã được tạo và lưu trong thư mục dự án:</p>
+                    <div class="export-downloads" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <a id="btn-download-narration" class="btn-card" download>
+                            <strong>🎵 Tải Narration Audio (.mp3)</strong>
+                            <small>Giọng đọc TTS chuẩn nhịp điệu</small>
+                        </a>
+                        <a id="btn-download-subtitles" class="btn-card" download>
+                            <strong>📝 Tải Phụ đề SRT (.srt)</strong>
+                            <small>Phụ đề ngắt cụm 5-8 từ/dòng chuẩn Shorts</small>
+                        </a>
+                        <a id="btn-download-sources" class="btn-card" download>
+                            <strong>🔗 Tải Nguồn trích dẫn (sources.txt)</strong>
+                            <small>Danh sách nguồn kiểm chứng cho mô tả video</small>
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <a id="btn-download-video" class="btn-success hidden" download="shorts_output.mp4">⬇️ Tải video (.mp4)</a>
-                <button id="btn-cancel-render" class="btn-secondary">Đóng</button>
+                <button id="btn-close-export" class="btn-secondary">Đóng</button>
             </div>
         </div>
     </div>
