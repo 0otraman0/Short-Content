@@ -28,3 +28,33 @@ I stopped" note: what is done, what is left, and the exact next step. Then commi
 "Resume the project": đọc file, báo cáo, làm task kế tiếp.
 "Bug": báo lỗi, sửa nhỏ nhất.
 "Change request": đổi yêu cầu thì sửa SPEC.md trước.
+
+7. Những điều chú ý nếu bị ngắt token giữa chừng
+    1. Đừng cho nó làm cả phase trong một lượt.
+    AGENTS.md đã bắt nó làm từng task, nhưng một phase gồm nhiều task. 
+    Bạn dặn: "làm đúng task T1 rồi dừng". Phase nào bị ngắt giữa chừng thì thứ mất chỉ 
+    là task đang làm, các task trước đã done và đã commit.
+
+    2. Nếu nó bị ngắt giữa task:
+
+    Code có thể đã viết một nửa. Mở Source Control (biểu tượng nhánh ở thanh trái) 
+    xem file nào đang thay đổi mà chưa commit.
+    Đổi tài khoản hoặc chờ có token, rồi mở chat mới và dán câu "Resume the project".
+    Nó thấy task ở trạng thái doing và thấy file sửa dở. Bạn bảo thêm: 
+    Compare PLAN.md, git status and the code. Tell me what is finished 
+    and what is half-done in the current task. Then finish it.
+
+    3. Nếu bạn thấy code dở dang và rối:
+    
+    Đây là lúc git phát huy tác dụng. Bạn bảo nó: "Discard the 
+    uncommitted changes of the current task and redo it from the last commit." 
+    Làm lại từ đầu task nhỏ thường nhanh hơn vá code dở. Mình không nên đoán 
+    lệnh git chính xác cho bạn, cứ để agent chạy và bạn xem nó báo gì trước khi đồng ý.
+
+    4. Phòng trước, tốn rất ít công:
+
+    Khi thấy token còn ít, gửi câu "Token is running low..." (ở mục 5) để nó 
+    ghi Where I stopped và commit. Đừng đợi tới khi nó tự ngắt.
+    Yêu cầu nó commit sau mỗi task, không đợi hết phase. Bạn cứ dặn 
+    "commit sau mỗi task" trong prompt giao việc nếu thấy nó quên.
+    Giữ task nhỏ. Task càng nhỏ thì khi bị ngắt càng ít mất.
