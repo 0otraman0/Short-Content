@@ -48,7 +48,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R1.1, R1.2, R1.3, R1.4, R1.5, R6.1
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Type in the editor, verify word count and duration update live; click random target length; check autosave status and verify `project.json` receives the script.
 
 ---

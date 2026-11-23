@@ -6,6 +6,7 @@ All finished tasks and notable updates are logged here.
 - **Config**: Updated Gemini AI model in `config.yaml` to `gemini-3.1-flash-lite` and appended architectural decision D8 in `DECISIONS.md`.
 
 ## [2026-11-23] - Phase 1
+- **T1.2**: Built complete client logic in `static/app.js`, updated `static/index.html` and `static/style.css`. Features implemented: live word count and duration estimation (~150 WPM + `[pause X]` duration), random target length generator (60-180s), debounced autosave (1.5s) to `project.json`, project sidebar list with open/duplicate/delete, and clickable interactive pacing cheatsheet inserting markup at cursor. Test passed.
 - **T1.1**: Implemented project storage backend in `main.py` (CRUD endpoints `/api/projects`, duplicate, delete, and autosave update). Verified folder creation, `project.json` persistence, and input sanitization via automated test `tests/test_projects.py`. Test passed.
 
 ## [2026-11-23] - Bug Fix
