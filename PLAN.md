@@ -88,7 +88,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `captions.py`, `requirements.txt`, `tests/test_captions.py`
 - **Requirements**: R5.4
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Transcribe a test audio file, verify generated `.ass` file content, timestamps, and formatting tags via unit tests.
 
 ### T3.2: FFmpeg Video Rendering Engine (GPU Detection & Placeholder Video)

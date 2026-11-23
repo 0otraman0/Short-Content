@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-23] - Phase 3
+- **T3.1**: Implemented word-level transcription and ASS subtitle generation in `captions.py` using `faster-whisper`. Configured 1080x1920 vertical video safe-area styling (Arial Black 72pt, black outline, bottom-margin 860), 2-4 word chunking, and dynamic active-word color highlights (`{\c&H0000FFFF&}`). Created unit test suite `tests/test_captions.py` passing 5/5 tests. Test passed.
+
 ## [2026-11-23] - Phase 2
 - **T2.3**: Integrated TTS preview and voice selection: added `/api/tts/preview`, `/api/tts/voices`, and `/api/tts/lock-voice` in `main.py`. Updated `static/index.html` and `static/app.js` with functional "Nghe thử" button for highlighted text/paragraph with in-browser audio playback, pacing preset selector, and a voice selection modal to pick and permanently lock English male voices into `config.yaml`. Handled edge cases with punctuation-only segments. Automated test `tests/test_tts_preview.py` passed. Test passed.
 - **T2.2**: Implemented TTS Engine in `tts.py` with `TTSProvider` interface and `EdgeTTSProvider`. Added voice locking to `config.yaml`, segment audio synthesis with pacing modifiers, FFmpeg silence generation via `anullsrc`, concat demuxer, and EBU R128 loudness normalization (`loudnorm`). Added automated test suite `tests/test_tts.py` verifying voice listing, silence generation, and full narration audio synthesis. Test passed.
@@ -16,6 +19,9 @@ All finished tasks and notable updates are logged here.
 ## [2026-11-23] - Phase 1
 - **T1.2**: Built complete client logic in `static/app.js`, updated `static/index.html` and `static/style.css`. Features implemented: live word count and duration estimation (~150 WPM + `[pause X]` duration), random target length generator (60-180s), debounced autosave (1.5s) to `project.json`, project sidebar list with open/duplicate/delete, and clickable interactive pacing cheatsheet inserting markup at cursor. Test passed.
 - **T1.1**: Implemented project storage backend in `main.py` (CRUD endpoints `/api/projects`, duplicate, delete, and autosave update). Verified folder creation, `project.json` persistence, and input sanitization via automated test `tests/test_projects.py`. Test passed.
+
+## [2026-11-23] - Phase 3
+- **T3.1**: Implemented word-level transcription and ASS subtitle generation in `captions.py` using `faster-whisper`. Configured 1080x1920 vertical video safe-area styling (Arial Black 72pt, black outline, bottom-margin 860), 2-4 word chunking, and dynamic active-word color highlights (`{\c&H0000FFFF&}`). Created unit test suite `tests/test_captions.py` passing 5/5 tests. Test passed.
 
 ## [2026-11-23] - Phase 2
 - **T2.1**: Implemented `pacing.py` to tokenize and parse script pacing markup (`[pause]`, `[slow]`, `[fast]`, `*emphasis*`, `[whisper]`), supporting presets (Mystery, Hype, Calm) and natural sentence pauses. Created automated test suite `tests/test_pacing.py` with 8 passing unit tests. Test passed.
