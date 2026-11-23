@@ -12,11 +12,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `.gitignore`, `.env.example`, `config.yaml`
 - **Requirements**: C5, R7.2
 - **Owner**: Builder
-- **Status**: doing
-- **Where I stopped**:
-  - *What is done*: Planner role finished project planning; initialized PLAN.md (all 8 phases T0.1 to T7.3) and DECISIONS.md (D1 to D7). Git repository initialized for session tracking.
-  - *What is left*: Create `.gitignore`, `.env.example`, and `config.yaml`.
-  - *Exact next step*: Builder creates `.gitignore`, `.env.example`, and `config.yaml`, tests their syntax/format, and marks T0.1 as done.
+- **Status**: done
 - **How to test**: Verify `.gitignore`, `.env.example` contains `GEMINI_API_KEY=`, and `config.yaml` parses correctly with YAML parser.
 
 ### T0.2: Minimal FastAPI Backend & UI Shell

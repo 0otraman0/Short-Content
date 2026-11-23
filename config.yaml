@@ -1,0 +1,44 @@
+# Application Configuration
+
+# TTS Settings
+tts:
+  # Locked English male voice (e.g., 'en-US-ChristopherNeural', 'en-US-GuyNeural')
+  # If empty or null, the user will be prompted to select one on first run.
+  voice: "en-US-ChristopherNeural"
+  provider: "edge-tts" # Options: "edge-tts", "kokoro"
+  fallback_provider: "kokoro"
+
+# Gemini AI Settings
+gemini:
+  # Available free model name from Google AI Studio
+  model: "gemini-2.5-flash"
+
+# Pacing Presets (multipliers and default pause values)
+pacing_presets:
+  mystery:
+    name: "Mystery"
+    baseline_rate: -0.05
+    baseline_pitch: "+0Hz"
+    sentence_pause: 0.6
+    reveal_pause: 1.0
+  hype:
+    name: "Hype"
+    baseline_rate: +0.10
+    baseline_pitch: "+2Hz"
+    sentence_pause: 0.3
+    reveal_pause: 0.5
+  calm:
+    name: "Calm"
+    baseline_rate: -0.10
+    baseline_pitch: "-2Hz"
+    sentence_pause: 0.8
+    reveal_pause: 0.8
+
+# Video Render Settings
+video:
+  width: 1080
+  height: 1920
+  fps: 30
+  music_ducking_db: -22.0
+  min_duration_seconds: 60
+  max_duration_seconds: 180

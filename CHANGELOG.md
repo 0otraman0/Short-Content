@@ -2,8 +2,8 @@
 
 All finished tasks and notable updates are logged here.
 
-## [Unreleased] - In Progress
-- **T0.1 (doing)**: Git initialization and initial configuration skeleton in progress.
+## [2026-11-23] - Phase 0
+- **T0.1**: Initialized `.gitignore`, `.env.example` (Gemini API key placeholder), and `config.yaml` (TTS voice defaults, pacing presets, Gemini model, video dimensions). Test passed.
 
 ## [2026-11-23] - Planning Phase
 - **Planner**: Read `AGENTS.md` and `SPEC.md`.
