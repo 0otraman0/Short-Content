@@ -72,6 +72,8 @@ Button "Xuất Audio & Phụ đề" (Export Project):
 - R5.5 Show progress modal with step names (TTS synthesis -> Whisper SRT -> Packaging).
 - R5.6 Provide direct download links for `narration.mp3`, `subtitles.srt`, and `sources.txt`, or open the project folder in Windows Explorer.
 - R5.7 Clear, human error messages in Vietnamese (FFmpeg missing, no API key, no internet, Gemini rate limit with friendly retry).
+- R5.8 Mỗi lần xuất (export job), dữ liệu thành phẩm (`narration.mp3`, `subtitles.srt`, `sources.txt` và `metadata.json`) được lưu trữ độc lập tại thư mục `projects/<id>/exports/<job_id>/`. Không ghi đè các lần xuất trước. Danh sách lịch sử xuất được ghi nhận trong `project.json`.
+- R5.9 Giao diện cung cấp danh sách "Lịch sử xuất audio" cho dự án. Người dùng có thể nghe lại trực tiếp bất kỳ audio nào đã xuất trước đó, tải file của đúng job đó. Mỗi job hoàn toàn độc lập, tạo job mới không làm mất hoặc lẫn audio của job cũ.
 
 ### R6. Projects
 - R6.1 Sidebar listing past projects (title, date, status) with open / duplicate / delete.

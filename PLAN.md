@@ -182,3 +182,23 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Follow `README.md` from scratch, produce a sample package (`narration.mp3`, `subtitles.srt`, `sources.txt`), and verify all acceptance criteria.
+
+---
+
+## Phase 7: Export History & Multi-Job Audio Storage (R5.8, R5.9)
+
+### T7.1: Backend Job-isolated Export Storage & Endpoints
+- **Goal**: Lưu thành phẩm mỗi lần xuất vào `projects/<id>/exports/<job_id>/` (narration.mp3, subtitles.srt, sources.txt, metadata.json), ghi nhận vào `project.json`. Bổ sung API lấy danh sách exports và stream/download theo từng job_id độc lập.
+- **Files**: `main.py`, `tests/test_export_pipeline.py`
+- **Requirements**: R5.8
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Chạy test xuất 2 job liên tiếp, kiểm tra 2 thư mục job độc lập tồn tại, API trả về đúng audio từng job.
+
+### T7.2: Export History UI & Audio Playback per Job
+- **Goal**: Thêm giao diện danh sách "Lịch sử xuất" trong UI, cho phép nghe lại audio của từng job, xem thời gian xuất, độ dài và tải riêng từng file của job đó.
+- **Files**: `static/index.html`, `static/app.js`, `static/style.css`
+- **Requirements**: R5.9
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Mở trình duyệt, xuất thử 2 lần, kiểm tra danh sách hiển thị đủ 2 job và bấm nghe lại từng job độc lập.

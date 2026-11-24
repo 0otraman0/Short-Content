@@ -388,11 +388,17 @@ async def run_export_pipeline(project_id: str, job_id: str):
         preset = project_data.get("pacing_preset", "mystery")
         voice = get_locked_voice()
 
+        # Create isolated job directory (R5.8)
+        exports_dir = folder / "exports"
+        exports_dir.mkdir(parents=True, exist_ok=True)
+        job_dir = exports_dir / job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
+
         # Step 1 (20%): TTS narration synthesis
         job["step"] = "Đang tổng hợp giọng đọc (TTS)..."
         job["progress"] = 20
 
-        audio_file = folder / "narration.mp3"
+        audio_file = job_dir / "narration.mp3"
         out_audio, duration = await synthesize_narration(
             script=script,
             output_path=audio_file,
@@ -406,7 +412,7 @@ async def run_export_pipeline(project_id: str, job_id: str):
         job["step"] = "Đang tạo phụ đề SRT (faster-whisper)..."
         job["progress"] = 60
 
-        srt_file = folder / "subtitles.srt"
+        srt_file = job_dir / "subtitles.srt"
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, transcribe_to_srt, audio_file, srt_file)
         job["progress"] = 80
@@ -415,7 +421,7 @@ async def run_export_pipeline(project_id: str, job_id: str):
         job["step"] = "Đang tạo sources.txt..."
         job["progress"] = 90
 
-        sources_file = folder / "sources.txt"
+        sources_file = job_dir / "sources.txt"
         claims = project_data.get("claims", [])
         if claims:
             lines = [
@@ -452,18 +458,56 @@ async def run_export_pipeline(project_id: str, job_id: str):
                 encoding="utf-8",
             )
 
-        # Step 4 (100%): Finalize project.json
+        # Write job metadata.json (R5.8)
+        created_at_iso = datetime.now().isoformat()
+        job_meta = {
+            "id": job_id,
+            "created_at": created_at_iso,
+            "duration": round(duration, 2),
+            "script": script,
+            "script_preview": script[:120] + ("..." if len(script) > 120 else ""),
+            "pacing_preset": preset,
+            "voice": voice,
+            "audio_file": "narration.mp3",
+            "subtitles_file": "subtitles.srt",
+            "sources_file": "sources.txt",
+        }
+        (job_dir / "metadata.json").write_text(json.dumps(job_meta, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        # Copy to root folder for backward compatibility
+        shutil.copy2(audio_file, folder / "narration.mp3")
+        shutil.copy2(srt_file, folder / "subtitles.srt")
+        shutil.copy2(sources_file, folder / "sources.txt")
+
+        # Step 4 (100%): Finalize project.json with history entry (R5.8)
         project_data["status"] = "exported"
         project_data["audio_file"] = "narration.mp3"
         project_data["subtitles_file"] = "subtitles.srt"
         project_data["sources_file"] = "sources.txt"
         project_data["actual_duration"] = round(duration, 2)
-        project_data["updated_at"] = datetime.now().isoformat()
+        project_data["updated_at"] = created_at_iso
+
+        export_entry = {
+            "id": job_id,
+            "created_at": created_at_iso,
+            "duration": round(duration, 2),
+            "script_preview": job_meta["script_preview"],
+            "pacing_preset": preset,
+            "voice": voice,
+            "audio_url": f"/api/projects/{project_id}/exports/{job_id}/audio",
+            "subtitles_url": f"/api/projects/{project_id}/exports/{job_id}/subtitles",
+            "sources_url": f"/api/projects/{project_id}/exports/{job_id}/sources",
+        }
+        exports_history = project_data.get("exports", [])
+        exports_history.insert(0, export_entry)
+        project_data["exports"] = exports_history
+
         json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
 
         job["step"] = "Hoàn tất! Gói xuất đã sẵn sàng."
         job["progress"] = 100
         job["status"] = "completed"
+        job["export_entry"] = export_entry
 
     except Exception as e:
         job["status"] = "failed"
@@ -532,6 +576,57 @@ async def get_sources(project_id: str):
     if not sources_file.exists():
         raise HTTPException(status_code=404, detail="Nguồn tham khảo chưa được tạo.")
     return FileResponse(sources_file, media_type="text/plain", filename=f"{project_id}_sources.txt")
+
+# ==========================================
+# Job-Isolated Export History Endpoints (R5.8, R5.9)
+# ==========================================
+
+@app.get("/api/projects/{project_id}/exports")
+async def list_project_exports(project_id: str):
+    """List historical exports for a project."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    try:
+        project_data = json.loads(json_file.read_text(encoding="utf-8"))
+        exports = project_data.get("exports", [])
+        return {"success": True, "exports": exports}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi đọc lịch sử xuất: {str(e)}")
+
+@app.get("/api/projects/{project_id}/exports/{job_id}/audio")
+async def get_job_audio(project_id: str, job_id: str):
+    """Stream or download narration.mp3 of a specific export job."""
+    folder = get_project_folder(project_id)
+    job_audio = folder / "exports" / job_id / "narration.mp3"
+    if not job_audio.exists():
+        job_audio = folder / "narration.mp3"
+        if not job_audio.exists():
+            raise HTTPException(status_code=404, detail="Không tìm thấy file audio cho tác vụ xuất này.")
+    return FileResponse(job_audio, media_type="audio/mpeg", filename=f"{project_id}_{job_id}_narration.mp3")
+
+@app.get("/api/projects/{project_id}/exports/{job_id}/subtitles")
+async def get_job_subtitles(project_id: str, job_id: str):
+    """Download subtitles.srt of a specific export job."""
+    folder = get_project_folder(project_id)
+    job_srt = folder / "exports" / job_id / "subtitles.srt"
+    if not job_srt.exists():
+        job_srt = folder / "subtitles.srt"
+        if not job_srt.exists():
+            raise HTTPException(status_code=404, detail="Không tìm thấy file phụ đề cho tác vụ xuất này.")
+    return FileResponse(job_srt, media_type="text/plain", filename=f"{project_id}_{job_id}_subtitles.srt")
+
+@app.get("/api/projects/{project_id}/exports/{job_id}/sources")
+async def get_job_sources(project_id: str, job_id: str):
+    """Download sources.txt of a specific export job."""
+    folder = get_project_folder(project_id)
+    job_sources = folder / "exports" / job_id / "sources.txt"
+    if not job_sources.exists():
+        job_sources = folder / "sources.txt"
+        if not job_sources.exists():
+            raise HTTPException(status_code=404, detail="Không tìm thấy file nguồn cho tác vụ xuất này.")
+    return FileResponse(job_sources, media_type="text/plain", filename=f"{project_id}_{job_id}_sources.txt")
 
 # ==========================================
 # Gemini Writing Assistant Endpoints (R3)

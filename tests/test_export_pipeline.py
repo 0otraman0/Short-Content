@@ -82,13 +82,41 @@ def test_full_export_pipeline():
         assert "Greenland shark" in sources_text
         assert "ĐÃ CHỨNG MINH" in sources_text
 
-        # Verify files on disk
+        # Verify files on disk (Root and isolated job directory R5.8)
         folder = PROJECTS_DIR / proj_id
         assert (folder / "narration.mp3").exists()
         assert (folder / "subtitles.srt").exists()
         assert (folder / "sources.txt").exists()
 
-        print("Full export pipeline test passed successfully!")
+        job_dir = folder / "exports" / job_id
+        assert job_dir.exists()
+        assert (job_dir / "narration.mp3").exists()
+        assert (job_dir / "subtitles.srt").exists()
+        assert (job_dir / "sources.txt").exists()
+        assert (job_dir / "metadata.json").exists()
+
+        # 5. Verify Job-isolated export endpoints (R5.8, R5.9)
+        exports_res = client.get(f"/api/projects/{proj_id}/exports")
+        assert exports_res.status_code == 200
+        exports_list = exports_res.json()["exports"]
+        assert len(exports_list) >= 1
+        assert exports_list[0]["id"] == job_id
+
+        # Verify job-specific audio download/stream
+        job_audio_res = client.get(f"/api/projects/{proj_id}/exports/{job_id}/audio")
+        assert job_audio_res.status_code == 200
+        assert "audio/mpeg" in job_audio_res.headers.get("content-type", "")
+        assert len(job_audio_res.content) > 1000
+
+        job_srt_res = client.get(f"/api/projects/{proj_id}/exports/{job_id}/subtitles")
+        assert job_srt_res.status_code == 200
+        assert "Greenland" in job_srt_res.text
+
+        job_sources_res = client.get(f"/api/projects/{proj_id}/exports/{job_id}/sources")
+        assert job_sources_res.status_code == 200
+        assert "Greenland shark" in job_sources_res.text
+
+        print("Full export pipeline test with job isolation passed successfully!")
 
     finally:
         # Clean up test project

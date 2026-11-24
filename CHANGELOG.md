@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-24] - Phase 7
+- **T7.1**: Implemented job-isolated export storage in `main.py` saving each export to `projects/<project_id>/exports/<job_id>/` (`narration.mp3`, `subtitles.srt`, `sources.txt`, and `metadata.json`) without overwriting previous runs. Recorded export history in `project.json` and added endpoints `GET /api/projects/{id}/exports`, `GET /api/projects/{id}/exports/{job_id}/audio`, `GET /api/projects/{id}/exports/{job_id}/subtitles`, and `GET /api/projects/{id}/exports/{job_id}/sources` (R5.8). Verified with integration test `tests/test_export_pipeline.py`. Test passed.
+
 ## [2026-11-24] - Phase 6
 - **T6.3**: Finalized comprehensive Vietnamese documentation in `README.md` (R7.1) covering prerequisites, installation, full workflow from idea to exported package (`narration.mp3`, `subtitles.srt`, `sources.txt`), Kokoro offline fallback setup, and troubleshooting guide. Executed complete test suite (35/35 passing tests across unit and integration tests) fulfilling the Definition of Done. Test passed.
 - **T6.2**: Implemented comprehensive Vietnamese error handling & diagnostics across `gemini_client.py`, `main.py`, and `static/app.js` (R5.7). Added `format_gemini_error` to translate rate limits (429), auth issues (401/403), overloads (503), and network dropouts into clear actionable Vietnamese with backoff retries. Updated `/api/status` and web UI to detect missing FFmpeg or GEMINI_API_KEY with interactive click-to-fix diagnostic alerts (winget commands and AI Studio setup). Added tests in `tests/test_gemini.py` and `tests/test_gemini_api.py`. Test passed.
