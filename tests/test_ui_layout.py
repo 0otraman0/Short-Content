@@ -39,5 +39,16 @@ class TestUILayout(unittest.TestCase):
         self.assertIn('id="btn-random-length"', toolbar_html,
                       "#btn-random-length must be located in .editor-toolbar next to target duration.")
 
+    def test_assistant_panel_grid_containment(self):
+        """Test that app-layout and main-content allow flex/grid shrinking with min-width: 0 so right panel isn't pushed offscreen."""
+        css_text = CSS_FILE.read_text(encoding="utf-8")
+
+        # Must have minmax(0, 1fr) in grid-template-columns or min-width: 0 in .main-content
+        has_minmax = "minmax(0, 1fr)" in css_text or "minmax(0,1fr)" in css_text
+        has_main_content_min_width = bool(re.search(r"\.main-content\s*\{[^}]*min-width\s*:\s*0", css_text))
+
+        self.assertTrue(has_minmax and has_main_content_min_width,
+                        "CSS Grid item .main-content and .app-layout must use minmax(0, 1fr) and min-width: 0 to prevent pushing .assistant-panel off-screen on typical laptop displays.")
+
 if __name__ == "__main__":
     unittest.main()

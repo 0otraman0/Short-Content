@@ -32,8 +32,10 @@ body {
 
 .app-layout {
     display: grid;
-    grid-template-columns: 260px 1fr 340px;
+    grid-template-columns: 240px minmax(0, 1fr) 320px;
     height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
 /* Sidebar */
@@ -91,6 +93,8 @@ body {
     display: flex;
     flex-direction: column;
     background-color: var(--bg-base);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .top-nav {
@@ -290,6 +294,8 @@ body {
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    overflow-y: auto;
 }
 
 .tabs {
@@ -1087,6 +1093,22 @@ button {
     border-color: var(--success);
     pointer-events: none;
 }
+
+/* ==========================================
+   Responsive Grid Adaptations
+   ========================================== */
+@media (max-width: 1200px) {
+    .app-layout {
+        grid-template-columns: 220px minmax(0, 1fr) 300px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .app-layout {
+        grid-template-columns: 200px minmax(0, 1fr) 280px;
+    }
+}
+
 
 
 

@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-24] - Bug Fix
+- **Fix (Assistant Panel Clipping & Grid Containment)**: Fixed right sidebar ("Trợ lý AI") being pushed off-screen on laptops and sub-1400px displays. The middle column previously lacked `min-width: 0`, which caused CSS Grid to default to `min-content` and expand past 100vw. Updated `.app-layout` to use `240px minmax(0, 1fr) 320px`, added `min-width: 0` to `.main-content` and `.assistant-panel`, and added responsive breakpoints for 1200px and 1024px screens. Added regression test in `tests/test_ui_layout.py` (43/43 tests passing).
 - **Fix (Top Navigation Layout & Overflow)**: Fixed broken top toolbar layout caused by 9 items squeezing horizontally without `white-space: nowrap`, which forced button text to wrap vertically word-by-word into 80px-tall bloated blocks. Enforced `white-space: nowrap`, compact 34px fixed height, and smooth horizontal scroll on `.top-actions`. Moved `#btn-random-length` into `.stats-badge` in the editor toolbar beside `#target-duration-display` where it logically belongs, streamlining the top bar into a clean, modern, single-line header. Added regression test `tests/test_ui_layout.py` (42/42 tests passing).
 
 ## [2026-11-24] - Phase 8
