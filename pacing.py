@@ -82,10 +82,12 @@ def parse_script(
     script: str,
     preset_name: str = "mystery",
     config_path: Optional[Path] = None,
-    auto_sentence_pauses: bool = True
+    auto_sentence_pauses: bool = False
 ) -> List[Segment]:
     """
     Parse a script containing pacing markup into a list of SpeechSegment and PauseSegment items.
+    By default (auto_sentence_pauses=False), text is kept coalesced at sentence/paragraph level
+    and only splits where markup explicitly specifies a different rate/pitch or a pause (R2.6).
     """
     if not script or not script.strip():
         return []
@@ -241,7 +243,7 @@ def _append_plain_text(
         ))
 
 def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
-    """Merge adjacent pauses and remove zero-duration pauses."""
+    """Merge adjacent pauses and coalesce adjacent speech segments with identical audio settings (R2.6)."""
     result: List[Segment] = []
 
     for seg in segments:
@@ -261,6 +263,19 @@ def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
             if not re.search(r"\w", clean_text):
                 if result and isinstance(result[-1], SpeechSegment):
                     result[-1].text = (result[-1].text + clean_text).strip()
+                continue
+
+            # Coalesce with preceding SpeechSegment if parameters match exactly (R2.6)
+            if (
+                result
+                and isinstance(result[-1], SpeechSegment)
+                and result[-1].rate == seg.rate
+                and result[-1].pitch == seg.pitch
+                and result[-1].volume == seg.volume
+                and result[-1].is_whisper == seg.is_whisper
+                and result[-1].is_emphasis == seg.is_emphasis
+            ):
+                result[-1].text = f"{result[-1].text} {clean_text}".strip()
             else:
                 result.append(seg)
 

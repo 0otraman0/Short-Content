@@ -98,5 +98,27 @@ class TestPacingParser(unittest.TestCase):
         self.assertTrue(has_speech)
         self.assertTrue(has_pause)
 
+    def test_coalesced_sentence_paragraph_default(self):
+        # By default (R2.6), sentences without tags remain coalesced into 1 speech segment
+        script = "Greenland sharks live in near-freezing waters. They grow less than one centimeter per year."
+        segments = parse_script(script)
+        self.assertEqual(len(segments), 1)
+        self.assertIsInstance(segments[0], SpeechSegment)
+        self.assertIn("waters. They grow", segments[0].text)
+
+    def test_split_only_on_tags_or_pause(self):
+        script = "Sentence one. [pause 0.5] Sentence two and three. [slow]Sentence four.[/slow]"
+        segments = parse_script(script)
+        # Expected:
+        # 1. "Sentence one."
+        # 2. Pause(0.5)
+        # 3. "Sentence two and three."
+        # 4. "Sentence four." (slow)
+        self.assertEqual(len(segments), 4)
+        self.assertEqual(segments[0].text, "Sentence one.")
+        self.assertIsInstance(segments[1], PauseSegment)
+        self.assertEqual(segments[2].text, "Sentence two and three.")
+        self.assertEqual(segments[3].text, "Sentence four.")
+
 if __name__ == "__main__":
     unittest.main()

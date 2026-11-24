@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-24] - Phase 8
+- **T8.1**: Upgraded `pacing.py` to synthesize speech at sentence and paragraph level by default (`auto_sentence_pauses=False` & speech segment coalescence), only splitting when markup (`[pause]`, `[slow]`, `[fast]`, `[whisper]`, `*emphasis*`) requires rate/pitch change or real silence (R2.6). Updated `gemini_client.py` with 4 mandatory speakability rules: alternating sentence lengths for musical rhythm, commas/em-dashes/ellipses for natural breaths, punchline/fact at end of sentence, and ambiguous numbers spelled out as words (R3.4). Added tests in `tests/test_pacing.py` and `tests/test_gemini.py`. Test passed.
+
 ## [2026-11-24] - Phase 7
 - **T7.2**: Built Export History modal & UI components in `static/index.html`, `static/app.js`, and `static/style.css`. Users can browse all past audio exports for the current project, view metadata (export timestamp, duration, preset, script preview), play back any job's audio in the preview player with one click, and download individual assets (.mp3, .srt, sources.txt) per job without cross-job interference (R5.9). Verified with end-to-end tests. Test passed.
 - **T7.1**: Implemented job-isolated export storage in `main.py` saving each export to `projects/<project_id>/exports/<job_id>/` (`narration.mp3`, `subtitles.srt`, `sources.txt`, and `metadata.json`) without overwriting previous runs. Recorded export history in `project.json` and added endpoints `GET /api/projects/{id}/exports`, `GET /api/projects/{id}/exports/{job_id}/audio`, `GET /api/projects/{id}/exports/{job_id}/subtitles`, and `GET /api/projects/{id}/exports/{job_id}/sources` (R5.8). Verified with integration test `tests/test_export_pipeline.py`. Test passed.

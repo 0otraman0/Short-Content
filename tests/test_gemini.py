@@ -50,5 +50,11 @@ class TestGeminiClient(unittest.TestCase):
         msg_net = format_gemini_error(err_net)
         self.assertIn("kết nối", msg_net)
 
+    def test_speakability_rules_in_system_prompt(self):
+        from gemini_client import SYSTEM_INSTRUCTION_WRITING
+        self.assertIn("SPEAKABILITY & NARRATION RULES", SYSTEM_INSTRUCTION_WRITING)
+        self.assertIn("Alternate short, punchy sentences", SYSTEM_INSTRUCTION_WRITING)
+        self.assertIn("end of the sentence", SYSTEM_INSTRUCTION_WRITING)
+
 if __name__ == "__main__":
     unittest.main()

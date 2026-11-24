@@ -202,3 +202,31 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Mở trình duyệt, xuất thử 2 lần, kiểm tra danh sách hiển thị đủ 2 job và bấm nghe lại từng job độc lập.
+
+---
+
+## Phase 8: Narration Expressiveness & Audio Enhancement (R2.6, R2.11, R2.12, R3.4)
+
+### T8.1: Coalesced Segment Parsing & Speakability Gemini Prompts
+- **Goal**: Cải tiến `pacing.py` để tổng hợp ở cấp độ câu/đoạn tự nhiên, chỉ tách khi có thẻ markup hoặc pause tường minh. Cập nhật `gemini_client.py` với 4 quy tắc speakability (xen kẽ độ dài câu, dấu ngắt nhịp, đặt fact ở cuối câu, viết số thành chữ).
+- **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`, `tests/test_gemini.py`
+- **Requirements**: R2.6, R3.4
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Chạy test kiểm tra đoạn văn bản không thẻ giữ nguyên 1 segment; kiểm tra prompt Gemini chứa đầy đủ 4 quy tắc speakability.
+
+### T8.2: Audio Post-Processing Chain with On/Off Toggles
+- **Goal**: Tích hợp chuỗi filter FFmpeg trong `tts.py` gồm light compression, male EQ, de-esser, light reverb, loudness normalization với các công tắc bật/tắt đọc từ `config.yaml` và tham số hàm.
+- **Files**: `tts.py`, `config.yaml`, `tests/test_tts.py`
+- **Requirements**: R2.12
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Chạy test xuất audio với từng cấu hình bật/tắt filter, kiểm tra âm thanh đầu ra hợp lệ và đạt chuẩn loudness.
+
+### T8.3: Paragraph Regeneration, Multi-Take Selector & UI Toggles
+- **Goal**: Thêm nút "Tạo lại" cho từng đoạn kịch bản, lưu tối đa 4 takes để nghe thử và chọn bản ưng ý nhất; thêm bảng công tắc bật/tắt audio post-processing trên giao diện.
+- **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
+- **Requirements**: R2.11, R2.12
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Bấm "Tạo lại" trên 1 đoạn kịch bản, tạo thử 3-4 takes, nghe lại từng take và chọn; chuyển đổi các công tắc audio enhancement và xuất thử.

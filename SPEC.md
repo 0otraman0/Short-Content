@@ -38,18 +38,20 @@ The user is a beginner who builds by "vibe coding". UI labels are in Vietnamese.
 - R2.3 `[fast]...[/fast]` = faster reading (rate about +12%).
 - R2.4 `*word or phrase*` = emphasis (slightly louder, slightly higher pitch, tiny pause before it).
 - R2.5 `[whisper]...[/whisper]` = lower pitch, lower volume, a bit slower, for mysterious moments.
-- R2.6 Implementation: split the script into segments, synthesize each with its own rate/pitch/volume, insert real silence between them, concatenate with FFmpeg into one narration file, normalize loudness.
+- R2.6 Implementation: synthesize at sentence or paragraph level by default (not tiny fragments); only split where the markup requires a different rate/pitch or an explicit pause. Insert real silence for pause tags, concatenate and apply audio post-processing chain.
 - R2.7 Global presets in the UI: "Mystery" (default: slower baseline, longer pauses after sentences, longer pause before a reveal), "Hype", "Calm". A preset only changes baseline values and default pause lengths.
 - R2.8 Button "Tự thêm nhịp (auto-pace)": Gemini inserts the markup into the plain script (fast hook at the start, slow buildup, pause before the key fact, strong ending). Show a before/after preview; the user accepts or rejects.
 - R2.9 Button "Nghe thử": synthesizes and plays only the selected paragraph.
 - R2.10 The markup parser must have simple automated tests.
+- R2.11 Paragraph multi-take regeneration: button "Tạo lại" on paragraphs, generating and keeping up to 4 takes to preview and pick from.
+- R2.12 Audio post-processing chain with on/off toggles: light compression, EQ for a male voice, de-esser, very light reverb, loudness normalization.
 
 ### R3. Gemini writing assistant (side panel)
 Each button has a free-text "ghi chú cho AI" box.
 - R3.1 "Gợi ý đoạn tiếp theo": from the script so far, suggest 3 alternative next paragraphs; click one to append it.
 - R3.2 "Viết lại bài đang dở": rewrite and polish the unfinished draft, keeping the user's facts and voice, optimized for spoken narration (short sentences, strong hook in the first 2 sentences, curiosity gaps, satisfying ending). Show before/after; the user accepts.
 - R3.3 "Dựng khung từ đầu": the user enters a topic or a single fact; Gemini returns an outline (hook, 3-5 beats, reveal, outro) and optionally a full first draft for a chosen target length.
-- R3.4 Rules for ALL Gemini writing calls: write in English; NEVER invent statistics, dates, names or sources; if a number is not certain, write the sentence without it and flag it with `[VERIFY]`; short speakable sentences; no clickbait lies.
+- R3.4 Rules for ALL Gemini writing calls: write in English; NEVER invent statistics, dates, names or sources; if a number is not certain, write the sentence without it and flag it with `[VERIFY]`; no clickbait lies. Speakability rules: alternate short and long sentences, use commas/dashes/ellipses for natural rhythm, put the key fact or number at the end of the sentence, write numbers as words when ambiguous.
 
 ### R4. Fact check panel (exactly two labels)
 Button "Kiểm chứng":

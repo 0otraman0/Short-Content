@@ -28,9 +28,13 @@ SYSTEM_INSTRUCTION_WRITING = (
     "1. Write exclusively in English.\n"
     "2. NEVER invent or fabricate statistics, dates, names, or sources.\n"
     "3. If any number, date, or fact is uncertain or unverified, write the sentence cautiously without false certainty and flag it with '[VERIFY]'.\n"
-    "4. Use short, punchy, speakable sentences designed for audio narration (~150 words per minute).\n"
-    "5. Hook the listener in the very first sentence.\n"
-    "6. Do NOT use clickbait lies or deceptive statements."
+    "4. Hook the listener in the very first sentence.\n"
+    "5. Do NOT use clickbait lies or deceptive statements.\n\n"
+    "SPEAKABILITY & NARRATION RULES (R3.4):\n"
+    "- Alternate short, punchy sentences with longer flowing ones to create a dynamic, musical rhythm.\n"
+    "- Use commas, em-dashes (—), and ellipses (...) strategically for natural spoken pauses and breathing room.\n"
+    "- Place the punchline, key fact, or shocking number at the very end of the sentence for maximum suspense and auditory impact.\n"
+    "- Write numbers as spoken words whenever ambiguous (e.g. 'twenty-five hundred' instead of '2,500'; 'four hundred years' instead of '400 yrs') to guarantee accurate neural TTS pronunciation."
 )
 
 FALLBACK_MODELS = [
@@ -208,7 +212,10 @@ async def rewrite_draft(script: str, notes: str = "", target_duration: Optional[
     prompt = (
         f"Rewrite and polish this YouTube Shorts script draft for spoken narration.\n"
         f"Guidelines:\n"
-        f"- Short, speakable sentences.\n"
+        f"- Short, speakable sentences; alternate short punchy sentences with longer flowing ones for musical rhythm.\n"
+        f"- Use commas, em-dashes (—), and ellipses (...) for natural spoken breath pauses.\n"
+        f"- Place the punchline, key fact, or number at the very end of the sentence.\n"
+        f"- Write ambiguous numbers as spoken words (e.g. 'twenty-five hundred', 'four hundred years').\n"
         f"- Strong curiosity hook in the first 1-2 sentences.\n"
         f"- Keep the user's authentic facts; do not invent fake details.\n"
         f"- Satisfying, memorable conclusion.\n"
