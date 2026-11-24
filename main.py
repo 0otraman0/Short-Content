@@ -555,3 +555,80 @@ async def api_auto_pace(payload: AutoPaceRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi AI tự thêm nhịp: {str(e)}")
 
+# ==========================================
+# Fact-Checking Endpoints (R4)
+# ==========================================
+
+from factcheck import extract_and_verify_claims, rewrite_claim_safely
+
+class ClaimsUpdateRequest(BaseModel):
+    claims: List[Dict[str, Any]]
+
+class RewriteSentenceRequest(BaseModel):
+    claim_text: str
+    sentence: str
+    reason: Optional[str] = ""
+
+@app.post("/api/projects/{project_id}/factcheck")
+async def api_project_factcheck(project_id: str):
+    """R4.1 - R4.4: Run fact-checking on the project's script, save to project.json, and return results."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy file dự án.")
+
+    try:
+        project_data = json.loads(json_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi đọc dự án: {str(e)}")
+
+    script = project_data.get("script", "").strip()
+    if not script:
+        raise HTTPException(status_code=400, detail="Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi kiểm chứng.")
+
+    try:
+        result = await extract_and_verify_claims(script)
+        claims = result.get("claims", [])
+        project_data["claims"] = claims
+        project_data["updated_at"] = datetime.now().isoformat()
+        json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        return {
+            "success": True,
+            "claims": claims,
+            "grounded": result.get("grounded", False),
+            "notice": result.get("notice", ""),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi kiểm chứng: {str(e)}")
+
+@app.put("/api/projects/{project_id}/claims")
+async def api_update_project_claims(project_id: str, payload: ClaimsUpdateRequest):
+    """R4.7: Update claims list (manual label override, edited URLs, custom sources)."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy file dự án.")
+
+    try:
+        project_data = json.loads(json_file.read_text(encoding="utf-8"))
+        project_data["claims"] = payload.claims
+        project_data["updated_at"] = datetime.now().isoformat()
+        json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+        return {"success": True, "claims": payload.claims}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi cập nhật nguồn: {str(e)}")
+
+@app.post("/api/factcheck/rewrite-sentence")
+async def api_rewrite_sentence(payload: RewriteSentenceRequest):
+    """R4.6: Rewrite an unproven sentence to be safe and scientifically accurate."""
+    sentence = payload.sentence.strip()
+    if not sentence:
+        raise HTTPException(status_code=400, detail="Câu văn cần sửa đang trống.")
+    try:
+        safe_sentence = await rewrite_claim_safely(payload.claim_text, sentence, payload.reason or "")
+        return {"success": True, "original": sentence, "safe_sentence": safe_sentence}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi sửa câu: {str(e)}")
+
+

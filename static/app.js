@@ -100,6 +100,18 @@ const DOM = {
     btnCancelAutoPace: document.getElementById('btn-cancel-auto-pace'),
     btnApplyAutoPace: document.getElementById('btn-apply-auto-pace'),
 
+    // Fact Check (R4)
+    btnCheckFacts: document.getElementById('btn-check-facts'),
+    factcheckLoading: document.getElementById('factcheck-loading'),
+    factcheckDisclaimer: document.getElementById('factcheck-disclaimer'),
+    claimsList: document.getElementById('claims-list'),
+    safeRewriteModal: document.getElementById('safe-rewrite-modal'),
+    safeOrigSentence: document.getElementById('safe-orig-sentence'),
+    safeNewSentence: document.getElementById('safe-new-sentence'),
+    btnCloseSafeRewrite: document.getElementById('btn-close-safe-rewrite'),
+    btnCancelSafeRewrite: document.getElementById('btn-cancel-safe-rewrite'),
+    btnApplySafeRewrite: document.getElementById('btn-apply-safe-rewrite'),
+
     // Tabs
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content')
@@ -267,6 +279,9 @@ async function loadProject(id) {
 
         DOM.saveStatus.textContent = 'Đã lưu';
         DOM.saveStatus.className = 'save-status';
+
+        // Render fact-checked claims if present
+        renderClaimsList(proj.claims || []);
 
         // Re-render project list to highlight active item
         renderProjectsList();
@@ -952,6 +967,234 @@ function handleApplyAutoPace() {
 }
 
 // ==========================================
+// 8.5. Fact Checking Actions (R4)
+// ==========================================
+
+function renderClaimsList(claims) {
+    if (!DOM.claimsList) return;
+    DOM.claimsList.innerHTML = '';
+
+    if (!claims || claims.length === 0) {
+        DOM.claimsList.innerHTML = '<p class="empty-hint">Bấm "Bóc tách & Kiểm chứng" để phân tích các luận điểm và nguồn tài liệu tham khảo.</p>';
+        if (DOM.factcheckDisclaimer) DOM.factcheckDisclaimer.classList.add('hidden');
+        return;
+    }
+
+    if (DOM.factcheckDisclaimer) DOM.factcheckDisclaimer.classList.remove('hidden');
+
+    claims.forEach((claim, idx) => {
+        const isProven = claim.label === 'ĐÃ CHỨNG MINH';
+        const card = document.createElement('div');
+        card.className = `claim-card ${isProven ? 'status-proven' : 'status-unclear'}`;
+
+        const urlsHtml = (claim.urls && claim.urls.length > 0)
+            ? claim.urls.map(u => `<a class="claim-url-link" href="${escapeHtml(u)}" target="_blank" rel="noopener noreferrer">🔗 ${escapeHtml(u)}</a>`).join('')
+            : '<span style="color:var(--text-muted); font-style:italic;">Chưa có link nguồn tài liệu</span>';
+
+        card.innerHTML = `
+            <div class="claim-header">
+                <span class="claim-badge ${isProven ? 'badge-proven' : 'badge-unclear'}">${escapeHtml(claim.label)}</span>
+                <select class="claim-label-select" title="Ghi đè nhãn thủ công (R4.7)">
+                    <option value="ĐÃ CHỨNG MINH" ${isProven ? 'selected' : ''}>ĐÃ CHỨNG MINH</option>
+                    <option value="CHƯA RÕ" ${!isProven ? 'selected' : ''}>CHƯA RÕ</option>
+                </select>
+            </div>
+            <div class="claim-text">${escapeHtml(claim.text || '')}</div>
+            <div class="claim-sentence-ref" title="Bấm để tô sáng câu này trong kịch bản">
+                🔍 Trích: "${escapeHtml(claim.sentence || '')}"
+            </div>
+            <div class="claim-evidence">
+                💡 ${escapeHtml(claim.evidence || '')}
+            </div>
+            <div class="claim-urls-section">
+                <div style="font-weight: 500; color: var(--text-muted); margin-bottom: 2px;">Nguồn kiểm chứng:</div>
+                <div class="claim-urls-list">${urlsHtml}</div>
+                <div style="margin-top: 6px; display: flex; gap: 4px;">
+                    <input type="text" class="input-new-url" placeholder="Thêm link nguồn (https://...)" style="flex: 1; font-size: 0.75rem; padding: 3px 6px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px;">
+                    <button class="btn-secondary btn-add-url" style="font-size: 0.75rem; padding: 2px 8px;">+ Thêm</button>
+                </div>
+            </div>
+            ${!isProven ? `<button class="btn-rewrite-safe" data-id="${claim.id}">🛡️ Sửa câu này cho an toàn</button>` : ''}
+        `;
+
+        // Click to highlight sentence in scriptEditor (R4.5)
+        const refSentence = card.querySelector('.claim-sentence-ref');
+        if (refSentence) {
+            refSentence.addEventListener('click', () => {
+                highlightSentenceInEditor(claim.sentence);
+            });
+        }
+
+        // Manual label override (R4.7)
+        const labelSelect = card.querySelector('.claim-label-select');
+        if (labelSelect) {
+            labelSelect.addEventListener('change', () => {
+                claim.label = labelSelect.value;
+                saveProjectClaims();
+                renderClaimsList(state.currentProject.claims);
+            });
+        }
+
+        // Add custom URL (R4.7)
+        const inputUrl = card.querySelector('.input-new-url');
+        const btnAddUrl = card.querySelector('.btn-add-url');
+        if (btnAddUrl && inputUrl) {
+            btnAddUrl.addEventListener('click', () => {
+                const val = inputUrl.value.trim();
+                if (val) {
+                    if (!claim.urls) claim.urls = [];
+                    claim.urls.push(val);
+                    inputUrl.value = '';
+                    saveProjectClaims();
+                    renderClaimsList(state.currentProject.claims);
+                }
+            });
+        }
+
+        // Safe rewrite button (R4.6)
+        const btnSafe = card.querySelector('.btn-rewrite-safe');
+        if (btnSafe) {
+            btnSafe.addEventListener('click', () => {
+                handleSafeRewrite(claim);
+            });
+        }
+
+        DOM.claimsList.appendChild(card);
+    });
+}
+
+function highlightSentenceInEditor(sentence) {
+    if (!sentence || !DOM.scriptEditor) return;
+    const text = DOM.scriptEditor.value;
+    const cleanSentence = sentence.trim();
+    let idx = text.indexOf(cleanSentence);
+
+    // If exact match not found (e.g. markup tags inside), search by key words
+    if (idx === -1) {
+        const words = cleanSentence.split(/\s+/).filter(w => w.length > 3);
+        if (words.length > 0) {
+            idx = text.indexOf(words[0]);
+        }
+    }
+
+    if (idx !== -1) {
+        DOM.scriptEditor.focus();
+        DOM.scriptEditor.setSelectionRange(idx, idx + cleanSentence.length);
+        const linesBefore = text.substring(0, idx).split('\n').length;
+        const lineHeight = 20;
+        DOM.scriptEditor.scrollTop = Math.max(0, (linesBefore - 2) * lineHeight);
+    }
+}
+
+async function saveProjectClaims() {
+    if (!state.currentProject) return;
+    try {
+        await fetch(`/api/projects/${state.currentProject.id}/claims`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ claims: state.currentProject.claims || [] })
+        });
+    } catch (err) {
+        console.error('Error saving claims:', err);
+    }
+}
+
+async function handleCheckFacts() {
+    if (!state.currentProject) {
+        alert('Vui lòng chọn hoặc tạo dự án trước khi kiểm chứng.');
+        return;
+    }
+
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung trước khi kiểm chứng.');
+        return;
+    }
+
+    // Ensure autosave first
+    await executeAutosave();
+
+    DOM.btnCheckFacts.disabled = true;
+    DOM.btnCheckFacts.innerHTML = '⏳ Đang kiểm chứng...';
+    if (DOM.factcheckLoading) DOM.factcheckLoading.classList.remove('hidden');
+
+    try {
+        const res = await fetch(`/api/projects/${state.currentProject.id}/factcheck`, {
+            method: 'POST'
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể kiểm chứng kịch bản');
+        }
+
+        const data = await res.json();
+        state.currentProject.claims = data.claims || [];
+        renderClaimsList(state.currentProject.claims);
+    } catch (err) {
+        alert('Lỗi kiểm chứng: ' + err.message);
+    } finally {
+        DOM.btnCheckFacts.disabled = false;
+        DOM.btnCheckFacts.innerHTML = '🔍 Bóc tách & Kiểm chứng';
+        if (DOM.factcheckLoading) DOM.factcheckLoading.classList.add('hidden');
+    }
+}
+
+let currentSafeClaim = null;
+
+async function handleSafeRewrite(claim) {
+    currentSafeClaim = claim;
+    DOM.safeOrigSentence.value = claim.sentence || claim.text;
+    DOM.safeNewSentence.value = 'Đang phân tích câu an toàn...';
+    DOM.btnApplySafeRewrite.disabled = true;
+    DOM.safeRewriteModal.classList.remove('hidden');
+
+    try {
+        const res = await fetch('/api/factcheck/rewrite-sentence', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                claim_text: claim.text,
+                sentence: claim.sentence || claim.text,
+                reason: claim.evidence || ''
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể viết lại câu an toàn');
+        }
+
+        const data = await res.json();
+        DOM.safeNewSentence.value = data.safe_sentence || '';
+        DOM.btnApplySafeRewrite.disabled = false;
+    } catch (err) {
+        DOM.safeNewSentence.value = 'Lỗi: ' + err.message;
+    }
+}
+
+function handleApplySafeRewrite() {
+    if (!currentSafeClaim) return;
+    const oldSentence = DOM.safeOrigSentence.value.trim();
+    const newSentence = DOM.safeNewSentence.value.trim();
+
+    if (newSentence && oldSentence) {
+        const editorText = DOM.scriptEditor.value;
+        if (editorText.includes(oldSentence)) {
+            DOM.scriptEditor.value = editorText.replace(oldSentence, newSentence);
+        } else {
+            DOM.scriptEditor.value += `\n\n${newSentence}`;
+        }
+        currentSafeClaim.sentence = newSentence;
+        saveProjectClaims();
+        updateStatsDisplay();
+        scheduleAutosave();
+        renderClaimsList(state.currentProject.claims);
+    }
+    DOM.safeRewriteModal.classList.add('hidden');
+}
+
+// ==========================================
 // 9. Utility Functions
 // ==========================================
 
@@ -1073,6 +1316,20 @@ async function init() {
     }
     if (DOM.btnApplyAutoPace) {
         DOM.btnApplyAutoPace.addEventListener('click', handleApplyAutoPace);
+    }
+
+    // Fact Check Event Listeners (R4)
+    if (DOM.btnCheckFacts) {
+        DOM.btnCheckFacts.addEventListener('click', handleCheckFacts);
+    }
+    if (DOM.btnCloseSafeRewrite) {
+        DOM.btnCloseSafeRewrite.addEventListener('click', () => DOM.safeRewriteModal.classList.add('hidden'));
+    }
+    if (DOM.btnCancelSafeRewrite) {
+        DOM.btnCancelSafeRewrite.addEventListener('click', () => DOM.safeRewriteModal.classList.add('hidden'));
+    }
+    if (DOM.btnApplySafeRewrite) {
+        DOM.btnApplySafeRewrite.addEventListener('click', handleApplySafeRewrite);
     }
 
     if (DOM.presetSelector) {

@@ -144,7 +144,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `static/index.html`, `static/app.js`, `main.py`
 - **Requirements**: R4.5, R4.6, R4.7
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Click "Kiểm chứng" in UI, click claims to verify text highlighting, edit claim label/URL, and test sentence rewriting.
 
 ### T5.3: Pre-Export Safety Check & `sources.txt` Export
