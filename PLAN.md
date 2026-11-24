@@ -250,3 +250,27 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Mở modal xuất, bấm "Đọc thử trước khi xuất", nghe kiểm tra toàn bài rồi mới bấm "Tiến hành xuất".
+
+---
+
+## Phase 10: Extended Pacing Tags & Quick Pacing Toolbar (R2.13, R1.4)
+
+### T10.1: Extended Pacing Markup Parser & Gemini Auto-Pace Upgrade
+- **Goal**: Mở rộng hệ thống nhịp điệu thêm 5 thẻ mới: `[deep]` (giọng trầm ma mị -6Hz, -8%), `[shock]` (giọng giật gân, ngạc nhiên +6Hz, +15%), `[urgent]` (dồn dập, đếm ngược +22%), `[solemn]` (lắng đọng, trang nghiêm -20%, -3Hz), `[loud]` (to vang, cảnh báo +30% vol). Nâng cấp prompt `auto_pace` trong `gemini_client.py` để AI tự động phối hợp đầy đủ 10 thẻ nhịp điệu.
+- **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`
+- **Requirements**: R2.8, R2.13
+- **Owner**: Builder
+- **Status**: in_progress
+- **Where I stopped**:
+  - What is done: Yêu cầu mở rộng thẻ nhịp điệu và phong cách mới đã được thống nhất; phân tích kỹ thuật và thông số pitch/rate/volume cho 5 thẻ mới hoàn tất.
+  - What is left: Cập nhật regex và bộ giải mã trong `pacing.py`; cập nhật prompt `auto_pace` trong `gemini_client.py`; viết test tự động trong `tests/test_pacing.py`.
+  - Exact next step: Chỉnh sửa `pacing.py` để bổ sung regex token và logic phân tách segment cho 5 thẻ `[deep]`, `[shock]`, `[urgent]`, `[solemn]`, `[loud]`.
+- **How to test**: Viết unit test trong `tests/test_pacing.py` xác minh từng thẻ mới được parse thành đúng `SpeechSegment` với rate, pitch, volume tương ứng.
+
+### T10.2: Quick Pacing Toolbar & UI Cheatsheet Upgrade
+- **Goal**: Nâng cấp Cheatsheet đầy đủ 10 thẻ nhịp điệu và bổ sung thanh nút bấm chèn nhanh (Quick Pacing Toolbar) trên khung soạn thảo: người dùng bôi đen câu/từ và bấm chèn nhanh thẻ nhịp.
+- **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
+- **Requirements**: R1.4, R2.13
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Bôi đen một đoạn text trong editor, bấm các nút chèn nhịp, kiểm tra thẻ được bọc chính xác quanh text đã chọn.

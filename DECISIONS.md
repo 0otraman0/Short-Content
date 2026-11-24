@@ -36,3 +36,11 @@
 ## D9. Removal of Video Rendering & Adoption of Audio + SRT Export
 - **Choice**: Removed FFmpeg video encoding pipeline (and Minecraft footage requirements). The application now focuses purely on: script writing with Gemini, fact-checking, pacing markup, and exporting `narration.mp3` (or `.wav`) + standard `subtitles.srt` (5-8 words per line) + `sources.txt` into the project folder.
 - **Reason**: Requested by user to streamline the workflow and decouple video editing. Users import the exported narration audio and SRT subtitles directly into their preferred video editor (CapCut, Premiere, DaVinci, etc.). Eliminates heavy video rendering load, GPU dependencies, and Minecraft footage management.
+
+## D10. Audition Bar Interactive State, Repeat-Click Prevention & AbortController Cancellation
+- **Choice**: Added generation loading indicator to the in-editor audition bar (`#audio-preview-bar`), disabled audition buttons (`disabled = true`) during generation to prevent repeated/spam clicks, and implemented `AbortController` cancellation linked to an active `⏹ Hủy` button (`#btn-cancel-preview`) and the close button (`#btn-close-audio`).
+- **Reason**: Provides immediate visual feedback of which scope (`Đoạn này` or `Toàn bài`) is generating, protects TTS endpoints against duplicate/wasted API requests, and gives users the freedom to abort in-flight TTS generation and audio playback at any moment.
+
+## D11. Extended Pacing Tags Architecture (10 Distinct Styles)
+- **Choice**: Expand pacing tags beyond the initial 5 (`[pause]`, `[slow]`, `[fast]`, `*emphasis*`, `[whisper]`) to include 5 additional expressive narration styles: `[deep]` (mysterious bass: -6Hz pitch, -8% rate, +10% volume), `[shock]` (climax revelation: +6Hz pitch, +15% rate, +15% volume), `[urgent]` (ticking clock: +22% rate, +10% volume), `[solemn]` (reflective closing: -20% rate, -3Hz pitch), and `[loud]` (wake-up warning: +30% volume, +2Hz pitch).
+- **Reason**: Enhances storytelling dynamics for YouTube Shorts and science fact narrations, giving users full creative control and richer automatic AI pacing.
