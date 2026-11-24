@@ -41,7 +41,7 @@ The user is a beginner who builds by "vibe coding". UI labels are in Vietnamese.
 - R2.6 Implementation: synthesize at sentence or paragraph level by default (not tiny fragments); only split where the markup requires a different rate/pitch or an explicit pause. Insert real silence for pause tags, concatenate and apply audio post-processing chain.
 - R2.7 Global presets in the UI: "Mystery" (default: slower baseline, longer pauses after sentences, longer pause before a reveal), "Hype", "Calm". A preset only changes baseline values and default pause lengths.
 - R2.8 Button "Tự thêm nhịp (auto-pace)": Gemini inserts the markup into the plain script (fast hook at the start, slow buildup, pause before the key fact, strong ending). Show a before/after preview; the user accepts or rejects.
-- R2.9 Button "Nghe thử": synthesizes and plays only the selected paragraph.
+- R2.9 Button "Đọc thử / Nghe thử" (Audio Audition): Tổng hợp và phát thử nhanh đoạn văn tại vị trí con trỏ hoặc toàn bộ kịch bản với đầy đủ nhịp điệu và nhấn nhá markup, hỗ trợ thanh nghe thử có timeline trực quan trước khi quyết định xuất chính thức.
 - R2.10 The markup parser must have simple automated tests.
 - R2.11 Paragraph multi-take regeneration: button "Tạo lại" on paragraphs, generating and keeping up to 4 takes to preview and pick from.
 - R2.12 Audio post-processing chain with on/off toggles: light compression, EQ for a male voice, de-esser, very light reverb, loudness normalization.
@@ -76,6 +76,7 @@ Button "Xuất Audio & Phụ đề" (Export Project):
 - R5.7 Clear, human error messages in Vietnamese (FFmpeg missing, no API key, no internet, Gemini rate limit with friendly retry).
 - R5.8 Mỗi lần xuất (export job), dữ liệu thành phẩm (`narration.mp3`, `subtitles.srt`, `sources.txt` và `metadata.json`) được lưu trữ độc lập tại thư mục `projects/<id>/exports/<job_id>/`. Không ghi đè các lần xuất trước. Danh sách lịch sử xuất được ghi nhận trong `project.json`.
 - R5.9 Giao diện cung cấp danh sách "Lịch sử xuất audio" cho dự án. Người dùng có thể nghe lại trực tiếp bất kỳ audio nào đã xuất trước đó, tải file của đúng job đó. Mỗi job hoàn toàn độc lập, tạo job mới không làm mất hoặc lẫn audio của job cũ.
+- R5.10 Pre-export Audition: Trong hộp thoại chuẩn bị xuất, cung cấp tính năng "Đọc thử trước khi xuất" để người dùng nghe duyệt lại toàn bộ bài đọc cùng các hiệu ứng âm thanh và nhịp điệu thực tế trước khi kích hoạt quy trình Whisper SRT và đóng gói Job.
 
 ### R6. Projects
 - R6.1 Sidebar listing past projects (title, date, status) with open / duplicate / delete.

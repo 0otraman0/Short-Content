@@ -230,3 +230,23 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Bấm "Tạo lại" trên 1 đoạn kịch bản, tạo thử 3-4 takes, nghe lại từng take và chọn; chuyển đổi các công tắc audio enhancement và xuất thử.
+
+---
+
+## Phase 9: Pre-Export Narration Audition & Pacing Review (R2.9, R5.10)
+
+### T9.1: In-Editor Paragraph & Full Script Audio Audition Bar
+- **Goal**: Nâng cấp chức năng đọc thử trong trình soạn thảo, cho phép nghe thử đoạn văn bản hiện tại hoặc toàn bộ kịch bản với đầy đủ hiệu ứng nhịp điệu (pause, slow, fast, emphasis) và Audio FX; cải tiến thanh nghe thử có timeline và thời lượng thực.
+- **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
+- **Requirements**: R2.9
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Viết kịch bản có các thẻ [slow], [pause], *emphasis*, bấm "Đọc thử" và kiểm tra thanh player phát đúng âm thanh nhấn nhá và thời lượng thực tế.
+
+### T9.2: Pre-Export Audition & Pacing Validation in Export Flow
+- **Goal**: Tích hợp nút "Đọc thử trước khi xuất" vào Modal Xuất Audio & Phụ đề, cho phép người dùng nghe duyệt toàn bộ audio trước khi bấm xuất chính thức.
+- **Files**: `static/index.html`, `static/app.js`, `static/style.css`
+- **Requirements**: R5.10
+- **Owner**: Builder
+- **Status**: todo
+- **How to test**: Mở modal xuất, bấm "Đọc thử trước khi xuất", nghe kiểm tra toàn bài rồi mới bấm "Tiến hành xuất".
