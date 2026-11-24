@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-24] - Phase 10
+- **T10.2**: Implemented Quick Pacing Toolbar and upgraded in-editor cheatsheet with all 10 pacing tags (R1.4, R2.13). Added `#pacing-quick-toolbar` with 1-click buttons (`⚡ Nhanh`, `🐢 Chậm`, `⏸️ Nghỉ 0.5s`, `🔥 Nhấn mạnh`, `🤫 Thì thầm`, `🌊 Trầm sâu`, `⚡ Giật gân`, `⏱️ Dồn dập`, `🏛️ Lắng đọng`, `📢 To vang`) that wrap highlighted text or insert interactive templates with automatic cursor placement. Updated pacing cheatsheet documentation with clear Vietnamese guides for all 10 tags. Verified with 8 automated layout regression tests in `tests/test_ui_layout.py`. Test passed.
 - **T10.1**: Implemented extended pacing markup parser and upgraded Gemini auto-pace prompt (R2.8, R2.13). Added 5 new narration tags: `[deep]` (deep mysterious bass: -6Hz, -8%, +10% vol), `[shock]` (climax revelation: +6Hz, +15%, +15% vol), `[urgent]` (ticking clock: +22%, +10% vol), `[solemn]` (reflective ending: -20%, -3Hz), and `[loud]` (wake-up warning: +30% vol, +2Hz). Updated `gemini_client.py` auto-pace prompt to orchestrate all 10 pacing tags dynamically. Verified with 16 automated tests in `tests/test_pacing.py`. Test passed.
 
 ## [2026-11-24] - Phase 9

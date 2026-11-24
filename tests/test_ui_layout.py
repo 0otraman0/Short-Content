@@ -144,5 +144,31 @@ class TestUILayout(unittest.TestCase):
         self.assertIn("cancelAudioPreview", js_text,
                       "app.js must implement cancelAudioPreview to cancel in-flight audio synthesis")
 
+    def test_quick_pacing_toolbar_and_extended_cheatsheet(self):
+        """Test that editor includes quick pacing toolbar with all 10 tags and extended cheatsheet."""
+        html_text = HTML_FILE.read_text(encoding="utf-8")
+        css_text = CSS_FILE.read_text(encoding="utf-8")
+        js_text = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+
+        # HTML must contain the quick pacing toolbar
+        self.assertIn('id="pacing-quick-toolbar"', html_text,
+                      "HTML must contain #pacing-quick-toolbar for quick markup insertion")
+
+        # Must have buttons for all tags
+        for tag in ["fast", "slow", "pause", "emphasis", "whisper", "deep", "shock", "urgent", "solemn", "loud"]:
+            self.assertIn(f'data-pacing-tag="{tag}"', html_text,
+                          f"Quick pacing toolbar must have a button with data-pacing-tag='{tag}'")
+
+        # Cheatsheet must document extended tags
+        for tag_doc in ["[deep]", "[shock]", "[urgent]", "[solemn]", "[loud]"]:
+            self.assertIn(tag_doc, html_text, f"Cheatsheet must document {tag_doc}")
+
+        # CSS must define styles for .pacing-toolbar
+        self.assertIn(".pacing-toolbar", css_text)
+
+        # JS must implement quick insertion handler
+        self.assertIn("setupQuickPacingToolbar", js_text,
+                      "app.js must implement setupQuickPacingToolbar for quick pacing tag insertion")
+
 if __name__ == "__main__":
     unittest.main()

@@ -321,11 +321,63 @@ body {
     border-radius: 4px;
 }
 
+/* Quick Pacing Toolbar */
+.pacing-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius) var(--radius) 0 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.pacing-toolbar-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pacing-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+}
+
+.btn-pacing-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.btn-pacing-tag:hover {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.15);
+    transform: translateY(-1px);
+}
+
 #script-editor {
     flex: 1;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
     padding: 16px;
     color: var(--text-primary);
     font-size: 1.05rem;

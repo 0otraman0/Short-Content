@@ -268,5 +268,5 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
 - **Requirements**: R1.4, R2.13
 - **Owner**: Builder
-- **Status**: todo
-- **How to test**: Bôi đen một đoạn text trong editor, bấm các nút chèn nhịp, kiểm tra thẻ được bọc chính xác quanh text đã chọn.
+- **Status**: done
+- **How to test**: Bôi đen một đoạn text trong editor, bấm các nút chèn nhịp, kiểm tra thẻ được bọc chính xác quanh text đã chọn. Test passed.

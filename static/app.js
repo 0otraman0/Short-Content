@@ -445,8 +445,72 @@ async function executeAutosave() {
 }
 
 // ==========================================
-// 4. Interactive Cheatsheet Insertion
+// 4. Interactive Cheatsheet & Quick Pacing Toolbar (R1.4, R2.13)
 // ==========================================
+
+function setupQuickPacingToolbar() {
+    const toolbar = document.getElementById('pacing-quick-toolbar');
+    const textarea = DOM.scriptEditor;
+    if (!toolbar || !textarea) return;
+
+    toolbar.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-pacing-tag');
+        if (!btn) return;
+        e.preventDefault();
+
+        const tag = btn.dataset.pacingTag;
+        const val = btn.dataset.val || '0.5';
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const selected = text.substring(start, end);
+
+        let openTag = '';
+        let closeTag = '';
+        let defaultInner = '';
+
+        if (tag === 'pause') {
+            const pauseSnippet = `[pause ${val}] `;
+            textarea.value = text.substring(0, start) + pauseSnippet + text.substring(end);
+            const newPos = start + pauseSnippet.length;
+            textarea.focus();
+            textarea.setSelectionRange(newPos, newPos);
+            updateStatsDisplay();
+            scheduleAutosave();
+            return;
+        } else if (tag === 'emphasis') {
+            openTag = '*';
+            closeTag = '*';
+            defaultInner = 'keyword';
+        } else {
+            // fast, slow, whisper, deep, shock, urgent, solemn, loud
+            openTag = `[${tag}]`;
+            closeTag = `[/${tag}]`;
+            defaultInner = 'text';
+        }
+
+        const innerContent = selected || defaultInner;
+        const insertion = openTag + innerContent + closeTag;
+
+        textarea.value = text.substring(0, start) + insertion + text.substring(end);
+        textarea.focus();
+
+        if (selected) {
+            // Move cursor after the closing tag
+            const newPos = start + insertion.length;
+            textarea.setSelectionRange(newPos, newPos);
+        } else {
+            // Highlight the default inner text so user can immediately type over it
+            const selStart = start + openTag.length;
+            const selEnd = selStart + defaultInner.length;
+            textarea.setSelectionRange(selStart, selEnd);
+        }
+
+        updateStatsDisplay();
+        scheduleAutosave();
+    });
+}
 
 function setupCheatsheet() {
     if (!DOM.cheatsheetContent) return;
@@ -1810,6 +1874,7 @@ function setupTabs() {
 async function init() {
     setupTabs();
     setupCheatsheet();
+    setupQuickPacingToolbar();
 
     // Event Listeners
     DOM.btnNewProject.addEventListener('click', createNewProject);

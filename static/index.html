@@ -103,15 +103,37 @@
                         <button id="btn-random-length" class="btn-chip" title="Chọn ngẫu nhiên thời lượng mục tiêu 60-180s">🎲 Đổi mục tiêu</button>
                     </div>
                     <details class="cheatsheet-dropdown">
-                        <summary>📖 Hướng dẫn nhịp điệu (Pacing markup)</summary>
+                        <summary>📖 Hướng dẫn nhịp điệu (10 loại Pacing markup)</summary>
                         <div class="cheatsheet-content">
-                            <p><code>[pause 0.5]</code>: Nghỉ 0.5 giây</p>
-                            <p><code>[slow]văn bản[/slow]</code>: Đọc chậm hơn (-15%)</p>
-                            <p><code>[fast]văn bản[/fast]</code>: Đọc nhanh hơn (+12%)</p>
-                            <p><code>*từ quan trọng*</code>: Nhấn giọng mạnh hơn</p>
-                            <p><code>[whisper]bí mật[/whisper]</code>: Thì thầm huyền bí</p>
+                            <p><code>[pause 0.5]</code>: Nghỉ 0.5 giây (dừng trước cú sốc / tiết lộ)</p>
+                            <p><code>[fast]văn bản[/fast]</code>: Đọc nhanh (+12% speed) cho hook mở đầu</p>
+                            <p><code>[slow]văn bản[/slow]</code>: Đọc chậm (-15% speed) tạo căng thẳng, hồi hộp</p>
+                            <p><code>*từ quan trọng*</code>: Nhấn giọng mạnh hơn (lên cao độ, ngắt nhẹ trước từ)</p>
+                            <p><code>[whisper]bí mật[/whisper]</code>: Thì thầm huyền bí (-30% volume, -4Hz pitch)</p>
+                            <p><code>[deep]rùng mình[/deep]</code>: Giọng trầm sâu bí hiểm (-6Hz pitch, -8% speed, +10% vol)</p>
+                            <p><code>[shock]kinh ngạc[/shock]</code>: Giọng giật gân, cao trào (+6Hz pitch, +15% speed, +15% vol)</p>
+                            <p><code>[urgent]khẩn cấp[/urgent]</code>: Dồn dập, đếm ngược nguy hiểm (+22% speed, +10% vol)</p>
+                            <p><code>[solemn]lắng đọng[/solemn]</code>: Chậm rãi, trang nghiêm đúc kết (-20% speed, -3Hz pitch)</p>
+                            <p><code>[loud]cảnh báo[/loud]</code>: To vang đánh thức sự chú ý (+30% volume, +2Hz pitch)</p>
                         </div>
                     </details>
+                </div>
+
+                <!-- Quick Pacing Toolbar (Chèn nhanh nhịp điệu R1.4, R2.13) -->
+                <div id="pacing-quick-toolbar" class="pacing-toolbar">
+                    <span class="pacing-toolbar-title">⚡ Chèn nhịp:</span>
+                    <div class="pacing-btn-group">
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="fast" title="Đọc nhanh (+12%) - Phù hợp câu Hook mở đầu">⚡ Nhanh</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="slow" title="Đọc chậm (-15%) - Tạo hồi hộp, chờ đợi">🐢 Chậm</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="pause" data-val="0.5" title="Chèn khoảng lặng 0.5s">⏸️ Nghỉ 0.5s</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="emphasis" title="Nhấn giọng mạnh hơn vào từ khóa">🔥 Nhấn mạnh</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="whisper" title="Thì thầm bí mật (-30% volume, -4Hz pitch)">🤫 Thì thầm</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="deep" title="Giọng trầm sâu rùng mình (-6Hz pitch, đáy biển/vũ trụ)">🌊 Trầm sâu</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="shock" title="Giọng kinh ngạc, giật gân (+6Hz pitch, cao trào)">⚡ Giật gân</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="urgent" title="Nhịp dồn dập, khẩn cấp (+22% speed)">⏱️ Dồn dập</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="solemn" title="Lắng đọng, trang nghiêm (-20% speed, triết lý)">🏛️ Lắng đọng</button>
+                        <button type="button" class="btn-pacing-tag" data-pacing-tag="loud" title="To vang, cảnh báo (+30% volume)">📢 To vang</button>
+                    </div>
                 </div>
 
                 <textarea id="script-editor" placeholder="Viết hoặc dán kịch bản tiếng Anh vào đây... (Ví dụ: Greenland sharks live longer than most trees. But how do they survive freezing Arctic waters for 400 years?)"></textarea>
