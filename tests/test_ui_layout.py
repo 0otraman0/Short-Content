@@ -170,5 +170,24 @@ class TestUILayout(unittest.TestCase):
         self.assertIn("setupQuickPacingToolbar", js_text,
                       "app.js must implement setupQuickPacingToolbar for quick pacing tag insertion")
 
+    def test_project_rename_functionality(self):
+        """Test that project renaming is supported via top bar and sidebar button (R6.1)."""
+        html_text = HTML_FILE.read_text(encoding="utf-8")
+        js_text = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+
+        # Top bar project title input must have title/tooltip or edit button indicating it's editable
+        self.assertIn('id="btn-edit-title"', html_text,
+                      "Top bar must have a title edit button or icon (#btn-edit-title)")
+
+        # JS must support sidebar rename button
+        self.assertIn("btn-rename", js_text,
+                      "Sidebar project items must have a rename button (.btn-rename)")
+        self.assertIn("renameProject", js_text,
+                      "app.js must implement renameProject function")
+
+        # JS must handle blur or Enter key on title input for immediate save
+        self.assertIn("keydown", js_text,
+                      "app.js should handle keydown (Enter) on project title input to save")
+
 if __name__ == "__main__":
     unittest.main()

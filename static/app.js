@@ -15,6 +15,7 @@ const DOM = {
     btnNewProject: document.getElementById('btn-new-project'),
     projectsList: document.getElementById('projects-list'),
     projectTitleInput: document.getElementById('project-title-input'),
+    btnEditTitle: document.getElementById('btn-edit-title'),
     saveStatus: document.getElementById('save-status'),
     systemStatus: document.getElementById('system-status'),
 
@@ -280,6 +281,7 @@ async function renderProjectsList() {
                 </div>
             </div>
             <div class="project-item-actions">
+                <button class="btn-icon btn-rename" data-id="${proj.id}" title="Đổi tên dự án">✏️</button>
                 <button class="btn-icon btn-dup" data-id="${proj.id}" title="Nhân bản">📋</button>
                 <button class="btn-icon btn-del" data-id="${proj.id}" title="Xóa">🗑️</button>
             </div>
@@ -288,6 +290,12 @@ async function renderProjectsList() {
         // Click to open
         item.querySelector('.project-info').addEventListener('click', () => {
             loadProject(proj.id);
+        });
+
+        // Rename
+        item.querySelector('.btn-rename').addEventListener('click', (e) => {
+            e.stopPropagation();
+            renameProject(proj.id, proj.title);
         });
 
         // Duplicate
@@ -385,6 +393,36 @@ async function deleteProject(id, title) {
         }
     } catch (err) {
         alert('Lỗi xóa dự án: ' + err.message);
+    }
+}
+
+async function renameProject(id, currentTitle) {
+    const newTitle = prompt('Nhập tên mới cho dự án:', currentTitle || '');
+    if (newTitle === null) return; // Người dùng bấm Hủy
+    const cleanTitle = newTitle.trim();
+    if (!cleanTitle) {
+        alert('Tên dự án không được để trống.');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/projects/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: cleanTitle })
+        });
+        if (!res.ok) throw new Error('Không thể đổi tên dự án');
+        const updated = await res.json();
+
+        // Nếu dự án đang mở đúng là dự án này thì cập nhật input và state
+        if (state.currentProject && state.currentProject.id === id) {
+            state.currentProject.title = updated.title;
+            DOM.projectTitleInput.value = updated.title;
+        }
+
+        await renderProjectsList();
+    } catch (err) {
+        alert('Lỗi đổi tên dự án: ' + err.message);
     }
 }
 
@@ -2088,8 +2126,29 @@ async function init() {
         scheduleAutosave();
     });
 
+    if (DOM.btnEditTitle) {
+        DOM.btnEditTitle.addEventListener('click', () => {
+            DOM.projectTitleInput.focus();
+            DOM.projectTitleInput.select();
+        });
+    }
+
     DOM.projectTitleInput.addEventListener('input', () => {
         scheduleAutosave();
+    });
+
+    DOM.projectTitleInput.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            DOM.projectTitleInput.blur();
+        }
+    });
+
+    DOM.projectTitleInput.addEventListener('blur', async () => {
+        if (state.currentProject) {
+            clearTimeout(state.autosaveTimer);
+            await executeAutosave();
+        }
     });
 
     // Check system status

@@ -270,3 +270,15 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Bôi đen một đoạn text trong editor, bấm các nút chèn nhịp, kiểm tra thẻ được bọc chính xác quanh text đã chọn. Test passed.
+
+---
+
+## Phase 11: Project Management Enhancement (Rename Project - R6.1)
+
+### T11.1: Project Renaming on Top Bar and Sidebar List
+- **Goal**: Hỗ trợ đổi tên dự án linh hoạt: (1) Thêm icon sửa tên `✏️` và xử lý Enter/blur lưu ngay trên thanh Top Bar; (2) Thêm nút `✏️ (Đổi tên)` trên từng dự án ở Sidebar để đổi tên nhanh chóng.
+- **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
+- **Requirements**: R6.1
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Đổi tên dự án từ ô Top Bar hoặc nút `✏️` ở Sidebar, kiểm tra tên mới được lưu vào `project.json` và hiển thị đồng bộ ở cả hai vị trí. Test passed.
