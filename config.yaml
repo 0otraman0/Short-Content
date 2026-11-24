@@ -5,6 +5,10 @@ tts:
   voice: en-US-ChristopherNeural
   provider: edge-tts
   fallback_provider: kokoro
+  kokoro:
+    voice: am_adam
+    model_path: assets/kokoro/kokoro-v0_19.onnx
+    voices_path: assets/kokoro/voices.json
 
 # Gemini AI Settings
 gemini:

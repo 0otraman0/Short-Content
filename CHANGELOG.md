@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-24] - Phase 6
+- **T6.1**: Implemented `KokoroTTSProvider` in `tts.py` using `kokoro-onnx` and standard WAV export. Configured `config.yaml` with offline Kokoro model/voice paths. Added automatic network fallback in `synthesize_narration` so that if EdgeTTS fails due to network outage or connection failure, narration seamlessly falls back to offline Kokoro TTS. Added 8 passing tests in `tests/test_tts.py`. Test passed.
+
 ## [2026-11-23] - Phase 5
 - **T5.3**: Implemented pre-export safety check in `static/app.js` warning the user before exporting if any claims remain "CHƯA RÕ" (R4.8). Formatted `sources.txt` in `main.py` ready for direct pasting into YouTube Shorts video descriptions with status, evidence summaries, and reference links (R4.9). Verified with automated export pipeline test. Test passed.
 - **T5.2**: Built Fact Check UI panel in `static/index.html` & `static/app.js` with endpoints in `main.py` (`POST /api/projects/{id}/factcheck`, `PUT /api/projects/{id}/claims`, `POST /api/factcheck/rewrite-sentence`). Features: colored badges (green for "ĐÃ CHỨNG MINH", yellow for "CHƯA RÕ"), sentence highlighting on card click, manual label override dropdown, custom source URL input, and "Sửa câu này cho an toàn" modal for safe sentence rewriting. Added test suite `tests/test_factcheck_api.py`. Test passed.

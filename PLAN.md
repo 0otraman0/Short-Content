@@ -164,7 +164,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `tts.py`, `requirements.txt`, `config.yaml`
 - **Requirements**: Tech stack (Kokoro fallback), C2
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Disconnect network or mock edge-tts failure; verify speech synthesis succeeds using local Kokoro model.
 
 ### T6.2: Vietnamese Error Handling & Diagnostics
