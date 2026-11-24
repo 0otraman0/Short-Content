@@ -36,6 +36,7 @@ const DOM = {
     audioPlayer: document.getElementById('audio-player'),
     btnPreviewParagraph: document.getElementById('btn-preview-paragraph'),
     btnPreviewAll: document.getElementById('btn-preview-all'),
+    btnCancelPreview: document.getElementById('btn-cancel-preview'),
     btnCloseAudio: document.getElementById('btn-close-audio'),
 
     // Voice Modal
@@ -554,7 +555,48 @@ async function checkSystemStatus() {
 // 6. TTS Audio Preview & Voice Management
 // ==========================================
 
+let previewAbortController = null;
+
+function cancelAudioPreview() {
+    if (previewAbortController) {
+        previewAbortController.abort();
+        previewAbortController = null;
+    }
+    if (DOM.audioPlayer) {
+        DOM.audioPlayer.pause();
+    }
+    resetPreviewState('⏹ Đã hủy đọc thử');
+}
+
+function resetPreviewState(statusMessage = null) {
+    if (DOM.btnPreviewParagraph) {
+        DOM.btnPreviewParagraph.disabled = false;
+        DOM.btnPreviewParagraph.innerHTML = '▶ Đoạn này';
+    }
+    if (DOM.btnPreviewAll) {
+        DOM.btnPreviewAll.disabled = false;
+        DOM.btnPreviewAll.innerHTML = '▶ Toàn bài';
+    }
+    if (DOM.btnPreviewAudio) {
+        DOM.btnPreviewAudio.disabled = false;
+        DOM.btnPreviewAudio.textContent = '🔊 Đọc thử kịch bản';
+    }
+    if (DOM.btnCancelPreview) {
+        DOM.btnCancelPreview.classList.add('hidden');
+    }
+    if (DOM.audioPreviewTag) {
+        DOM.audioPreviewTag.classList.remove('generating');
+    }
+    if (statusMessage && DOM.audioPreviewLabel) {
+        DOM.audioPreviewLabel.textContent = statusMessage;
+    }
+}
+
 async function handleAudioPreview(scope = 'auto') {
+    if (previewAbortController) {
+        return; // Đang tạo âm thanh dở dang, chặn click lặp lại
+    }
+
     const textarea = DOM.scriptEditor;
     const fullText = textarea.value.trim();
     if (!fullText) {
@@ -608,11 +650,38 @@ async function handleAudioPreview(scope = 'auto') {
         return;
     }
 
-    const originalBtnText = DOM.btnPreviewAudio ? DOM.btnPreviewAudio.textContent : '🔊 Đọc thử';
+    // Hiển thị thanh Audition ngay lập tức với chỉ báo khởi tạo
+    DOM.audioPreviewBar.classList.remove('hidden');
+    if (DOM.audioPreviewTag) {
+        DOM.audioPreviewTag.textContent = scopeTag;
+        DOM.audioPreviewTag.classList.add('generating');
+    }
+    if (DOM.audioPreviewLabel) {
+        DOM.audioPreviewLabel.textContent = `⏳ Đang khởi tạo & tạo âm thanh (${scopeTag})...`;
+    }
+
+    // Vô hiệu hóa các nút điều khiển để chống spam click nhiều lần
+    if (DOM.btnPreviewParagraph) {
+        DOM.btnPreviewParagraph.disabled = true;
+        if (scope === 'paragraph' || (scope === 'auto' && scopeTag === 'Đoạn này')) {
+            DOM.btnPreviewParagraph.innerHTML = '⏳ Đang tạo...';
+        }
+    }
+    if (DOM.btnPreviewAll) {
+        DOM.btnPreviewAll.disabled = true;
+        if (scope === 'full') {
+            DOM.btnPreviewAll.innerHTML = '⏳ Đang tạo...';
+        }
+    }
     if (DOM.btnPreviewAudio) {
         DOM.btnPreviewAudio.disabled = true;
         DOM.btnPreviewAudio.textContent = '⏳ Đang đọc...';
     }
+    if (DOM.btnCancelPreview) {
+        DOM.btnCancelPreview.classList.remove('hidden');
+    }
+
+    previewAbortController = new AbortController();
 
     try {
         const preset = DOM.presetSelector ? DOM.presetSelector.value : 'mystery';
@@ -623,7 +692,8 @@ async function handleAudioPreview(scope = 'auto') {
                 text: targetText,
                 preset: preset,
                 scope: scope
-            })
+            }),
+            signal: previewAbortController.signal
         });
 
         if (!res.ok) {
@@ -634,18 +704,24 @@ async function handleAudioPreview(scope = 'auto') {
         const data = await res.json();
         if (data.audio_url) {
             DOM.audioPreviewBar.classList.remove('hidden');
-            if (DOM.audioPreviewTag) DOM.audioPreviewTag.textContent = scopeTag;
+            if (DOM.audioPreviewTag) {
+                DOM.audioPreviewTag.textContent = scopeTag;
+                DOM.audioPreviewTag.classList.remove('generating');
+            }
             DOM.audioPreviewLabel.textContent = `🔊 Đọc thử (${data.duration.toFixed(1)}s):`;
             DOM.audioPlayer.src = data.audio_url;
             DOM.audioPlayer.play().catch(e => console.log('Autoplay blocked:', e));
         }
     } catch (err) {
-        alert('Lỗi nghe đọc thử: ' + err.message);
-    } finally {
-        if (DOM.btnPreviewAudio) {
-            DOM.btnPreviewAudio.disabled = false;
-            DOM.btnPreviewAudio.textContent = originalBtnText;
+        if (err.name === 'AbortError') {
+            if (DOM.audioPreviewLabel) DOM.audioPreviewLabel.textContent = '⏹ Đã hủy tạo âm thanh.';
+        } else {
+            alert('Lỗi nghe đọc thử: ' + err.message);
+            if (DOM.audioPreviewLabel) DOM.audioPreviewLabel.textContent = '❌ Lỗi tạo âm thanh.';
         }
+    } finally {
+        previewAbortController = null;
+        resetPreviewState();
     }
 }
 
@@ -1772,9 +1848,12 @@ async function init() {
     if (DOM.btnPreviewAll) {
         DOM.btnPreviewAll.addEventListener('click', () => handleAudioPreview('full'));
     }
+    if (DOM.btnCancelPreview) {
+        DOM.btnCancelPreview.addEventListener('click', cancelAudioPreview);
+    }
     if (DOM.btnCloseAudio) {
         DOM.btnCloseAudio.addEventListener('click', () => {
-            DOM.audioPlayer.pause();
+            cancelAudioPreview();
             DOM.audioPreviewBar.classList.add('hidden');
         });
     }

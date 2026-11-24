@@ -396,13 +396,42 @@ body {
     color: var(--text-primary);
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, opacity 0.15s;
 }
 
 .btn-subtle:hover {
     border-color: var(--primary);
     background: rgba(99, 102, 241, 0.1);
     color: var(--text-primary);
+}
+
+.btn-subtle:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-color: var(--border-color);
+}
+
+.btn-cancel-preview {
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.1);
+    font-weight: 600;
+}
+
+.btn-cancel-preview:hover {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.2);
+    color: #ff6b6b;
+}
+
+.audio-preview-tag.generating {
+    animation: pulse-tag 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-tag {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.97); }
 }
 
 .hidden {

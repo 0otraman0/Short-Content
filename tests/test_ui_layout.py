@@ -118,5 +118,31 @@ class TestUILayout(unittest.TestCase):
         self.assertIn("!audioMenuToggle.contains(e.target)", js_text,
                       "app.js must use !audioMenuToggle.contains(e.target) to properly handle clicks on toggle children")
 
+    def test_audition_bar_loading_disable_and_cancel(self):
+        """Test that audition bar features loading indicator, disables buttons during generation, and supports cancellation."""
+        html_text = HTML_FILE.read_text(encoding="utf-8")
+        css_text = CSS_FILE.read_text(encoding="utf-8")
+        js_text = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+
+        # HTML must have cancel button in audio preview bar
+        self.assertIn('id="btn-cancel-preview"', html_text,
+                      "Audition bar must have a cancel button (#btn-cancel-preview)")
+
+        # CSS must define disabled state for .btn-subtle:disabled and cancel button styles
+        self.assertIn(".btn-subtle:disabled", css_text,
+                      "CSS must define disabled state (.btn-subtle:disabled) to prevent repeat clicks")
+        self.assertIn(".btn-cancel-preview", css_text,
+                      "CSS must define styles for .btn-cancel-preview")
+
+        # JS must disable buttons, indicate loading status, and support AbortController cancellation
+        self.assertIn("btnPreviewParagraph.disabled = true", js_text,
+                      "app.js must disable btnPreviewParagraph during audio generation")
+        self.assertIn("btnPreviewAll.disabled = true", js_text,
+                      "app.js must disable btnPreviewAll during audio generation")
+        self.assertIn("AbortController", js_text,
+                      "app.js must use AbortController to support cancelling the in-flight TTS generation")
+        self.assertIn("cancelAudioPreview", js_text,
+                      "app.js must implement cancelAudioPreview to cancel in-flight audio synthesis")
+
 if __name__ == "__main__":
     unittest.main()
