@@ -11,6 +11,17 @@ class TestGeminiAPI(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
 
+    def test_system_status_api(self):
+        res = self.client.get("/api/status")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("status", data)
+        self.assertIn("ffmpeg", data)
+        self.assertIn("has_gemini_key", data)
+        self.assertIn("warnings", data)
+        self.assertIn("config", data)
+        self.assertTrue(data["ffmpeg"])
+
     def test_suggest_next_api(self):
         # Empty script validation
         res_err = self.client.post("/api/gemini/suggest-next", json={"script": ""})

@@ -93,15 +93,34 @@ async def index():
 
 @app.get("/api/status")
 async def system_status():
-    """Return system readiness status."""
+    """Return system readiness status and diagnostic warnings."""
+    ensure_ffmpeg()
     gpu = detect_gpu()
     ffmpeg_installed = check_ffmpeg()
     config = load_config()
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    has_gemini_key = bool(api_key and not api_key.startswith("your_"))
+
+    warnings = []
+    if not ffmpeg_installed:
+        warnings.append({
+            "code": "MISSING_FFMPEG",
+            "message": "Chưa cài đặt FFmpeg trên máy tính.",
+            "guide": "Mở PowerShell và chạy lệnh: winget install Gyan.FFmpeg rồi khởi động lại ứng dụng."
+        })
+    if not has_gemini_key:
+        warnings.append({
+            "code": "MISSING_GEMINI_KEY",
+            "message": "Chưa cấu hình GEMINI_API_KEY.",
+            "guide": "Mở file .env, điền khóa API miễn phí từ https://aistudio.google.com rồi khởi động lại start.bat."
+        })
 
     return {
-        "status": "ready",
+        "status": "ready" if (ffmpeg_installed and has_gemini_key) else "warning",
         "gpu": gpu,
         "ffmpeg": ffmpeg_installed,
+        "has_gemini_key": has_gemini_key,
+        "warnings": warnings,
         "config": {
             "voice": config.get("tts", {}).get("voice", "Chưa chọn"),
             "model": config.get("gemini", {}).get("model", "Chưa đặt"),
@@ -305,6 +324,13 @@ async def save_locked_voice(payload: LockVoiceRequest):
 @app.post("/api/tts/preview")
 async def preview_tts(payload: TTSPreviewRequest):
     """Synthesize selected paragraph or text with pacing markup for instant in-browser playback."""
+    ensure_ffmpeg()
+    if not check_ffmpeg():
+        raise HTTPException(
+            status_code=500,
+            detail="Chưa tìm thấy FFmpeg trên hệ thống. Vui lòng mở PowerShell và chạy: winget install Gyan.FFmpeg rồi khởi động lại ứng dụng.",
+        )
+
     text = payload.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Vui lòng bôi đen hoặc nhập đoạn văn bản cần nghe thử.")
@@ -326,7 +352,12 @@ async def preview_tts(payload: TTSPreviewRequest):
             "preview_id": preview_id,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Lỗi tạo giọng đọc thử nghiệm: {str(e)}")
+        err_msg = str(e)
+        if any(k in err_msg.lower() for k in ["getaddrinfo", "connection", "connecterror", "offline"]):
+            detail = "Lỗi kết nối giọng đọc: Không có mạng Internet để dùng EdgeTTS và chưa cài mô hình Kokoro offline."
+        else:
+            detail = f"Lỗi tạo giọng đọc thử nghiệm: {err_msg}"
+        raise HTTPException(status_code=500, detail=detail)
 
 # ==========================================
 # Export Pipeline (Audio + SRT + Sources)
@@ -340,6 +371,10 @@ async def run_export_pipeline(project_id: str, job_id: str):
     job["status"] = "processing"
 
     try:
+        ensure_ffmpeg()
+        if not check_ffmpeg():
+            raise RuntimeError("Chưa tìm thấy FFmpeg trên hệ thống. Vui lòng mở PowerShell và chạy: winget install Gyan.FFmpeg rồi khởi động lại ứng dụng.")
+
         folder = get_project_folder(project_id)
         json_file = folder / "project.json"
         if not json_file.exists():
@@ -432,8 +467,9 @@ async def run_export_pipeline(project_id: str, job_id: str):
 
     except Exception as e:
         job["status"] = "failed"
-        job["error"] = str(e)
-        job["step"] = f"Lỗi xuất: {str(e)}"
+        err_str = str(e)
+        job["error"] = err_str
+        job["step"] = f"Lỗi xuất: {err_str}"
 
 @app.post("/api/projects/{project_id}/export")
 async def start_export(project_id: str, background_tasks: BackgroundTasks):

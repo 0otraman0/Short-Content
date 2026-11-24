@@ -451,7 +451,7 @@ function insertTagAtCursor(tagText) {
 }
 
 // ==========================================
-// 5. System Status & Diagnostics
+// 5. System Status & Diagnostics (R5.7)
 // ==========================================
 
 async function checkSystemStatus() {
@@ -460,23 +460,50 @@ async function checkSystemStatus() {
         if (!res.ok) throw new Error();
         const data = await res.json();
 
+        let dotColor = 'var(--success)';
         let statusText = 'Hệ thống sẵn sàng';
-        if (data.gpu && data.gpu.has_gpu) {
-            statusText += ` (GPU: NVENC)`;
-        } else {
-            statusText += ` (CPU)`;
-        }
+
         if (!data.ffmpeg) {
-            statusText = 'Cảnh báo: Chưa có FFmpeg';
-            DOM.systemStatus.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
+            dotColor = 'var(--danger)';
+            statusText = '⚠️ Thiếu FFmpeg (Bấm xem cách cài)';
+            DOM.systemStatus.onclick = () => {
+                alert(
+                    "CHƯA TÌM THẤY FFMPEG TRÊN HỆ THỐNG!\n\n" +
+                    "FFmpeg là công cụ bắt buộc để ghép audio và chuẩn hóa âm lượng theo chuẩn EBU R128.\n\n" +
+                    "Cách cài đặt tự động trên Windows:\n" +
+                    "1. Mở PowerShell (hoặc Terminal)\n" +
+                    "2. Chạy lệnh: winget install Gyan.FFmpeg\n" +
+                    "3. Khởi động lại ứng dụng (chạy lại start.bat)"
+                );
+            };
+            DOM.systemStatus.style.cursor = 'pointer';
+        } else if (!data.has_gemini_key) {
+            dotColor = 'var(--warning)';
+            statusText = '⚠️ Thiếu GEMINI_API_KEY';
+            DOM.systemStatus.onclick = () => {
+                alert(
+                    "CHƯA CẤU HÌNH KHÓA GEMINI_API_KEY!\n\n" +
+                    "Các tính năng trợ lý viết kịch bản, thêm nhịp đọc và kiểm chứng nguồn cần khóa Gemini API miễn phí.\n\n" +
+                    "Cách cấu hình:\n" +
+                    "1. Truy cập https://aistudio.google.com và tạo khóa API miễn phí\n" +
+                    "2. Mở file .env trong thư mục phần mềm\n" +
+                    "3. Điền: GEMINI_API_KEY=khóa_vừa_tạo\n" +
+                    "4. Khởi động lại ứng dụng (start.bat)"
+                );
+            };
+            DOM.systemStatus.style.cursor = 'pointer';
         } else {
-            DOM.systemStatus.querySelector('.status-dot').style.backgroundColor = 'var(--success)';
+            statusText = `Hệ thống sẵn sàng (${data.gpu && data.gpu.has_gpu ? 'GPU' : 'CPU'})`;
+            DOM.systemStatus.onclick = null;
+            DOM.systemStatus.style.cursor = 'default';
         }
 
-        DOM.systemStatus.innerHTML = `<span class="status-dot"></span> ${statusText}`;
+        DOM.systemStatus.innerHTML = `<span class="status-dot" style="background:${dotColor}"></span> ${statusText}`;
         DOM.systemStatus.title = `Model AI: ${data.config.model} | Giọng: ${data.config.voice}`;
     } catch (err) {
         DOM.systemStatus.innerHTML = `<span class="status-dot" style="background:var(--danger)"></span> Mất kết nối server`;
+        DOM.systemStatus.onclick = null;
+        DOM.systemStatus.style.cursor = 'default';
     }
 }
 

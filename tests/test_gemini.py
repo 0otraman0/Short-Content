@@ -39,5 +39,16 @@ class TestGeminiClient(unittest.TestCase):
         print("\nSuggested next options count:", len(options))
         print("Option 1:", options[0][:80], "...")
 
+    def test_format_gemini_error(self):
+        from gemini_client import format_gemini_error
+        err_429 = Exception("429 ResourceExhausted: quota exceeded")
+        msg_429 = format_gemini_error(err_429)
+        self.assertIn("429", msg_429)
+        self.assertIn("Rate limit", msg_429)
+
+        err_net = Exception("getaddrinfo failed: host not found")
+        msg_net = format_gemini_error(err_net)
+        self.assertIn("kết nối", msg_net)
+
 if __name__ == "__main__":
     unittest.main()

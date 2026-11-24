@@ -52,14 +52,44 @@ def get_configured_model() -> str:
     cfg = load_config()
     return cfg.get("gemini", {}).get("model", "gemini-flash-lite-latest")
 
+def format_gemini_error(err: Exception) -> str:
+    """Translate raw Gemini / network errors into clear, friendly, actionable Vietnamese (R5.7)."""
+    err_str = str(err)
+    err_lower = err_str.lower()
+
+    if "429" in err_str or "resource_exhausted" in err_lower or "quota" in err_lower or "rate limit" in err_lower:
+        return (
+            "Đã vượt quá giới hạn lượt gọi Gemini API (Rate limit 429 / Quota exhausted). "
+            "Hệ thống đã tự động thử lại nhưng máy chủ vẫn bận. Vui lòng chờ 30-60 giây rồi thử lại."
+        )
+    if "api_key" in err_lower or "401" in err_str or "403" in err_str or "permission_denied" in err_lower:
+        return (
+            "Khóa GEMINI_API_KEY trong file .env không hợp lệ hoặc chưa được cấp quyền. "
+            "Vui lòng kiểm tra lại khóa API tại https://aistudio.google.com và cập nhật vào file .env."
+        )
+    if "503" in err_str or "unavailable" in err_lower or "high demand" in err_lower:
+        return (
+            "Máy chủ Google Gemini đang quá tải tạm thời (503 High Demand / Service Unavailable). "
+            "Hệ thống đã tự động thử các model dự phòng nhưng chưa phản hồi. Vui lòng thử lại sau giây lát."
+        )
+    if any(k in err_lower for k in ["getaddrinfo failed", "connection", "timeout", "timed out", "handshake", "offline", "network"]):
+        return (
+            "Không thể kết nối đến máy chủ Google Gemini do sự cố mạng. "
+            "Vui lòng kiểm tra kết nối Internet của bạn."
+        )
+    return f"Lỗi từ dịch vụ Gemini AI: {err_str}"
+
 def get_gemini_client() -> Any:
     """Initialize and return google-genai Client using API key from .env."""
     if genai is None:
-        raise RuntimeError("Thư viện 'google-genai' chưa được cài đặt. Vui lòng chạy pip install google-genai.")
+        raise RuntimeError("Thư viện 'google-genai' chưa được cài đặt. Vui lòng chạy lệnh: pip install google-genai.")
     
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not api_key:
-        raise ValueError("Chưa thiết lập GEMINI_API_KEY trong file .env. Vui lòng thêm khóa API vào .env.")
+    if not api_key or api_key.startswith("your_"):
+        raise ValueError(
+            "Chưa cấu hình GEMINI_API_KEY trong file .env. "
+            "Vui lòng mở file .env, nhập khóa API miễn phí từ Google AI Studio (https://aistudio.google.com) và khởi động lại ứng dụng."
+        )
     
     # Crucial: Use v1beta where current models (gemini-3.5-flash-lite, etc.) are active
     return genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
@@ -111,11 +141,12 @@ async def generate_text(
                 # If unavailable (503), timed out, or rate-limited (429), back off before retry
                 if attempt < max_retries - 1:
                     wait_time = (attempt + 1) * 2.5
+                    print(f"[Gemini Retry] Model {m} (lần {attempt + 1}/{max_retries}): {err_str[:60]}... Đợi {wait_time}s")
                     await asyncio.sleep(wait_time)
                     continue
                 break
 
-    raise RuntimeError(f"Lỗi gọi Gemini API sau khi thử các model ({', '.join(models_to_try)}): {str(last_error)}")
+    raise RuntimeError(format_gemini_error(last_error))
 
 # ==========================================
 # Specialized Assistant Helpers

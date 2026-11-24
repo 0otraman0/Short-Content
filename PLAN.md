@@ -172,7 +172,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `gemini_client.py`, `static/app.js`
 - **Requirements**: R5.7
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Test error states and verify descriptive Vietnamese alerts appear in UI.
 
 ### T6.3: Complete Documentation & Final Verification

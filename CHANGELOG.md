@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-24] - Phase 6
+- **T6.2**: Implemented comprehensive Vietnamese error handling & diagnostics across `gemini_client.py`, `main.py`, and `static/app.js` (R5.7). Added `format_gemini_error` to translate rate limits (429), auth issues (401/403), overloads (503), and network dropouts into clear actionable Vietnamese with backoff retries. Updated `/api/status` and web UI to detect missing FFmpeg or GEMINI_API_KEY with interactive click-to-fix diagnostic alerts (winget commands and AI Studio setup). Added tests in `tests/test_gemini.py` and `tests/test_gemini_api.py`. Test passed.
 - **T6.1**: Implemented `KokoroTTSProvider` in `tts.py` using `kokoro-onnx` and standard WAV export. Configured `config.yaml` with offline Kokoro model/voice paths. Added automatic network fallback in `synthesize_narration` so that if EdgeTTS fails due to network outage or connection failure, narration seamlessly falls back to offline Kokoro TTS. Added 8 passing tests in `tests/test_tts.py`. Test passed.
 
 ## [2026-11-23] - Phase 5
