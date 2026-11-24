@@ -9,8 +9,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tts import (
     EdgeTTSProvider,
     KokoroTTSProvider,
+    build_audio_filter_chain,
     generate_silence,
     get_audio_duration,
+    get_audio_enhancements,
     get_locked_voice,
     get_tts_provider,
     lock_voice,
@@ -130,6 +132,54 @@ class TestTTSEngine(unittest.TestCase):
         self.assertGreater(out_path.stat().st_size, 1000)
         self.assertGreater(duration, 1.0)
         print(f"TTS synthesis passed: generated {duration:.2f}s audio at {out_path.name}")
+
+    def test_audio_filter_chain_builder(self):
+        # All enabled
+        chain_all = build_audio_filter_chain({
+            "compression": True,
+            "male_eq": True,
+            "deesser": True,
+            "reverb": True,
+            "loudnorm": True,
+        })
+        self.assertIn("acompressor", chain_all)
+        self.assertIn("equalizer", chain_all)
+        self.assertIn("highpass", chain_all)
+        self.assertIn("deesser", chain_all)
+        self.assertIn("aecho", chain_all)
+        self.assertIn("loudnorm", chain_all)
+
+        # All disabled
+        chain_none = build_audio_filter_chain({
+            "compression": False,
+            "male_eq": False,
+            "deesser": False,
+            "reverb": False,
+            "loudnorm": False,
+        })
+        self.assertEqual(chain_none, "anull")
+
+        # Selective toggles
+        chain_eq_only = build_audio_filter_chain({
+            "compression": False,
+            "male_eq": True,
+            "deesser": False,
+            "reverb": False,
+            "loudnorm": False,
+        })
+        self.assertIn("equalizer", chain_eq_only)
+        self.assertNotIn("acompressor", chain_eq_only)
+        self.assertNotIn("loudnorm", chain_eq_only)
+
+    def test_get_audio_enhancements(self):
+        enh = get_audio_enhancements()
+        self.assertIsInstance(enh, dict)
+        self.assertIn("compression", enh)
+        self.assertIn("male_eq", enh)
+        self.assertIn("deesser", enh)
+        self.assertIn("reverb", enh)
+        self.assertIn("loudnorm", enh)
+        self.assertTrue(enh["loudnorm"])
 
 if __name__ == "__main__":
     unittest.main()

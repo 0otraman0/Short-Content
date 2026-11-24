@@ -280,8 +280,68 @@ def get_tts_provider(provider_name: Optional[str] = None) -> TTSProvider:
     return EdgeTTSProvider()
 
 # ==========================================
-# 3. Audio Processing Helpers (FFmpeg)
+# 3. Audio Processing Helpers & Enhancement Chain (FFmpeg)
 # ==========================================
+
+DEFAULT_AUDIO_ENHANCEMENTS = {
+    "compression": True,
+    "male_eq": True,
+    "deesser": True,
+    "reverb": True,
+    "loudnorm": True,
+}
+
+def get_audio_enhancements(config_path: Optional[Path] = None) -> Dict[str, bool]:
+    """Retrieve audio enhancement toggles from config.yaml or return defaults (R2.12)."""
+    cfg = get_config()
+    enh = cfg.get("audio_enhancements", {})
+    return {
+        "compression": enh.get("compression", DEFAULT_AUDIO_ENHANCEMENTS["compression"]),
+        "male_eq": enh.get("male_eq", DEFAULT_AUDIO_ENHANCEMENTS["male_eq"]),
+        "deesser": enh.get("deesser", DEFAULT_AUDIO_ENHANCEMENTS["deesser"]),
+        "reverb": enh.get("reverb", DEFAULT_AUDIO_ENHANCEMENTS["reverb"]),
+        "loudnorm": enh.get("loudnorm", DEFAULT_AUDIO_ENHANCEMENTS["loudnorm"]),
+    }
+
+def build_audio_filter_chain(
+    enhancements: Optional[Dict[str, bool]] = None,
+    target_lufs: float = -16.0,
+) -> str:
+    """
+    Construct FFmpeg audio filter string based on enabled enhancement toggles (R2.12):
+    - male_eq: highpass at 80Hz + body warmth at 120Hz + presence boost at 3500Hz
+    - compression: subtle vocal compressor (acompressor)
+    - deesser: reduces harsh sibilance (deesser)
+    - reverb: very light room acoustic reflection (aecho)
+    - loudnorm: EBU R128 loudness normalization
+    """
+    opts = dict(DEFAULT_AUDIO_ENHANCEMENTS)
+    if enhancements:
+        opts.update(enhancements)
+
+    filters: List[str] = []
+
+    # 1. Male EQ (rumble cut + low warmth + high-mid presence)
+    if opts.get("male_eq", False):
+        filters.append("highpass=f=80,equalizer=f=120:width_type=o:width=1.0:g=2.0,equalizer=f=3500:width_type=o:width=1.5:g=2.5")
+
+    # 2. Vocal compression (smooth dynamics, thicken spoken dialogue)
+    if opts.get("compression", False):
+        filters.append("acompressor=threshold=-18dB:ratio=3:attack=10:release=100:makeup=2dB")
+
+    # 3. De-esser (reduce harsh 's' frequencies)
+    if opts.get("deesser", False):
+        filters.append("deesser=i=0.5:m=0.5:f=0.5:s=o")
+
+    # 4. Light Reverb (subtle room acoustic ambiance)
+    if opts.get("reverb", False):
+        filters.append("aecho=0.8:0.88:20:0.15")
+
+    # 5. EBU R128 Loudness Normalization
+    if opts.get("loudnorm", True):
+        filters.append(f"loudnorm=I={target_lufs}:TP=-1.5:LRA=11")
+
+    return ",".join(filters) if filters else "anull"
 
 def generate_silence(duration: float, output_file: Path, sample_rate: int = 24000) -> Path:
     """Generate a precise silent audio file of specified duration using FFmpeg."""
@@ -304,8 +364,9 @@ def concatenate_and_normalize(
     audio_files: List[Path],
     final_output: Path,
     target_lufs: float = -16.0,
+    enhancements: Optional[Dict[str, bool]] = None,
 ) -> Path:
-    """Concatenate audio segments and apply EBU R128 loudness normalization."""
+    """Concatenate audio segments and apply audio post-processing chain (R2.12)."""
     if not audio_files:
         raise ValueError("No audio files provided for concatenation.")
 
@@ -337,18 +398,19 @@ def concatenate_and_normalize(
         if res.returncode != 0:
             raise RuntimeError(f"FFmpeg concat failed: {res.stderr}")
 
-        # Step 2: Normalize loudness with loudnorm filter
+        # Step 2: Apply post-processing filter chain (R2.12)
+        active_filters = build_audio_filter_chain(enhancements, target_lufs=target_lufs)
         norm_cmd = [
             "ffmpeg", "-y",
             "-i", str(raw_concat_file),
-            "-af", f"loudnorm=I={target_lufs}:TP=-1.5:LRA=11",
+            "-af", active_filters,
             "-c:a", "libmp3lame",
             "-b:a", "192k",
             str(final_output),
         ]
         res = subprocess.run(norm_cmd, capture_output=True, text=True)
         if res.returncode != 0:
-            raise RuntimeError(f"FFmpeg loudnorm failed: {res.stderr}")
+            raise RuntimeError(f"FFmpeg audio processing chain failed: {res.stderr}")
 
     return final_output
 
@@ -381,9 +443,10 @@ async def synthesize_narration(
     voice: Optional[str] = None,
     provider: Optional[TTSProvider] = None,
     allow_fallback: bool = True,
+    enhancements: Optional[Dict[str, bool]] = None,
 ) -> Tuple[Path, float]:
     """
-    Synthesize complete narration with pacing markup, real pauses, and loudness normalization.
+    Synthesize complete narration with pacing markup, real pauses, and audio post-processing chain.
     Returns (output_path, duration_seconds).
     If the active provider (e.g. EdgeTTS) fails due to a network or connection error and
     a fallback provider (Kokoro) is configured and available, it falls back seamlessly.
@@ -453,8 +516,8 @@ async def synthesize_narration(
             else:
                 raise primary_err
 
-        # Concatenate and normalize
-        concatenate_and_normalize(segment_files, output_path)
+        # Concatenate and apply audio post-processing chain (R2.12)
+        concatenate_and_normalize(segment_files, output_path, enhancements=enhancements)
         duration = get_audio_duration(output_path)
         return output_path, duration
     finally:

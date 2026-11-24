@@ -3,6 +3,7 @@
 All finished tasks and notable updates are logged here.
 
 ## [2026-11-24] - Phase 8
+- **T8.2**: Implemented audio post-processing enhancement chain in `tts.py` with individual on/off toggles (`compression`, `male_eq`, `deesser`, `reverb`, `loudnorm`) and configuration in `config.yaml` (R2.12). Filter chain applies 80Hz rumble cut, 120Hz male vocal warmth, 3.5kHz presence boost, dynamic vocal compression via `acompressor`, sibilance reduction via `deesser`, acoustic reflection via `aecho`, and EBU R128 loudness normalization. Added automated tests in `tests/test_tts.py` (10/10 passed). Test passed.
 - **T8.1**: Upgraded `pacing.py` to synthesize speech at sentence and paragraph level by default (`auto_sentence_pauses=False` & speech segment coalescence), only splitting when markup (`[pause]`, `[slow]`, `[fast]`, `[whisper]`, `*emphasis*`) requires rate/pitch change or real silence (R2.6). Updated `gemini_client.py` with 4 mandatory speakability rules: alternating sentence lengths for musical rhythm, commas/em-dashes/ellipses for natural breaths, punchline/fact at end of sentence, and ambiguous numbers spelled out as words (R3.4). Added tests in `tests/test_pacing.py` and `tests/test_gemini.py`. Test passed.
 
 ## [2026-11-24] - Phase 7

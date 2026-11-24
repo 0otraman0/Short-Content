@@ -39,3 +39,11 @@ pacing_presets:
 narration:
   min_duration_seconds: 60
   max_duration_seconds: 180
+
+# Audio Post-Processing Enhancements (R2.12)
+audio_enhancements:
+  compression: true
+  male_eq: true
+  deesser: true
+  reverb: true
+  loudnorm: true

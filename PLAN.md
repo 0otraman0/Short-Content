@@ -220,7 +220,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `tts.py`, `config.yaml`, `tests/test_tts.py`
 - **Requirements**: R2.12
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Chạy test xuất audio với từng cấu hình bật/tắt filter, kiểm tra âm thanh đầu ra hợp lệ và đạt chuẩn loudness.
 
 ### T8.3: Paragraph Regeneration, Multi-Take Selector & UI Toggles
