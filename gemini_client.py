@@ -256,23 +256,38 @@ async def outline_topic(topic: str, notes: str = "", target_duration: int = 90) 
 async def auto_pace(script: str) -> str:
     """
     R2.8: Insert pacing markup into raw script based on narrative structure.
-    Markup allowed:
-    - [pause X] (e.g. [pause 0.5] or [pause 1.0])
-    - [slow]...[/slow]
-    - [fast]...[/fast]
-    - *emphasis*
-    - [whisper]...[/whisper]
+    Supported markup tags:
+    - [pause X] (e.g. [pause 0.5] or [pause 0.8]): pauses before a reveal or after a shocking statement.
+    - [fast]text[/fast]: for high-energy hooks or rapid lists (+12% rate).
+    - [slow]text[/slow]: for suspenseful buildup (-15% rate).
+    - [whisper]text[/whisper]: for quiet secrets or mysterious details (-30% volume, -4Hz pitch).
+    - [deep]text[/deep]: for chilling facts, deep ocean/space, or eerie gravity (-6Hz pitch, -8% rate).
+    - [shock]text[/shock]: for mind-blowing plot twists or astonishing numbers (+6Hz pitch, +15% rate).
+    - [urgent]text[/urgent]: for ticking-clock countdowns, intense danger (+22% rate).
+    - [solemn]text[/solemn]: for philosophical takeaways, endings, millions of years (-20% rate, -3Hz pitch).
+    - [loud]text[/loud]: for wake-up calls, commanding warnings (+30% volume).
+    - *emphasis*: for single punchy keywords.
     """
     prompt = (
-        "You are an audio pacing director. Analyze this YouTube Shorts script and insert pacing markup to maximize engagement.\n\n"
-        "MARKUP RULES:\n"
-        "- [fast]text[/fast]: for high-energy hooks or rapid lists (+12% rate).\n"
-        "- [slow]text[/slow]: for serious, solemn, or suspenseful buildup (-15% rate).\n"
-        "- [pause 0.5] to [pause 1.0]: before a big reveal or after a shocking statement.\n"
-        "- *word*: for single punchy emphasis words.\n"
-        "- [whisper]text[/whisper]: for quiet secrets or mysterious details.\n\n"
+        "You are an expert audio pacing director for viral YouTube Shorts fact narrations.\n"
+        "Analyze this YouTube Shorts script and strategically insert pacing markup to maximize viewer retention and emotional impact.\n\n"
+        "AVAILABLE PACING TAGS:\n"
+        "- [fast]text[/fast]: Quick, punchy hooks or rapid item lists (+12% speed).\n"
+        "- [slow]text[/slow]: Suspenseful, slow buildup before facts (-15% speed).\n"
+        "- [pause 0.5] to [pause 1.0]: Dramatic silence before a big reveal or after a mind-blowing statement.\n"
+        "- *word*: Emphasis on 1-2 punchy keywords (slightly louder, higher pitch).\n"
+        "- [whisper]text[/whisper]: Whispered secrets, mysterious or hidden details.\n"
+        "- [deep]text[/deep]: Deep, low-pitch eerie voice for cosmic scale, dark ocean depths, or chilling facts.\n"
+        "- [shock]text[/shock]: High-pitch dramatic revelation, disbelief, or shocking discovery.\n"
+        "- [urgent]text[/urgent]: Rapid, intense pacing for ticking clock or survival stakes (+22% speed).\n"
+        "- [solemn]text[/solemn]: Slow, thoughtful closing takeaway, ancient history, or philosophical reflection (-20% speed).\n"
+        "- [loud]text[/loud]: Command attention, loud wake-up warning (+30% volume).\n\n"
+        "RULES:\n"
+        "1. Blend different tags across sentences to create dynamic, musical narration variety (hook -> buildup -> deep mystery -> shock reveal -> solemn conclusion).\n"
+        "2. Do NOT change, rephrase, or remove any words from the original script.\n"
+        "3. Only add the pacing markup tags.\n"
+        "4. Return ONLY the marked-up script.\n\n"
         "ORIGINAL SCRIPT:\n\"\"\"" + script.strip() + "\"\"\"\n\n"
-        "TASK: Return the exact script with pacing markup added naturally. Do not change words or facts, only add tags. "
-        "Return ONLY the marked-up script."
+        "MARKED-UP SCRIPT:"
     )
     return await generate_text(prompt)

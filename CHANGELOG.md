@@ -2,6 +2,9 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-24] - Phase 10
+- **T10.1**: Implemented extended pacing markup parser and upgraded Gemini auto-pace prompt (R2.8, R2.13). Added 5 new narration tags: `[deep]` (deep mysterious bass: -6Hz, -8%, +10% vol), `[shock]` (climax revelation: +6Hz, +15%, +15% vol), `[urgent]` (ticking clock: +22%, +10% vol), `[solemn]` (reflective ending: -20%, -3Hz), and `[loud]` (wake-up warning: +30% vol, +2Hz). Updated `gemini_client.py` auto-pace prompt to orchestrate all 10 pacing tags dynamically. Verified with 16 automated tests in `tests/test_pacing.py`. Test passed.
+
 ## [2026-11-24] - Phase 9
 - **T9.2**: Implemented pre-export audition review & pacing validation in the export workflow (R5.10). When opening the Export modal, users are presented with a dedicated audition box to listen to the entire narration with all active pacing markup and Audio FX before committing to the export. Includes embedded player, real duration readout, pacing tips, and clear confirmation before invoking Whisper SRT and job archiving. Added regression tests in `tests/test_ui_layout.py` (44/44 tests passing). Test passed.
 - **T9.1**: Implemented interactive in-editor audio audition bar for live paragraph and full script playback with pacing and emphasis feedback (R2.9). Upgraded `preview_tts` in `main.py` with `scope` selection and automated active audio FX enhancement chain integration. Updated `static/index.html`, `static/style.css`, and `static/app.js` with an audition bar featuring real duration badge, scope tags, direct playback controls, and one-click quick switch between current paragraph and full script. Verified with unit and preview tests. Test passed.

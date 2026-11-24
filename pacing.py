@@ -2,11 +2,16 @@
 pacing.py - Script pacing markup parser and segment splitter.
 
 Supported tags:
-  [pause 0.5]          - Silence in seconds
-  [slow]...[/slow]     - Slower narration rate (-15%)
-  [fast]...[/fast]     - Faster narration rate (+12%)
-  *word or phrase*     - Emphasis (louder, higher pitch, tiny pause before)
-  [whisper]...[/whisper] - Lower pitch, lower volume, slightly slower
+  [pause 0.5]            - Silence in seconds
+  [slow]...[/slow]       - Slower narration rate (-15%)
+  [fast]...[/fast]       - Faster narration rate (+12%)
+  *word or phrase*       - Emphasis (louder, higher pitch, tiny pause before)
+  [whisper]...[/whisper] - Lower pitch (-4Hz), lower volume (-30%), slightly slower (-10%)
+  [deep]...[/deep]       - Deep bass voice for mysteries and chilling facts (-6Hz pitch, -8% rate, +10% vol)
+  [shock]...[/shock]     - High dramatic revelation and disbelief (+6Hz pitch, +15% rate, +15% vol)
+  [urgent]...[/urgent]   - Ticking clock, fast-paced intensity (+22% rate, +10% vol, +1Hz pitch)
+  [solemn]...[/solemn]   - Slow reflective ending and ancient history (-20% rate, -3Hz pitch)
+  [loud]...[/loud]       - Powerful wake-up attention grabber (+30% vol, +2Hz pitch)
 """
 
 from dataclasses import dataclass
@@ -100,12 +105,19 @@ def parse_script(
     sentence_pause = float(preset.get("sentence_pause", 0.6))
 
     # Token patterns
-    # Matches: [pause X], [slow]...[/slow], [fast]...[/fast], [whisper]...[/whisper], *emphasis*
+    # Matches: [pause X], [slow]...[/slow], [fast]...[/fast], [whisper]...[/whisper],
+    #          [deep]...[/deep], [shock]...[/shock], [urgent]...[/urgent],
+    #          [solemn]...[/solemn], [loud]...[/loud], *emphasis*
     token_pattern = re.compile(
         r"(\[pause\s+([0-9.]+)\])"
         r"|(\[slow\]([\s\S]*?)\[/slow\])"
         r"|(\[fast\]([\s\S]*?)\[/fast\])"
         r"|(\[whisper\]([\s\S]*?)\[/whisper\])"
+        r"|(\[deep\]([\s\S]*?)\[/deep\])"
+        r"|(\[shock\]([\s\S]*?)\[/shock\])"
+        r"|(\[urgent\]([\s\S]*?)\[/urgent\])"
+        r"|(\[solemn\]([\s\S]*?)\[/solemn\])"
+        r"|(\[loud\]([\s\S]*?)\[/loud\])"
         r"|(\*([^*\n]+)\*)",
         re.IGNORECASE
     )
@@ -164,9 +176,74 @@ def parse_script(
                     is_whisper=True
                 ))
 
-        # 5. *emphasis*
+        # 5. [deep]...[/deep]
         elif match.group(9):
             inner_text = match.group(10).strip()
+            if inner_text:
+                effective_rate = baseline_rate - 0.08
+                effective_pitch = baseline_pitch_hz - 6
+                raw_segments.append(SpeechSegment(
+                    text=inner_text,
+                    rate=format_rate(effective_rate),
+                    pitch=format_pitch(effective_pitch),
+                    volume="+10%"
+                ))
+
+        # 6. [shock]...[/shock]
+        elif match.group(11):
+            inner_text = match.group(12).strip()
+            if inner_text:
+                effective_rate = baseline_rate + 0.15
+                effective_pitch = baseline_pitch_hz + 6
+                raw_segments.append(SpeechSegment(
+                    text=inner_text,
+                    rate=format_rate(effective_rate),
+                    pitch=format_pitch(effective_pitch),
+                    volume="+15%"
+                ))
+
+        # 7. [urgent]...[/urgent]
+        elif match.group(13):
+            inner_text = match.group(14).strip()
+            if inner_text:
+                effective_rate = baseline_rate + 0.22
+                effective_pitch = baseline_pitch_hz + 1
+                raw_segments.append(SpeechSegment(
+                    text=inner_text,
+                    rate=format_rate(effective_rate),
+                    pitch=format_pitch(effective_pitch),
+                    volume="+10%"
+                ))
+
+        # 8. [solemn]...[/solemn]
+        elif match.group(15):
+            inner_text = match.group(16).strip()
+            if inner_text:
+                effective_rate = baseline_rate - 0.20
+                effective_pitch = baseline_pitch_hz - 3
+                raw_segments.append(SpeechSegment(
+                    text=inner_text,
+                    rate=format_rate(effective_rate),
+                    pitch=format_pitch(effective_pitch),
+                    volume="+0%"
+                ))
+
+        # 9. [loud]...[/loud]
+        elif match.group(17):
+            inner_text = match.group(18).strip()
+            if inner_text:
+                effective_rate = baseline_rate
+                effective_pitch = baseline_pitch_hz + 2
+                raw_segments.append(SpeechSegment(
+                    text=inner_text,
+                    rate=format_rate(effective_rate),
+                    pitch=format_pitch(effective_pitch),
+                    volume="+30%"
+                ))
+
+        # 10. *emphasis*
+        elif match.group(19):
+            inner_text = match.group(20).strip()
             if inner_text:
                 # Insert tiny pause (0.15s) before emphasis if previous segment isn't already a pause
                 if not raw_segments or not isinstance(raw_segments[-1], PauseSegment):

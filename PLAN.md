@@ -260,12 +260,8 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`
 - **Requirements**: R2.8, R2.13
 - **Owner**: Builder
-- **Status**: in_progress
-- **Where I stopped**:
-  - What is done: Yêu cầu mở rộng thẻ nhịp điệu và phong cách mới đã được thống nhất; phân tích kỹ thuật và thông số pitch/rate/volume cho 5 thẻ mới hoàn tất.
-  - What is left: Cập nhật regex và bộ giải mã trong `pacing.py`; cập nhật prompt `auto_pace` trong `gemini_client.py`; viết test tự động trong `tests/test_pacing.py`.
-  - Exact next step: Chỉnh sửa `pacing.py` để bổ sung regex token và logic phân tách segment cho 5 thẻ `[deep]`, `[shock]`, `[urgent]`, `[solemn]`, `[loud]`.
-- **How to test**: Viết unit test trong `tests/test_pacing.py` xác minh từng thẻ mới được parse thành đúng `SpeechSegment` với rate, pitch, volume tương ứng.
+- **Status**: done
+- **How to test**: Viết unit test trong `tests/test_pacing.py` xác minh từng thẻ mới được parse thành đúng `SpeechSegment` với rate, pitch, volume tương ứng. Test passed.
 
 ### T10.2: Quick Pacing Toolbar & UI Cheatsheet Upgrade
 - **Goal**: Nâng cấp Cheatsheet đầy đủ 10 thẻ nhịp điệu và bổ sung thanh nút bấm chèn nhanh (Quick Pacing Toolbar) trên khung soạn thảo: người dùng bôi đen câu/từ và bấm chèn nhanh thẻ nhịp.
