@@ -180,5 +180,5 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `README.md`, `CHANGELOG.md`
 - **Requirements**: R7.1, R7.3, Definition of Done
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Follow `README.md` from scratch, produce a sample package (`narration.mp3`, `subtitles.srt`, `sources.txt`), and verify all acceptance criteria.
