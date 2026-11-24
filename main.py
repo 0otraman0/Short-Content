@@ -296,6 +296,7 @@ class TTSPreviewRequest(BaseModel):
     preset: Optional[str] = "mystery"
     voice: Optional[str] = None
     enhancements: Optional[Dict[str, bool]] = None
+    scope: Optional[str] = "paragraph"
 
 class LockVoiceRequest(BaseModel):
     voice: str
@@ -491,18 +492,21 @@ async def preview_tts(payload: TTSPreviewRequest):
     output_file = CACHE_DIR / f"{preview_id}.mp3"
 
     try:
+        from tts import get_audio_enhancements
+        enhancements = payload.enhancements if payload.enhancements is not None else get_audio_enhancements()
         out_path, duration = await synthesize_narration(
             script=text,
             output_path=output_file,
             preset_name=payload.preset or "mystery",
-            voice=payload.voice,
-            enhancements=payload.enhancements,
+            voice=payload.voice or get_locked_voice(),
+            enhancements=enhancements,
         )
         return {
             "success": True,
             "audio_url": f"/static/cache/{preview_id}.mp3",
-            "duration": duration,
+            "duration": round(duration, 2),
             "preview_id": preview_id,
+            "scope": payload.scope or "paragraph",
         }
     except Exception as e:
         err_msg = str(e)

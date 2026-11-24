@@ -275,13 +275,68 @@ body {
 
 .audio-bar {
     margin-top: 12px;
-    padding: 10px 16px;
+    padding: 8px 14px;
     background-color: var(--bg-surface);
     border-radius: var(--radius);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--primary);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
+    flex-wrap: wrap;
+}
+
+.audio-bar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.audio-bar-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.audio-preview-tag {
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.audio-bar audio {
+    flex: 1;
+    min-width: 220px;
+    height: 36px;
+}
+
+.audio-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-subtle {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.btn-subtle:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--text-primary);
 }
 
 .hidden {

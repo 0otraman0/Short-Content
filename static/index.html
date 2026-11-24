@@ -73,9 +73,16 @@
 
                 <!-- Audio preview player -->
                 <div id="audio-preview-bar" class="audio-bar hidden">
-                    <span id="audio-preview-label">🔊 Nghe thử:</span>
-                    <audio id="audio-player" controls></audio>
-                    <button id="btn-close-audio" class="btn-icon" title="Đóng trình phát">✕</button>
+                    <div class="audio-bar-info">
+                        <span id="audio-preview-label" class="audio-bar-title">🔊 Đọc thử:</span>
+                        <span id="audio-preview-tag" class="audio-preview-tag">Nhịp & Nhấn nhá</span>
+                    </div>
+                    <audio id="audio-player" controls preload="auto"></audio>
+                    <div class="audio-bar-actions">
+                        <button id="btn-preview-paragraph" class="btn-subtle" title="Đọc thử đoạn văn bản tại vị trí con trỏ">▶ Đoạn này</button>
+                        <button id="btn-preview-all" class="btn-subtle" title="Đọc thử toàn bộ kịch bản từ đầu đến cuối">▶ Toàn bài</button>
+                        <button id="btn-close-audio" class="btn-icon" title="Đóng trình phát">✕</button>
+                    </div>
                 </div>
             </div>
         </main>

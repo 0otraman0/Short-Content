@@ -240,7 +240,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.9
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Viết kịch bản có các thẻ [slow], [pause], *emphasis*, bấm "Đọc thử" và kiểm tra thanh player phát đúng âm thanh nhấn nhá và thời lượng thực tế.
 
 ### T9.2: Pre-Export Audition & Pacing Validation in Export Flow

@@ -32,7 +32,10 @@ const DOM = {
     // Audio Preview
     audioPreviewBar: document.getElementById('audio-preview-bar'),
     audioPreviewLabel: document.getElementById('audio-preview-label'),
+    audioPreviewTag: document.getElementById('audio-preview-tag'),
     audioPlayer: document.getElementById('audio-player'),
+    btnPreviewParagraph: document.getElementById('btn-preview-paragraph'),
+    btnPreviewAll: document.getElementById('btn-preview-all'),
     btnCloseAudio: document.getElementById('btn-close-audio'),
 
     // Voice Modal
@@ -543,24 +546,24 @@ async function checkSystemStatus() {
 // 6. TTS Audio Preview & Voice Management
 // ==========================================
 
-async function handleAudioPreview() {
+async function handleAudioPreview(scope = 'auto') {
     const textarea = DOM.scriptEditor;
+    const fullText = textarea.value.trim();
+    if (!fullText) {
+        alert('Vui lòng nhập nội dung kịch bản để nghe đọc thử nhịp điệu.');
+        return;
+    }
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
 
     let targetText = "";
-    if (start !== end) {
-        // Highlighted text
-        targetText = textarea.value.substring(start, end).trim();
-    } else {
-        // Paragraph around cursor or full text if short
-        const fullText = textarea.value.trim();
-        if (!fullText) {
-            alert('Vui lòng nhập hoặc bôi đen một đoạn kịch bản cần nghe thử.');
-            return;
-        }
+    let scopeTag = "Đoạn văn";
 
-        // Find current paragraph around cursor
+    if (scope === 'full') {
+        targetText = fullText;
+        scopeTag = "Toàn bài";
+    } else if (scope === 'paragraph') {
         const beforeCursor = textarea.value.substring(0, start);
         const afterCursor = textarea.value.substring(start);
         const paraStart = beforeCursor.lastIndexOf('\n') + 1;
@@ -571,16 +574,37 @@ async function handleAudioPreview() {
         if (!targetText) {
             targetText = fullText.split('\n\n')[0].trim();
         }
+        scopeTag = "Đoạn này";
+    } else {
+        // 'auto': if selection exists use it, otherwise paragraph around cursor
+        if (start !== end) {
+            targetText = textarea.value.substring(start, end).trim();
+            scopeTag = "Đoạn chọn";
+        } else {
+            const beforeCursor = textarea.value.substring(0, start);
+            const afterCursor = textarea.value.substring(start);
+            const paraStart = beforeCursor.lastIndexOf('\n') + 1;
+            const paraEndRel = afterCursor.indexOf('\n');
+            const paraEnd = paraEndRel === -1 ? textarea.value.length : start + paraEndRel;
+
+            targetText = textarea.value.substring(paraStart, paraEnd).trim();
+            if (!targetText) {
+                targetText = fullText.split('\n\n')[0].trim();
+            }
+            scopeTag = "Đoạn này";
+        }
     }
 
     if (!targetText) {
-        alert('Vui lòng bôi đen một đoạn văn bản để nghe thử.');
+        alert('Đoạn văn bản đang trống.');
         return;
     }
 
-    const originalBtnText = DOM.btnPreviewAudio.textContent;
-    DOM.btnPreviewAudio.disabled = true;
-    DOM.btnPreviewAudio.textContent = '⏳ Đang tổng hợp...';
+    const originalBtnText = DOM.btnPreviewAudio ? DOM.btnPreviewAudio.textContent : '🔊 Đọc thử';
+    if (DOM.btnPreviewAudio) {
+        DOM.btnPreviewAudio.disabled = true;
+        DOM.btnPreviewAudio.textContent = '⏳ Đang đọc...';
+    }
 
     try {
         const preset = DOM.presetSelector ? DOM.presetSelector.value : 'mystery';
@@ -589,7 +613,8 @@ async function handleAudioPreview() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 text: targetText,
-                preset: preset
+                preset: preset,
+                scope: scope
             })
         });
 
@@ -601,15 +626,18 @@ async function handleAudioPreview() {
         const data = await res.json();
         if (data.audio_url) {
             DOM.audioPreviewBar.classList.remove('hidden');
-            DOM.audioPreviewLabel.textContent = `🔊 Nghe thử (${data.duration.toFixed(1)}s):`;
+            if (DOM.audioPreviewTag) DOM.audioPreviewTag.textContent = scopeTag;
+            DOM.audioPreviewLabel.textContent = `🔊 Đọc thử (${data.duration.toFixed(1)}s):`;
             DOM.audioPlayer.src = data.audio_url;
             DOM.audioPlayer.play().catch(e => console.log('Autoplay blocked:', e));
         }
     } catch (err) {
-        alert('Lỗi nghe thử: ' + err.message);
+        alert('Lỗi nghe đọc thử: ' + err.message);
     } finally {
-        DOM.btnPreviewAudio.disabled = false;
-        DOM.btnPreviewAudio.textContent = originalBtnText;
+        if (DOM.btnPreviewAudio) {
+            DOM.btnPreviewAudio.disabled = false;
+            DOM.btnPreviewAudio.textContent = originalBtnText;
+        }
     }
 }
 
@@ -1640,7 +1668,13 @@ async function init() {
     DOM.btnRandomLength.addEventListener('click', randomTargetDuration);
 
     if (DOM.btnPreviewAudio) {
-        DOM.btnPreviewAudio.addEventListener('click', handleAudioPreview);
+        DOM.btnPreviewAudio.addEventListener('click', () => handleAudioPreview('auto'));
+    }
+    if (DOM.btnPreviewParagraph) {
+        DOM.btnPreviewParagraph.addEventListener('click', () => handleAudioPreview('paragraph'));
+    }
+    if (DOM.btnPreviewAll) {
+        DOM.btnPreviewAll.addEventListener('click', () => handleAudioPreview('full'));
     }
     if (DOM.btnCloseAudio) {
         DOM.btnCloseAudio.addEventListener('click', () => {
