@@ -51,6 +51,14 @@ const DOM = {
     exportModalTitle: document.getElementById('export-modal-title'),
     btnCloseExportModal: document.getElementById('btn-close-export-modal'),
     btnCloseExport: document.getElementById('btn-close-export'),
+    exportPrecheckSection: document.getElementById('export-precheck-section'),
+    btnModalPreviewAudio: document.getElementById('btn-modal-preview-audio'),
+    exportAuditionStatus: document.getElementById('export-audition-status'),
+    exportAuditionDuration: document.getElementById('export-audition-duration'),
+    exportAuditionPlayer: document.getElementById('export-audition-player'),
+    exportPrecheckWarning: document.getElementById('export-precheck-warning'),
+    btnCancelPreExport: document.getElementById('btn-cancel-pre-export'),
+    btnConfirmStartExport: document.getElementById('btn-confirm-start-export'),
     exportProgressSection: document.getElementById('export-progress-section'),
     exportStepLabel: document.getElementById('export-step-label'),
     exportProgressBar: document.getElementById('export-progress-bar'),
@@ -736,41 +744,102 @@ async function handleStartExport() {
         return;
     }
 
-    // Check estimated duration
-    const { duration } = calculateStats(script);
-    if (duration < 60 || duration > 180) {
-        const proceed = confirm(
-            `Thời lượng kịch bản ước tính là ${duration}s (khuyến nghị cho YouTube Shorts là từ 60 đến 180 giây).\n\nBạn có muốn tiếp tục xuất gói tài nguyên không?`
-        );
-        if (!proceed) return;
-    }
-
-    // Safety check for unverified claims (R4.8)
-    const claims = state.currentProject.claims || [];
-    const unclearClaims = claims.filter(c => c.label === 'CHƯA RÕ');
-    if (unclearClaims.length > 0) {
-        const proceedSafety = confirm(
-            `⚠️ CẢNH BÁO AN TOÀN KIỂM CHỨNG (R4.8):\n\n` +
-            `Dự án hiện có ${unclearClaims.length} luận điểm vẫn đang được gắn nhãn "CHƯA RÕ":\n` +
-            unclearClaims.map((c, i) => `  ${i + 1}. "${c.text || c.sentence}"`).join('\n') +
-            `\n\nBạn có chắc chắn muốn xuất gói tài nguyên này không?`
-        );
-        if (!proceedSafety) return;
-    }
-
     // Ensure latest changes are saved first
     await executeAutosave();
 
-    // Open export modal & reset state
+    // Check estimated duration and unverified claims for inline warnings in modal
+    const { duration } = calculateStats(script);
+    const claims = state.currentProject.claims || [];
+    const unclearClaims = claims.filter(c => c.label === 'CHƯA RÕ');
+
+    let warnings = [];
+    if (duration < 60 || duration > 180) {
+        warnings.push(`⚠️ Thời lượng ước tính: ${duration}s (khuyến nghị cho Shorts là 60–180s).`);
+    }
+    if (unclearClaims.length > 0) {
+        warnings.push(`⚠️ Có ${unclearClaims.length} luận điểm chưa được chứng minh (nhãn "CHƯA RÕ").`);
+    }
+
+    // Open export modal into Pre-Export Audition Review state (R5.10)
     DOM.exportModal.classList.remove('hidden');
-    DOM.exportProgressSection.classList.remove('hidden');
+    if (DOM.exportPrecheckSection) DOM.exportPrecheckSection.classList.remove('hidden');
+    DOM.exportProgressSection.classList.add('hidden');
     DOM.exportResultSection.classList.add('hidden');
     DOM.exportWarningBox.classList.add('hidden');
 
-    if (unclearClaims.length > 0) {
-        DOM.exportWarningBox.textContent = `⚠️ Lưu ý: Kịch bản chứa ${unclearClaims.length} luận điểm chưa được chứng minh đầy đủ.`;
-        DOM.exportWarningBox.classList.remove('hidden');
+    // Reset Audition Player
+    if (DOM.exportAuditionPlayer) {
+        DOM.exportAuditionPlayer.pause();
+        DOM.exportAuditionPlayer.style.display = 'none';
+        DOM.exportAuditionPlayer.src = '';
     }
+    if (DOM.exportAuditionStatus) DOM.exportAuditionStatus.textContent = 'Chưa nghe thử';
+    if (DOM.exportAuditionDuration) DOM.exportAuditionDuration.textContent = '';
+
+    if (DOM.exportPrecheckWarning) {
+        if (warnings.length > 0) {
+            DOM.exportPrecheckWarning.innerHTML = warnings.join('<br>');
+            DOM.exportPrecheckWarning.classList.remove('hidden');
+        } else {
+            DOM.exportPrecheckWarning.classList.add('hidden');
+        }
+    }
+}
+
+async function handleModalAudition() {
+    const script = DOM.scriptEditor.value.trim();
+    if (!script) {
+        alert('Kịch bản đang trống.');
+        return;
+    }
+
+    DOM.btnModalPreviewAudio.disabled = true;
+    DOM.btnModalPreviewAudio.textContent = '⏳ Đang tổng hợp audio đọc thử...';
+    if (DOM.exportAuditionStatus) DOM.exportAuditionStatus.textContent = 'Đang xử lý nhịp điệu & Audio FX...';
+
+    try {
+        const preset = DOM.presetSelector ? DOM.presetSelector.value : 'mystery';
+        const res = await fetch('/api/tts/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: script,
+                preset: preset,
+                scope: 'full'
+            })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Lỗi đọc thử audio');
+        }
+
+        const data = await res.json();
+        if (data.audio_url) {
+            DOM.exportAuditionPlayer.src = data.audio_url;
+            DOM.exportAuditionPlayer.style.display = 'block';
+            DOM.exportAuditionPlayer.play().catch(e => console.log('Autoplay blocked:', e));
+            if (DOM.exportAuditionDuration) DOM.exportAuditionDuration.textContent = `⏱️ ${data.duration.toFixed(1)}s`;
+            if (DOM.exportAuditionStatus) DOM.exportAuditionStatus.innerHTML = '<span style="color:var(--success)">✓ Đã sẵn sàng phát</span>';
+        }
+    } catch (err) {
+        alert('Lỗi đọc thử: ' + err.message);
+        if (DOM.exportAuditionStatus) DOM.exportAuditionStatus.textContent = 'Lỗi đọc thử';
+    } finally {
+        DOM.btnModalPreviewAudio.disabled = false;
+        DOM.btnModalPreviewAudio.textContent = '🔊 Đọc thử toàn bộ kịch bản';
+    }
+}
+
+async function executeActualExport() {
+    if (DOM.exportAuditionPlayer) {
+        DOM.exportAuditionPlayer.pause();
+    }
+
+    if (DOM.exportPrecheckSection) DOM.exportPrecheckSection.classList.add('hidden');
+    DOM.exportProgressSection.classList.remove('hidden');
+    DOM.exportResultSection.classList.add('hidden');
+    DOM.exportWarningBox.classList.add('hidden');
 
     DOM.exportStepLabel.textContent = 'Đang khởi động tiến trình xuất...';
     DOM.exportProgressBar.style.width = '5%';
@@ -849,6 +918,9 @@ function pollExportProgress(projectId, jobId) {
 
 function closeExportModal() {
     clearInterval(exportPollTimer);
+    if (DOM.exportAuditionPlayer) {
+        DOM.exportAuditionPlayer.pause();
+    }
     DOM.exportModal.classList.add('hidden');
 }
 
@@ -1698,6 +1770,15 @@ async function init() {
 
     if (DOM.btnExportProject) {
         DOM.btnExportProject.addEventListener('click', handleStartExport);
+    }
+    if (DOM.btnModalPreviewAudio) {
+        DOM.btnModalPreviewAudio.addEventListener('click', handleModalAudition);
+    }
+    if (DOM.btnConfirmStartExport) {
+        DOM.btnConfirmStartExport.addEventListener('click', executeActualExport);
+    }
+    if (DOM.btnCancelPreExport) {
+        DOM.btnCancelPreExport.addEventListener('click', closeExportModal);
     }
     if (DOM.btnCloseExportModal) {
         DOM.btnCloseExportModal.addEventListener('click', closeExportModal);

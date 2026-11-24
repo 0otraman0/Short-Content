@@ -50,5 +50,20 @@ class TestUILayout(unittest.TestCase):
         self.assertTrue(has_minmax and has_main_content_min_width,
                         "CSS Grid item .main-content and .app-layout must use minmax(0, 1fr) and min-width: 0 to prevent pushing .assistant-panel off-screen on typical laptop displays.")
 
+    def test_pre_export_audition_and_editor_controls(self):
+        """Test R2.9 and R5.10 audition controls exist in index.html."""
+        html_text = HTML_FILE.read_text(encoding="utf-8")
+
+        # In-editor audition controls (R2.9)
+        self.assertIn('id="btn-preview-paragraph"', html_text)
+        self.assertIn('id="btn-preview-all"', html_text)
+        self.assertIn('id="audio-preview-tag"', html_text)
+
+        # Pre-export review controls (R5.10)
+        self.assertIn('id="export-precheck-section"', html_text)
+        self.assertIn('id="btn-modal-preview-audio"', html_text)
+        self.assertIn('id="export-audition-player"', html_text)
+        self.assertIn('id="btn-confirm-start-export"', html_text)
+
 if __name__ == "__main__":
     unittest.main()

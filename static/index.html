@@ -162,7 +162,39 @@
                 <button id="btn-close-export-modal" class="btn-icon">✕</button>
             </div>
             <div class="modal-body">
-                <div id="export-progress-section">
+                <!-- Pre-Export Audition & Pacing Review (R5.10) -->
+                <div id="export-precheck-section">
+                    <p class="modal-desc" style="margin-bottom: 12px;">
+                        Kiểm tra và nghe thử toàn bộ kịch bản trước khi tạo bản audio và xuất phụ đề:
+                    </p>
+                    
+                    <div class="audition-box" style="margin-bottom: 16px; padding: 14px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">🎧 Thẩm âm & Đọc thử kịch bản:</span>
+                            <span id="export-audition-status" style="font-size: 0.78rem; color: var(--text-muted);">Chưa nghe thử</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                            <button id="btn-modal-preview-audio" class="btn-primary" style="font-size: 0.82rem; padding: 6px 12px;">
+                                🔊 Đọc thử toàn bộ kịch bản
+                            </button>
+                            <span id="export-audition-duration" style="font-size: 0.8rem; color: var(--accent); font-weight: 500;"></span>
+                        </div>
+                        <audio id="export-audition-player" controls preload="none" style="width: 100%; height: 38px; display: none;"></audio>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
+                            💡 Mẹo: Nghe kỹ các chỗ ngắt nhịp <code>[pause]</code>, đọc chậm <code>[slow]</code>, đọc nhanh <code>[fast]</code> và nhấn mạnh <code>*từ*</code> để đảm bảo giọng đọc cuốn hút trước khi xuất.
+                        </p>
+                    </div>
+
+                    <div id="export-precheck-warning" class="warning-alert hidden" style="margin-bottom: 14px;"></div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button id="btn-cancel-pre-export" class="btn-secondary">Chỉnh sửa thêm</button>
+                        <button id="btn-confirm-start-export" class="btn-success">🚀 Bắt đầu xuất Audio & Phụ đề</button>
+                    </div>
+                </div>
+
+                <!-- Export Progress Section -->
+                <div id="export-progress-section" class="hidden">
                     <p id="export-step-label" class="step-label">Đang chuẩn bị...</p>
                     <div class="progress-track">
                         <div id="export-progress-bar" class="progress-fill" style="width: 5%;"></div>
