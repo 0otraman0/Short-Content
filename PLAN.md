@@ -228,5 +228,5 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.11, R2.12
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Bấm "Tạo lại" trên 1 đoạn kịch bản, tạo thử 3-4 takes, nghe lại từng take và chọn; chuyển đổi các công tắc audio enhancement và xuất thử.

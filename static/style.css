@@ -897,5 +897,146 @@ button {
     color: var(--text-primary);
 }
 
+/* ==========================================
+   Audio FX Toggles Modal (R2.12)
+   ========================================== */
+.fx-toggle-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.fx-toggle-item:hover {
+    border-color: var(--primary);
+    background-color: var(--bg-surface-elevated);
+}
+
+.fx-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.fx-toggle-left input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.fx-toggle-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fx-toggle-desc {
+    margin-top: 4px;
+    margin-left: 28px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* ==========================================
+   Paragraph Multi-Take Selector (R2.11)
+   ========================================== */
+.takes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.take-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.take-card.is-selected {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.take-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.take-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.take-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.take-badge-selected {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--success);
+    color: #fff;
+    font-weight: 600;
+}
+
+.take-audio-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.take-audio-wrapper audio {
+    width: 100%;
+    height: 36px;
+    border-radius: 4px;
+}
+
+.take-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.take-select-btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface-elevated);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.take-select-btn:hover {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.take-select-btn.active {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+    pointer-events: none;
+}
+
+
 
 

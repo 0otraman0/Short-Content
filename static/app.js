@@ -67,6 +67,30 @@ const DOM = {
     btnCloseHistory: document.getElementById('btn-close-history'),
     btnViewHistoryFromModal: document.getElementById('btn-view-history-from-modal'),
 
+    // Audio FX Modal (R2.12)
+    btnAudioFx: document.getElementById('btn-audio-fx'),
+    audioFxModal: document.getElementById('audio-fx-modal'),
+    btnCloseAudioFxModal: document.getElementById('btn-close-audio-fx-modal'),
+    btnCloseAudioFx: document.getElementById('btn-close-audio-fx'),
+    btnSaveAudioFx: document.getElementById('btn-save-audio-fx'),
+    fxSaveStatus: document.getElementById('fx-save-status'),
+    fxCompression: document.getElementById('fx-compression'),
+    fxMaleEq: document.getElementById('fx-male-eq'),
+    fxDeesser: document.getElementById('fx-deesser'),
+    fxReverb: document.getElementById('fx-reverb'),
+    fxLoudnorm: document.getElementById('fx-loudnorm'),
+
+    // Paragraph Takes Modal (R2.11)
+    btnParagraphTakes: document.getElementById('btn-paragraph-takes'),
+    paragraphTakesModal: document.getElementById('paragraph-takes-modal'),
+    btnCloseTakesModal: document.getElementById('btn-close-takes-modal'),
+    btnCloseTakes: document.getElementById('btn-close-takes'),
+    takesParagraphSelect: document.getElementById('takes-paragraph-select'),
+    btnGenerateNewTake: document.getElementById('btn-generate-new-take'),
+    takesParaPreview: document.getElementById('takes-para-preview'),
+    takesLoading: document.getElementById('takes-loading'),
+    paragraphTakesList: document.getElementById('paragraph-takes-list'),
+
     // Gemini Writing Assistant
     aiNotes: document.getElementById('ai-notes'),
     btnSuggestNext: document.getElementById('btn-suggest-next'),
@@ -892,6 +916,245 @@ function closeExportHistoryModal() {
 }
 
 // ==========================================
+// Audio Enhancements FX (R2.12)
+// ==========================================
+
+async function openAudioFxModal() {
+    DOM.audioFxModal.classList.remove('hidden');
+    if (DOM.fxSaveStatus) DOM.fxSaveStatus.classList.add('hidden');
+    try {
+        const res = await fetch('/api/config/audio-enhancements');
+        if (res.ok) {
+            const data = await res.json();
+            const enh = data.enhancements || {};
+            if (DOM.fxCompression) DOM.fxCompression.checked = enh.compression !== false;
+            if (DOM.fxMaleEq) DOM.fxMaleEq.checked = enh.male_eq !== false;
+            if (DOM.fxDeesser) DOM.fxDeesser.checked = enh.deesser !== false;
+            if (DOM.fxReverb) DOM.fxReverb.checked = enh.reverb !== false;
+            if (DOM.fxLoudnorm) DOM.fxLoudnorm.checked = enh.loudnorm !== false;
+        }
+    } catch (err) {
+        console.error('Lỗi tải cấu hình FX:', err);
+    }
+}
+
+function closeAudioFxModal() {
+    DOM.audioFxModal.classList.add('hidden');
+}
+
+async function saveAudioFxSettings() {
+    const enhancements = {
+        compression: DOM.fxCompression ? DOM.fxCompression.checked : true,
+        male_eq: DOM.fxMaleEq ? DOM.fxMaleEq.checked : true,
+        deesser: DOM.fxDeesser ? DOM.fxDeesser.checked : true,
+        reverb: DOM.fxReverb ? DOM.fxReverb.checked : true,
+        loudnorm: DOM.fxLoudnorm ? DOM.fxLoudnorm.checked : true
+    };
+
+    DOM.btnSaveAudioFx.disabled = true;
+    DOM.btnSaveAudioFx.textContent = 'Đang lưu...';
+
+    try {
+        const res = await fetch('/api/config/audio-enhancements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enhancements })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể lưu cài đặt âm thanh');
+        }
+        if (DOM.fxSaveStatus) DOM.fxSaveStatus.classList.remove('hidden');
+        setTimeout(() => {
+            if (DOM.fxSaveStatus) DOM.fxSaveStatus.classList.add('hidden');
+        }, 2500);
+    } catch (err) {
+        alert('Lỗi khi lưu cấu hình âm thanh: ' + err.message);
+    } finally {
+        DOM.btnSaveAudioFx.disabled = false;
+        DOM.btnSaveAudioFx.textContent = 'Lưu cấu hình';
+    }
+}
+
+// ==========================================
+// Paragraph Takes & Multi-Take Selector (R2.11)
+// ==========================================
+
+let takesParagraphs = [];
+let currentTakeParaIndex = 0;
+
+function getScriptParagraphs() {
+    const fullText = DOM.scriptEditor.value.trim();
+    if (!fullText) return [];
+    let paras = fullText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+    if (paras.length <= 1 && fullText.includes('\n')) {
+        paras = fullText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+    }
+    return paras.length > 0 ? paras : [fullText];
+}
+
+async function openParagraphTakesModal() {
+    if (!state.currentProject) {
+        alert('Vui lòng chọn hoặc tạo một dự án trước.');
+        return;
+    }
+
+    takesParagraphs = getScriptParagraphs();
+    if (takesParagraphs.length === 0) {
+        alert('Kịch bản đang trống. Vui lòng nhập nội dung kịch bản trước khi tạo bản thu.');
+        return;
+    }
+
+    // Determine current paragraph at cursor
+    const cursor = DOM.scriptEditor.selectionStart || 0;
+    const textBefore = DOM.scriptEditor.value.substring(0, cursor);
+    const beforeCount = (textBefore.match(/\n\s*\n/g) || []).length;
+    currentTakeParaIndex = Math.min(beforeCount, takesParagraphs.length - 1);
+
+    // Populate dropdown
+    DOM.takesParagraphSelect.innerHTML = '';
+    takesParagraphs.forEach((para, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const words = para.split(/\s+/).filter(Boolean).length;
+        const excerpt = para.length > 30 ? para.substring(0, 30) + '...' : para;
+        opt.textContent = `Đoạn ${idx + 1} (${words} từ): "${excerpt}"`;
+        if (idx === currentTakeParaIndex) opt.selected = true;
+        DOM.takesParagraphSelect.appendChild(opt);
+    });
+
+    updateTakesParaPreview();
+    DOM.paragraphTakesModal.classList.remove('hidden');
+    await loadParagraphTakes(currentTakeParaIndex);
+}
+
+function updateTakesParaPreview() {
+    const paraText = takesParagraphs[currentTakeParaIndex] || '';
+    DOM.takesParaPreview.value = paraText;
+}
+
+function closeParagraphTakesModal() {
+    DOM.paragraphTakesModal.classList.add('hidden');
+}
+
+async function loadParagraphTakes(paraIndex) {
+    DOM.paragraphTakesList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 16px;">Đang tải danh sách bản thu...</div>';
+
+    try {
+        const res = await fetch(`/api/projects/${state.currentProject.id}/paragraph-takes/${paraIndex}`);
+        if (!res.ok) throw new Error('Không thể tải danh sách bản thu');
+        const data = await res.json();
+        const takes = data.takes || [];
+
+        renderParagraphTakes(takes, paraIndex);
+    } catch (err) {
+        DOM.paragraphTakesList.innerHTML = `<div style="color: var(--danger); padding: 12px;">Lỗi: ${err.message}</div>`;
+    }
+}
+
+function renderParagraphTakes(takes, paraIndex) {
+    DOM.paragraphTakesList.innerHTML = '';
+    if (takes.length === 0) {
+        DOM.paragraphTakesList.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 24px; background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: 6px;">
+                Chưa có bản thu nào cho đoạn này.<br>
+                Bấm <strong>"🎙️ Tạo Take mới cho đoạn này"</strong> để thu âm giọng đọc và lưu take (tối đa 4 bản).
+            </div>
+        `;
+        return;
+    }
+
+    takes.forEach((t) => {
+        const card = document.createElement('div');
+        card.className = `take-card ${t.is_selected ? 'is-selected' : ''}`;
+
+        const timeStr = t.created_at ? new Date(t.created_at).toLocaleTimeString() : '';
+
+        card.innerHTML = `
+            <div class="take-header">
+                <span class="take-title">
+                    Take #${t.take_number}
+                    ${t.is_selected ? '<span class="take-badge-selected">★ Bản chính đang chọn</span>' : ''}
+                </span>
+                <span class="take-meta">⏱️ ${t.duration ? t.duration.toFixed(1) : 0}s &bull; ${timeStr}</span>
+            </div>
+            <div class="take-audio-wrapper">
+                <audio controls preload="none" src="${t.audio_url}" style="width: 100%;"></audio>
+            </div>
+            <div class="take-actions">
+                <button class="take-select-btn ${t.is_selected ? 'active' : ''}">
+                    ${t.is_selected ? '✓ Đang chọn làm bản phát' : '⭐ Chọn Take này'}
+                </button>
+            </div>
+        `;
+
+        const selectBtn = card.querySelector('.take-select-btn');
+        if (!t.is_selected) {
+            selectBtn.addEventListener('click', async () => {
+                await selectParagraphTake(paraIndex, t.id);
+            });
+        }
+
+        DOM.paragraphTakesList.appendChild(card);
+    });
+}
+
+async function generateNewTake() {
+    if (!state.currentProject) return;
+    const text = takesParagraphs[currentTakeParaIndex];
+    if (!text) {
+        alert('Đoạn văn bản đang trống.');
+        return;
+    }
+
+    DOM.btnGenerateNewTake.disabled = true;
+    DOM.takesLoading.classList.remove('hidden');
+
+    try {
+        const preset = DOM.presetSelector ? DOM.presetSelector.value : 'mystery';
+        const res = await fetch('/api/tts/paragraph-take', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: state.currentProject.id,
+                paragraph_index: currentTakeParaIndex,
+                text: text,
+                preset: preset
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể tạo bản thu mới.');
+        }
+
+        const data = await res.json();
+        renderParagraphTakes(data.takes, currentTakeParaIndex);
+    } catch (err) {
+        alert('Lỗi tạo take mới: ' + err.message);
+    } finally {
+        DOM.btnGenerateNewTake.disabled = false;
+        DOM.takesLoading.classList.add('hidden');
+    }
+}
+
+async function selectParagraphTake(paraIndex, takeId) {
+    try {
+        const res = await fetch(`/api/projects/${state.currentProject.id}/paragraph-takes/${paraIndex}/select?take_id=${takeId}`, {
+            method: 'PUT'
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Không thể chọn Take.');
+        }
+        const data = await res.json();
+        renderParagraphTakes(data.takes, paraIndex);
+    } catch (err) {
+        alert('Lỗi chọn take: ' + err.message);
+    }
+}
+
+// ==========================================
 // 8. Gemini Writing Assistant Actions (R3)
 // ==========================================
 
@@ -1424,6 +1687,41 @@ async function init() {
             closeExportModal();
             openExportHistoryModal();
         });
+    }
+
+    // Audio FX Event Listeners (R2.12)
+    if (DOM.btnAudioFx) {
+        DOM.btnAudioFx.addEventListener('click', openAudioFxModal);
+    }
+    if (DOM.btnCloseAudioFxModal) {
+        DOM.btnCloseAudioFxModal.addEventListener('click', closeAudioFxModal);
+    }
+    if (DOM.btnCloseAudioFx) {
+        DOM.btnCloseAudioFx.addEventListener('click', closeAudioFxModal);
+    }
+    if (DOM.btnSaveAudioFx) {
+        DOM.btnSaveAudioFx.addEventListener('click', saveAudioFxSettings);
+    }
+
+    // Paragraph Takes Event Listeners (R2.11)
+    if (DOM.btnParagraphTakes) {
+        DOM.btnParagraphTakes.addEventListener('click', openParagraphTakesModal);
+    }
+    if (DOM.btnCloseTakesModal) {
+        DOM.btnCloseTakesModal.addEventListener('click', closeParagraphTakesModal);
+    }
+    if (DOM.btnCloseTakes) {
+        DOM.btnCloseTakes.addEventListener('click', closeParagraphTakesModal);
+    }
+    if (DOM.takesParagraphSelect) {
+        DOM.takesParagraphSelect.addEventListener('change', async (e) => {
+            currentTakeParaIndex = parseInt(e.target.value, 10) || 0;
+            updateTakesParaPreview();
+            await loadParagraphTakes(currentTakeParaIndex);
+        });
+    }
+    if (DOM.btnGenerateNewTake) {
+        DOM.btnGenerateNewTake.addEventListener('click', generateNewTake);
     }
 
     // AI Assistant Event Listeners (R3)

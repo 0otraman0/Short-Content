@@ -38,6 +38,8 @@
                         <option value="calm">Nhịp: Trầm tĩnh (Calm)</option>
                     </select>
                     <button id="btn-select-voice" class="btn-secondary" title="Xem hoặc chọn lại giọng đọc nam">🎙️ Giọng đọc</button>
+                    <button id="btn-audio-fx" class="btn-secondary" title="Cấu hình bộ lọc âm thanh hậu kỳ (Compression, EQ, Reverb, Loudnorm)">🎛️ Bộ lọc Audio</button>
+                    <button id="btn-paragraph-takes" class="btn-secondary" title="Tạo lại đoạn & quản lý bản thu Takes">🔄 Tạo lại đoạn (Takes)</button>
                     <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
                     <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
@@ -337,6 +339,105 @@
             <div class="modal-footer">
                 <button id="btn-cancel-safe-rewrite" class="btn-secondary">Hủy</button>
                 <button id="btn-apply-safe-rewrite" class="btn-primary">Thay thế câu này vào kịch bản</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio FX Enhancements Modal (R2.12) -->
+    <div id="audio-fx-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>🎛️ Bộ lọc Audio & Hậu kỳ Giọng đọc</h3>
+                <button id="btn-close-audio-fx-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc" style="margin-bottom: 1rem;">
+                    Chuỗi xử lý tín hiệu FFmpeg giúp giọng đọc trầm ấm, trong trẻo, không bị chói và đạt chuẩn âm lượng chuyên nghiệp:
+                </p>
+                <div class="fx-toggles-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <label class="fx-toggle-item">
+                        <div class="fx-toggle-left">
+                            <input type="checkbox" id="fx-compression" checked>
+                            <span class="fx-toggle-title">Nén động học nhẹ (Light Compression)</span>
+                        </div>
+                        <p class="fx-toggle-desc">Threshold -18dB, ratio 3:1, makeup +2dB giúp âm lượng các câu nói đều đặn, không bị tiếng to tiếng nhỏ.</p>
+                    </label>
+
+                    <label class="fx-toggle-item">
+                        <div class="fx-toggle-left">
+                            <input type="checkbox" id="fx-male-eq" checked>
+                            <span class="fx-toggle-title">Bộ cân bằng EQ giọng nam (Male Voice EQ)</span>
+                        </div>
+                        <p class="fx-toggle-desc">Highpass 80Hz lọc ù tạp âm, Boost +2dB dải trầm ấm 120Hz, Boost +2.5dB dải rõ lời 3.5kHz.</p>
+                    </label>
+
+                    <label class="fx-toggle-item">
+                        <div class="fx-toggle-left">
+                            <input type="checkbox" id="fx-deesser" checked>
+                            <span class="fx-toggle-title">Khử chói rít xì xào (De-esser)</span>
+                        </div>
+                        <p class="fx-toggle-desc">Tự động làm dịu các phụ âm 's', 'sh', 'ch' chói gắt trên micro và tai nghe.</p>
+                    </label>
+
+                    <label class="fx-toggle-item">
+                        <div class="fx-toggle-left">
+                            <input type="checkbox" id="fx-reverb" checked>
+                            <span class="fx-toggle-title">Không gian phòng kể chuyện (Light Reverb)</span>
+                        </div>
+                        <p class="fx-toggle-desc">Hiệu ứng vang rất nhẹ (20ms delay, 15% decay) tạo cảm giác giọng đọc có chiều sâu trong phòng thu.</p>
+                    </label>
+
+                    <label class="fx-toggle-item">
+                        <div class="fx-toggle-left">
+                            <input type="checkbox" id="fx-loudnorm" checked>
+                            <span class="fx-toggle-title">Chuẩn hóa âm lượng EBU R128 (Loudness Normalization)</span>
+                        </div>
+                        <p class="fx-toggle-desc">Đưa âm lượng về chuẩn -16 LUFS (-1.5 dB True Peak), tối ưu cho YouTube Shorts, Reels và TikTok.</p>
+                    </label>
+                </div>
+                <div id="fx-save-status" class="hidden" style="margin-top: 10px; font-size: 0.85rem; color: var(--success); text-align: center;">
+                    ✓ Đã lưu cài đặt bộ lọc âm thanh thành công!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-audio-fx" class="btn-secondary">Đóng</button>
+                <button id="btn-save-audio-fx" class="btn-primary">Lưu cấu hình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paragraph Multi-Take Selector Modal (R2.11) -->
+    <div id="paragraph-takes-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 720px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>🔄 Tạo lại đoạn & Chọn Take (Tối đa 4 Takes)</h3>
+                <button id="btn-close-takes-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 1.25rem 1.5rem;">
+                <div style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="takes-paragraph-select" style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">Chọn đoạn:</label>
+                        <select id="takes-paragraph-select" class="preset-dropdown" style="min-width: 140px;"></select>
+                    </div>
+                    <button id="btn-generate-new-take" class="btn-primary">🎙️ Tạo Take mới cho đoạn này</button>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nội dung đoạn văn đang chọn:</label>
+                    <textarea id="takes-para-preview" readonly style="width: 100%; height: 80px; font-size: 0.88rem; padding: 8px 10px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; resize: none;"></textarea>
+                </div>
+
+                <div id="takes-loading" class="hidden" style="text-align: center; padding: 16px; color: var(--accent); font-size: 0.9rem;">
+                    ⏳ Đang tổng hợp giọng đọc cho Take mới...
+                </div>
+
+                <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Danh sách bản thu (Lưu tối đa 4 takes gần nhất):</h4>
+                <div id="paragraph-takes-list" class="takes-list">
+                    <!-- Take cards rendered dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-takes" class="btn-secondary">Đóng</button>
             </div>
         </div>
     </div>

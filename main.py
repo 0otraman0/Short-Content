@@ -295,9 +295,161 @@ class TTSPreviewRequest(BaseModel):
     text: str
     preset: Optional[str] = "mystery"
     voice: Optional[str] = None
+    enhancements: Optional[Dict[str, bool]] = None
 
 class LockVoiceRequest(BaseModel):
     voice: str
+
+class AudioEnhancementsUpdate(BaseModel):
+    enhancements: Dict[str, bool]
+
+@app.get("/api/config/audio-enhancements")
+async def api_get_audio_enhancements():
+    """Get active audio enhancement toggles (R2.12)."""
+    from tts import get_audio_enhancements
+    return {"success": True, "enhancements": get_audio_enhancements()}
+
+@app.post("/api/config/audio-enhancements")
+async def api_save_audio_enhancements(payload: AudioEnhancementsUpdate):
+    """Save audio enhancement toggles to config.yaml (R2.12)."""
+    cfg_file = BASE_DIR / "config.yaml"
+    try:
+        cfg = {}
+        if cfg_file.exists():
+            cfg = yaml.safe_load(cfg_file.read_text(encoding="utf-8")) or {}
+        cfg["audio_enhancements"] = payload.enhancements
+        cfg_file.write_text(yaml.dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8")
+        return {"success": True, "enhancements": payload.enhancements}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi lưu cấu hình âm thanh: {str(e)}")
+
+# ==========================================
+# Paragraph Multi-Take Regeneration (R2.11)
+# ==========================================
+
+class ParagraphTakeRequest(BaseModel):
+    project_id: str
+    paragraph_index: int
+    text: str
+    preset: Optional[str] = "mystery"
+    voice: Optional[str] = None
+    enhancements: Optional[Dict[str, bool]] = None
+
+@app.post("/api/tts/paragraph-take")
+async def create_paragraph_take(payload: ParagraphTakeRequest):
+    """
+    R2.11: Regenerate a take for a specific paragraph, keeping up to 4 takes to pick from.
+    """
+    ensure_ffmpeg()
+    if not check_ffmpeg():
+        raise HTTPException(status_code=500, detail="Chưa cài đặt FFmpeg trên máy tính.")
+
+    clean_text = payload.text.strip()
+    if not clean_text:
+        raise HTTPException(status_code=400, detail="Đoạn văn bản đang trống.")
+
+    folder = get_project_folder(payload.project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+
+    project_data = json.loads(json_file.read_text(encoding="utf-8"))
+    takes_store = project_data.get("takes", {})
+    para_key = f"para_{payload.paragraph_index}"
+    para_takes = takes_store.get(para_key, [])
+
+    take_id = f"take_{uuid.uuid4().hex[:6]}"
+    takes_dir = folder / "takes" / para_key
+    takes_dir.mkdir(parents=True, exist_ok=True)
+    take_file = takes_dir / f"{take_id}.mp3"
+
+    try:
+        out_path, duration = await synthesize_narration(
+            script=clean_text,
+            output_path=take_file,
+            preset_name=payload.preset or "mystery",
+            voice=payload.voice or get_locked_voice(),
+            enhancements=payload.enhancements,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi tạo bản thu đoạn văn: {str(e)}")
+
+    take_record = {
+        "id": take_id,
+        "take_number": len(para_takes) + 1,
+        "created_at": datetime.now().isoformat(),
+        "duration": round(duration, 2),
+        "text": clean_text,
+        "audio_url": f"/api/projects/{payload.project_id}/takes/{para_key}/{take_id}",
+        "is_selected": len(para_takes) == 0,
+    }
+
+    # Keep at most 4 takes (remove oldest if exceeds 4)
+    para_takes.append(take_record)
+    if len(para_takes) > 4:
+        oldest = para_takes.pop(0)
+        old_file = takes_dir / f"{oldest['id']}.mp3"
+        try:
+            old_file.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    for idx, t in enumerate(para_takes, 1):
+        t["take_number"] = idx
+
+    takes_store[para_key] = para_takes
+    project_data["takes"] = takes_store
+    json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return {
+        "success": True,
+        "take": take_record,
+        "takes": para_takes,
+        "paragraph_index": payload.paragraph_index,
+    }
+
+@app.get("/api/projects/{project_id}/paragraph-takes/{paragraph_index}")
+async def get_paragraph_takes(project_id: str, paragraph_index: int):
+    """Retrieve existing takes for a paragraph (R2.11)."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    project_data = json.loads(json_file.read_text(encoding="utf-8"))
+    takes = project_data.get("takes", {}).get(f"para_{paragraph_index}", [])
+    return {"success": True, "takes": takes}
+
+@app.put("/api/projects/{project_id}/paragraph-takes/{paragraph_index}/select")
+async def select_paragraph_take(project_id: str, paragraph_index: int, take_id: str):
+    """Select preferred take for a paragraph (R2.11)."""
+    folder = get_project_folder(project_id)
+    json_file = folder / "project.json"
+    if not json_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    project_data = json.loads(json_file.read_text(encoding="utf-8"))
+    para_key = f"para_{paragraph_index}"
+    para_takes = project_data.get("takes", {}).get(para_key, [])
+    found = False
+    for t in para_takes:
+        if t["id"] == take_id:
+            t["is_selected"] = True
+            found = True
+        else:
+            t["is_selected"] = False
+    if not found:
+        raise HTTPException(status_code=404, detail="Không tìm thấy Take.")
+    project_data["takes"][para_key] = para_takes
+    json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"success": True, "takes": para_takes}
+
+@app.get("/api/projects/{project_id}/takes/{para_key}/{take_id}")
+async def get_take_audio(project_id: str, para_key: str, take_id: str):
+    """Serve audio file for a paragraph take."""
+    folder = get_project_folder(project_id)
+    take_file = folder / "takes" / para_key / f"{take_id}.mp3"
+    if not take_file.exists():
+        raise HTTPException(status_code=404, detail="Không tìm thấy file âm thanh của Take này.")
+    return FileResponse(take_file, media_type="audio/mpeg", filename=f"{take_id}.mp3")
 
 @app.get("/api/tts/voices")
 async def get_voices():
@@ -344,6 +496,7 @@ async def preview_tts(payload: TTSPreviewRequest):
             output_path=output_file,
             preset_name=payload.preset or "mystery",
             voice=payload.voice,
+            enhancements=payload.enhancements,
         )
         return {
             "success": True,
@@ -399,11 +552,14 @@ async def run_export_pipeline(project_id: str, job_id: str):
         job["progress"] = 20
 
         audio_file = job_dir / "narration.mp3"
+        from tts import get_audio_enhancements
+        enhancements = project_data.get("audio_enhancements") or get_audio_enhancements()
         out_audio, duration = await synthesize_narration(
             script=script,
             output_path=audio_file,
             preset_name=preset,
             voice=voice,
+            enhancements=enhancements,
         )
         job["duration"] = round(duration, 2)
         job["progress"] = 40
