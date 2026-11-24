@@ -376,26 +376,44 @@ async def run_export_pipeline(project_id: str, job_id: str):
         await loop.run_in_executor(None, transcribe_to_srt, audio_file, srt_file)
         job["progress"] = 80
 
-        # Step 3 (90%): Write sources.txt from claims or placeholder
+        # Step 3 (90%): Write sources.txt from claims or placeholder formatted for YouTube description (R4.9)
         job["step"] = "Đang tạo sources.txt..."
         job["progress"] = 90
 
         sources_file = folder / "sources.txt"
         claims = project_data.get("claims", [])
         if claims:
-            lines = ["Nguồn tham khảo / Sources\n"]
+            lines = [
+                "SOURCES & REFERENCES (YouTube Shorts Description):",
+                "==================================================",
+            ]
             for i, claim in enumerate(claims, 1):
                 label = claim.get("label", "CHƯA RÕ")
                 text_c = claim.get("text", "")
                 urls = claim.get("urls", [])
-                lines.append(f"{i}. [{label}] {text_c}")
-                for url in urls:
-                    lines.append(f"   {url}")
-            sources_file.write_text("\n".join(lines), encoding="utf-8")
+                evidence = claim.get("evidence", "")
+
+                status_mark = "Verified / Đã chứng minh" if "ĐÃ" in label else "Unverified / Chưa rõ"
+                lines.append(f"\n{i}. {text_c}")
+                lines.append(f"   Status: [{label}] ({status_mark})")
+                if evidence:
+                    lines.append(f"   Summary: {evidence}")
+                if urls:
+                    lines.append("   References:")
+                    for url in urls:
+                        lines.append(f"   - {url}")
+                else:
+                    lines.append("   References: (No source link provided)")
+
+            lines.append("\n==================================================")
+            lines.append("Produced with Shorts Narration Tool")
+            sources_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
         else:
             sources_file.write_text(
-                "Nguồn tham khảo / Sources\n"
-                "(Chưa có nguồn được kiểm chứng. Hãy sử dụng tính năng Kiểm chứng để thêm nguồn.)\n",
+                "SOURCES & REFERENCES (YouTube Shorts Description):\n"
+                "==================================================\n"
+                "(No claims fact-checked yet. Use the Fact Check panel in the tool to verify and list references.)\n"
+                "==================================================\n",
                 encoding="utf-8",
             )
 

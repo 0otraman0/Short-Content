@@ -658,6 +658,19 @@ async function handleStartExport() {
         if (!proceed) return;
     }
 
+    // Safety check for unverified claims (R4.8)
+    const claims = state.currentProject.claims || [];
+    const unclearClaims = claims.filter(c => c.label === 'CHƯA RÕ');
+    if (unclearClaims.length > 0) {
+        const proceedSafety = confirm(
+            `⚠️ CẢNH BÁO AN TOÀN KIỂM CHỨNG (R4.8):\n\n` +
+            `Dự án hiện có ${unclearClaims.length} luận điểm vẫn đang được gắn nhãn "CHƯA RÕ":\n` +
+            unclearClaims.map((c, i) => `  ${i + 1}. "${c.text || c.sentence}"`).join('\n') +
+            `\n\nBạn có chắc chắn muốn xuất gói tài nguyên này không?`
+        );
+        if (!proceedSafety) return;
+    }
+
     // Ensure latest changes are saved first
     await executeAutosave();
 
@@ -666,6 +679,11 @@ async function handleStartExport() {
     DOM.exportProgressSection.classList.remove('hidden');
     DOM.exportResultSection.classList.add('hidden');
     DOM.exportWarningBox.classList.add('hidden');
+
+    if (unclearClaims.length > 0) {
+        DOM.exportWarningBox.textContent = `⚠️ Lưu ý: Kịch bản chứa ${unclearClaims.length} luận điểm chưa được chứng minh đầy đủ.`;
+        DOM.exportWarningBox.classList.remove('hidden');
+    }
 
     DOM.exportStepLabel.textContent = 'Đang khởi động tiến trình xuất...';
     DOM.exportProgressBar.style.width = '5%';

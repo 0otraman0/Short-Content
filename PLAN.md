@@ -152,7 +152,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `main.py`, `static/app.js`
 - **Requirements**: R4.8, R4.9
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Attempt export with an unverified claim, verify warning confirmation prompt appears; verify `sources.txt` is created upon export.
 
 ---
