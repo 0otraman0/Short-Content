@@ -41,6 +41,7 @@
                     <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
                     <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
+                    <button id="btn-export-history" class="btn-secondary" title="Xem lại các bản audio đã xuất">📜 Lịch sử xuất</button>
                     <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio & Phụ đề</button>
                 </div>
             </header>
@@ -182,10 +183,28 @@
                             <small>Danh sách nguồn kiểm chứng cho mô tả video</small>
                         </a>
                     </div>
+                    <button id="btn-view-history-from-modal" class="btn-secondary" style="margin-top: 12px; width: 100%;">📜 Xem lịch sử các bản audio đã xuất của dự án</button>
                 </div>
             </div>
             <div class="modal-footer">
                 <button id="btn-close-export" class="btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export History Modal (R5.8, R5.9) -->
+    <div id="export-history-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 780px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>📜 Lịch sử các lần xuất Audio</h3>
+                <button id="btn-close-history-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 1rem 1.5rem;">
+                <p class="modal-desc" style="margin-bottom: 1rem;">Mỗi lần xuất được lưu trữ độc lập theo Job. Bạn có thể nghe lại trực tiếp bất kỳ bản audio nào hoặc tải các tệp liên quan:</p>
+                <div id="export-history-list" class="export-history-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-close-history" class="btn-secondary">Đóng</button>
             </div>
         </div>
     </div>

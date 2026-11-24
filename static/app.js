@@ -59,6 +59,14 @@ const DOM = {
     btnDownloadSubtitles: document.getElementById('btn-download-subtitles'),
     btnDownloadSources: document.getElementById('btn-download-sources'),
 
+    // Export History Modal (R5.8, R5.9)
+    btnExportHistory: document.getElementById('btn-export-history'),
+    exportHistoryModal: document.getElementById('export-history-modal'),
+    exportHistoryList: document.getElementById('export-history-list'),
+    btnCloseHistoryModal: document.getElementById('btn-close-history-modal'),
+    btnCloseHistory: document.getElementById('btn-close-history'),
+    btnViewHistoryFromModal: document.getElementById('btn-view-history-from-modal'),
+
     // Gemini Writing Assistant
     aiNotes: document.getElementById('ai-notes'),
     btnSuggestNext: document.getElementById('btn-suggest-next'),
@@ -793,6 +801,97 @@ function closeExportModal() {
 }
 
 // ==========================================
+// 7.5. Export History Functions (R5.8, R5.9)
+// ==========================================
+
+async function openExportHistoryModal() {
+    if (!state.currentProject) {
+        alert('Vui lòng chọn hoặc tạo một dự án trước.');
+        return;
+    }
+
+    DOM.exportHistoryModal.classList.remove('hidden');
+    DOM.exportHistoryList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 25px;">Đang tải lịch sử các bản audio...</div>';
+
+    try {
+        const res = await fetch(`/api/projects/${state.currentProject.id}/exports`);
+        if (!res.ok) throw new Error('Không thể tải lịch sử xuất.');
+        const data = await res.json();
+        const exports = data.exports || [];
+
+        if (exports.length === 0) {
+            DOM.exportHistoryList.innerHTML = `
+                <div style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    <div style="font-size: 2.2rem; margin-bottom: 8px;">📂</div>
+                    <p style="font-weight: 500;">Dự án này chưa có bản audio nào được xuất.</p>
+                    <small>Bấm "Xuất Audio & Phụ đề" để tạo và lưu trữ bản đầu tiên.</small>
+                </div>
+            `;
+            return;
+        }
+
+        DOM.exportHistoryList.innerHTML = '';
+        exports.forEach((exp) => {
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            
+            const dateStr = exp.created_at ? new Date(exp.created_at).toLocaleString('vi-VN') : 'Không rõ thời gian';
+            const durationStr = exp.duration ? `${exp.duration}s` : 'N/A';
+            const presetStr = exp.pacing_preset ? exp.pacing_preset.toUpperCase() : 'MYSTERY';
+            const previewText = exp.script_preview || 'Không có bản xem trước kịch bản';
+
+            const audioUrl = exp.audio_url || `/api/projects/${state.currentProject.id}/exports/${exp.id}/audio`;
+            const srtUrl = exp.subtitles_url || `/api/projects/${state.currentProject.id}/exports/${exp.id}/subtitles`;
+            const sourcesUrl = exp.sources_url || `/api/projects/${state.currentProject.id}/exports/${exp.id}/sources`;
+
+            card.innerHTML = `
+                <div class="history-card-header">
+                    <div class="history-title-group">
+                        <span class="history-job-id">#${escapeHtml(exp.id)}</span>
+                        <span class="history-time">🕒 ${escapeHtml(dateStr)}</span>
+                    </div>
+                    <div class="history-badges">
+                        <span class="history-badge">⏱️ ${escapeHtml(durationStr)}</span>
+                        <span class="history-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success);">🎵 ${escapeHtml(presetStr)}</span>
+                    </div>
+                </div>
+                <div class="history-preview">"${escapeHtml(previewText)}"</div>
+                <div class="history-actions">
+                    <button class="btn-primary btn-play-history" style="font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">
+                        ▶️ Nghe audio này
+                    </button>
+                    <div class="history-download-links">
+                        <a href="${audioUrl}" download class="history-link-btn" title="Tải file audio của job này">🎵 .mp3</a>
+                        <a href="${srtUrl}" download class="history-link-btn" title="Tải file phụ đề SRT của job này">📝 .srt</a>
+                        <a href="${sourcesUrl}" download class="history-link-btn" title="Tải file nguồn kiểm chứng của job này">🔗 sources.txt</a>
+                    </div>
+                </div>
+            `;
+
+            // Audio Playback isolated to this job
+            const btnPlay = card.querySelector('.btn-play-history');
+            if (btnPlay) {
+                btnPlay.addEventListener('click', () => {
+                    DOM.audioPreviewBar.classList.remove('hidden');
+                    DOM.audioPreviewLabel.textContent = `Bản audio #${exp.id} (${durationStr}) - ${dateStr}`;
+                    DOM.audioPlayer.src = audioUrl;
+                    DOM.audioPlayer.play().catch(e => console.log('Autoplay blocked:', e));
+                });
+            }
+
+            DOM.exportHistoryList.appendChild(card);
+        });
+
+    } catch (err) {
+        DOM.exportHistoryList.innerHTML = `<div style="color: var(--danger); padding: 15px;">Lỗi: ${err.message}</div>`;
+    }
+}
+
+function closeExportHistoryModal() {
+    DOM.exportHistoryModal.classList.add('hidden');
+}
+
+// ==========================================
 // 8. Gemini Writing Assistant Actions (R3)
 // ==========================================
 
@@ -1308,6 +1407,23 @@ async function init() {
     }
     if (DOM.btnCloseExport) {
         DOM.btnCloseExport.addEventListener('click', closeExportModal);
+    }
+
+    // Export History Event Listeners (R5.8, R5.9)
+    if (DOM.btnExportHistory) {
+        DOM.btnExportHistory.addEventListener('click', openExportHistoryModal);
+    }
+    if (DOM.btnCloseHistoryModal) {
+        DOM.btnCloseHistoryModal.addEventListener('click', closeExportHistoryModal);
+    }
+    if (DOM.btnCloseHistory) {
+        DOM.btnCloseHistory.addEventListener('click', closeExportHistoryModal);
+    }
+    if (DOM.btnViewHistoryFromModal) {
+        DOM.btnViewHistoryFromModal.addEventListener('click', () => {
+            closeExportModal();
+            openExportHistoryModal();
+        });
     }
 
     // AI Assistant Event Listeners (R3)

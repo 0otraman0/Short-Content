@@ -200,5 +200,5 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R5.9
 - **Owner**: Builder
-- **Status**: todo
+- **Status**: done
 - **How to test**: Mở trình duyệt, xuất thử 2 lần, kiểm tra danh sách hiển thị đủ 2 job và bấm nghe lại từng job độc lập.
