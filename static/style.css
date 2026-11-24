@@ -97,25 +97,32 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
+    padding: 8px 16px;
+    min-height: 52px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-surface);
+    gap: 12px;
 }
 
 .project-title-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .project-title-bar input {
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-primary);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    padding: 4px 8px;
+    padding: 4px 6px;
     border-radius: 4px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .project-title-bar input:focus {
@@ -125,13 +132,37 @@ body {
 }
 
 .save-status {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
 .top-actions {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.top-actions::-webkit-scrollbar {
+    display: none;
+}
+
+.top-actions button,
+.top-actions select {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0 10px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+    line-height: 1;
 }
 
 /* Editor Container */
@@ -160,6 +191,26 @@ body {
     padding: 6px 14px;
     border-radius: 20px;
     border: 1px solid var(--border-color);
+}
+
+.btn-chip {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    height: 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-chip:hover {
+    border-color: var(--primary);
+    background: var(--bg-base);
 }
 
 .stats-badge strong {

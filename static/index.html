@@ -33,18 +33,17 @@
                 </div>
                 <div class="top-actions">
                     <select id="preset-selector" class="preset-dropdown" title="Chọn preset nhịp điệu">
-                        <option value="mystery">Nhịp: Huyền bí (Mystery)</option>
-                        <option value="hype">Nhịp: Sôi nổi (Hype)</option>
-                        <option value="calm">Nhịp: Trầm tĩnh (Calm)</option>
+                        <option value="mystery">Nhịp: Huyền bí</option>
+                        <option value="hype">Nhịp: Sôi nổi</option>
+                        <option value="calm">Nhịp: Trầm tĩnh</option>
                     </select>
                     <button id="btn-select-voice" class="btn-secondary" title="Xem hoặc chọn lại giọng đọc nam">🎙️ Giọng đọc</button>
-                    <button id="btn-audio-fx" class="btn-secondary" title="Cấu hình bộ lọc âm thanh hậu kỳ (Compression, EQ, Reverb, Loudnorm)">🎛️ Bộ lọc Audio</button>
-                    <button id="btn-paragraph-takes" class="btn-secondary" title="Tạo lại đoạn & quản lý bản thu Takes">🔄 Tạo lại đoạn (Takes)</button>
-                    <button id="btn-random-length" class="btn-secondary" title="Chọn ngẫu nhiên 60-180s">🎲 Thời lượng ngẫu nhiên</button>
+                    <button id="btn-audio-fx" class="btn-secondary" title="Cấu hình bộ lọc âm thanh hậu kỳ (Compression, EQ, Reverb, Loudnorm)">🎛️ Audio FX</button>
+                    <button id="btn-paragraph-takes" class="btn-secondary" title="Tạo lại đoạn & quản lý bản thu Takes">🔄 Takes</button>
                     <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
-                    <button id="btn-export-history" class="btn-secondary" title="Xem lại các bản audio đã xuất">📜 Lịch sử xuất</button>
-                    <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio & Phụ đề</button>
+                    <button id="btn-export-history" class="btn-secondary" title="Xem lại các bản audio đã xuất">📜 Lịch sử</button>
+                    <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio</button>
                 </div>
             </header>
 
@@ -56,6 +55,7 @@
                         <span>Ước tính: <strong id="est-duration">0s</strong></span>
                         <span class="divider">|</span>
                         <span id="target-duration-display" class="target-chip">Mục tiêu: 60s - 180s</span>
+                        <button id="btn-random-length" class="btn-chip" title="Chọn ngẫu nhiên thời lượng mục tiêu 60-180s">🎲 Đổi mục tiêu</button>
                     </div>
                     <details class="cheatsheet-dropdown">
                         <summary>📖 Hướng dẫn nhịp điệu (Pacing markup)</summary>
