@@ -1744,18 +1744,20 @@ async function init() {
     const audioMenuDropdown = document.getElementById('audio-menu-dropdown');
     if (audioMenuToggle && audioMenuDropdown) {
         audioMenuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             audioMenuDropdown.classList.toggle('hidden');
         });
 
         audioMenuDropdown.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
+            const btn = e.target.closest('button');
+            if (btn && btn.id !== 'btn-audio-menu-toggle') {
                 audioMenuDropdown.classList.add('hidden');
             }
         });
 
         document.addEventListener('click', (e) => {
-            if (!audioMenuDropdown.contains(e.target) && e.target !== audioMenuToggle) {
+            if (!audioMenuDropdown.contains(e.target) && !audioMenuToggle.contains(e.target)) {
                 audioMenuDropdown.classList.add('hidden');
             }
         });

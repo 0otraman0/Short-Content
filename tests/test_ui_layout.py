@@ -93,5 +93,30 @@ class TestUILayout(unittest.TestCase):
         self.assertNotIn('id="btn-auto-pace"', menu_html)
         self.assertNotIn('id="btn-export-project"', menu_html)
 
+    def test_audio_menu_overflow_and_visibility(self):
+        """Test that .top-actions and .top-nav do not clip the audio menu dropdown with overflow auto/hidden."""
+        css_text = CSS_FILE.read_text(encoding="utf-8")
+        js_text = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+
+        # .top-actions must have overflow: visible
+        top_actions_block = re.search(r'\.top-actions\s*\{([^}]*)\}', css_text)
+        self.assertIsNotNone(top_actions_block, "Could not find .top-actions block in CSS")
+        top_actions_css = top_actions_block.group(1)
+        self.assertIn("overflow: visible", top_actions_css,
+                      ".top-actions must have 'overflow: visible' so the audio menu dropdown is not clipped vertically.")
+        self.assertNotIn("overflow-x: auto", top_actions_css,
+                         ".top-actions cannot have 'overflow-x: auto' as it forces vertical clipping of popover dropdowns.")
+
+        # .top-nav must have z-index to stay above the editor
+        top_nav_block = re.search(r'\.top-nav\s*\{([^}]*)\}', css_text)
+        self.assertIsNotNone(top_nav_block, "Could not find .top-nav block in CSS")
+        top_nav_css = top_nav_block.group(1)
+        self.assertIn("z-index", top_nav_css,
+                      ".top-nav must have a z-index to ensure popover dropdowns float above the editor.")
+
+        # In app.js, outside-click logic must use .contains()
+        self.assertIn("!audioMenuToggle.contains(e.target)", js_text,
+                      "app.js must use !audioMenuToggle.contains(e.target) to properly handle clicks on toggle children")
+
 if __name__ == "__main__":
     unittest.main()
