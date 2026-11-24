@@ -169,6 +169,70 @@ body {
     line-height: 1;
 }
 
+/* Audio Menu Dropdown & Table */
+.audio-menu-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.audio-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 320px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+    z-index: 100;
+    padding: 12px;
+}
+
+.audio-menu-header {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.audio-menu-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.audio-menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.audio-menu-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 85px;
+}
+
+.audio-menu-cell {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.audio-menu-cell .btn-menu-item,
+.audio-menu-cell select {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    padding: 6px 10px;
+    height: 32px;
+    font-size: 0.8rem;
+}
+
 /* Editor Container */
 .editor-container {
     flex: 1;

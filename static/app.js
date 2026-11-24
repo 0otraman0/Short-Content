@@ -1739,6 +1739,28 @@ async function init() {
     DOM.btnNewProject.addEventListener('click', createNewProject);
     DOM.btnRandomLength.addEventListener('click', randomTargetDuration);
 
+    // Audio Menu Dropdown Toggle
+    const audioMenuToggle = document.getElementById('btn-audio-menu-toggle');
+    const audioMenuDropdown = document.getElementById('audio-menu-dropdown');
+    if (audioMenuToggle && audioMenuDropdown) {
+        audioMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            audioMenuDropdown.classList.toggle('hidden');
+        });
+
+        audioMenuDropdown.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                audioMenuDropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!audioMenuDropdown.contains(e.target) && e.target !== audioMenuToggle) {
+                audioMenuDropdown.classList.add('hidden');
+            }
+        });
+    }
+
     if (DOM.btnPreviewAudio) {
         DOM.btnPreviewAudio.addEventListener('click', () => handleAudioPreview('auto'));
     }

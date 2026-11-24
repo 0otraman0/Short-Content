@@ -32,17 +32,62 @@
                     <span id="save-status" class="save-status">Đã lưu</span>
                 </div>
                 <div class="top-actions">
-                    <select id="preset-selector" class="preset-dropdown" title="Chọn preset nhịp điệu">
-                        <option value="mystery">Nhịp: Huyền bí</option>
-                        <option value="hype">Nhịp: Sôi nổi</option>
-                        <option value="calm">Nhịp: Trầm tĩnh</option>
-                    </select>
-                    <button id="btn-select-voice" class="btn-secondary" title="Xem hoặc chọn lại giọng đọc nam">🎙️ Giọng đọc</button>
-                    <button id="btn-audio-fx" class="btn-secondary" title="Cấu hình bộ lọc âm thanh hậu kỳ (Compression, EQ, Reverb, Loudnorm)">🎛️ Audio FX</button>
-                    <button id="btn-paragraph-takes" class="btn-secondary" title="Tạo lại đoạn & quản lý bản thu Takes">🔄 Takes</button>
-                    <button id="btn-preview-audio" class="btn-secondary" title="Nghe thử đoạn bôi đen">🔊 Nghe thử</button>
+                    <!-- Menu Gom Cài đặt & Công cụ Âm thanh -->
+                    <div class="audio-menu-dropdown-wrapper">
+                        <button id="btn-audio-menu-toggle" class="btn-secondary" title="Tùy chỉnh giọng đọc, nhịp điệu, bộ lọc Audio FX, Takes & Lịch sử">
+                            🎙️ Cài đặt Âm thanh ▾
+                        </button>
+                        <div id="audio-menu-dropdown" class="audio-menu-dropdown hidden">
+                            <div class="audio-menu-header">
+                                <span>🎧 Công cụ & Cài đặt Âm thanh</span>
+                            </div>
+                            <div class="audio-menu-table">
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Nhịp điệu:</span>
+                                    <div class="audio-menu-cell">
+                                        <select id="preset-selector" class="preset-dropdown" title="Chọn preset nhịp điệu">
+                                            <option value="mystery">Nhịp: Huyền bí</option>
+                                            <option value="hype">Nhịp: Sôi nổi</option>
+                                            <option value="calm">Nhịp: Trầm tĩnh</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Giọng đọc:</span>
+                                    <div class="audio-menu-cell">
+                                        <button id="btn-select-voice" class="btn-secondary btn-menu-item" title="Xem hoặc chọn lại giọng đọc nam">🎙️ Chọn giọng đọc nam</button>
+                                    </div>
+                                </div>
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Bộ lọc FX:</span>
+                                    <div class="audio-menu-cell">
+                                        <button id="btn-audio-fx" class="btn-secondary btn-menu-item" title="Cấu hình bộ lọc âm thanh hậu kỳ (Compression, EQ, Reverb, Loudnorm)">🎛️ Bộ lọc Audio FX</button>
+                                    </div>
+                                </div>
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Bản thu Takes:</span>
+                                    <div class="audio-menu-cell">
+                                        <button id="btn-paragraph-takes" class="btn-secondary btn-menu-item" title="Tạo lại đoạn & quản lý bản thu Takes">🔄 Quản lý Takes</button>
+                                    </div>
+                                </div>
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Đọc thử:</span>
+                                    <div class="audio-menu-cell">
+                                        <button id="btn-preview-audio" class="btn-secondary btn-menu-item" title="Nghe thử đoạn bôi đen hoặc toàn bộ kịch bản">🔊 Đọc thử kịch bản</button>
+                                    </div>
+                                </div>
+                                <div class="audio-menu-row">
+                                    <span class="audio-menu-label">Lịch sử xuất:</span>
+                                    <div class="audio-menu-cell">
+                                        <button id="btn-export-history" class="btn-secondary btn-menu-item" title="Xem lại các bản audio đã xuất">📜 Lịch sử các lần xuất</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Giữ độc lập trên thanh công cụ: Tự thêm nhịp & Xuất audio -->
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
-                    <button id="btn-export-history" class="btn-secondary" title="Xem lại các bản audio đã xuất">📜 Lịch sử</button>
                     <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio</button>
                 </div>
             </header>

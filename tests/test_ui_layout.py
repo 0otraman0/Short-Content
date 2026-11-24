@@ -65,5 +65,33 @@ class TestUILayout(unittest.TestCase):
         self.assertIn('id="export-audition-player"', html_text)
         self.assertIn('id="btn-confirm-start-export"', html_text)
 
+    def test_grouped_audio_menu_and_standalone_export_and_autopace(self):
+        """Test that related audio tools are grouped into an audio menu dropdown table, leaving only Auto-Pace and Export Project on the top bar."""
+        html_text = HTML_FILE.read_text(encoding="utf-8")
+
+        # Top bar must have the audio menu toggle
+        self.assertIn('id="btn-audio-menu-toggle"', html_text,
+                      "Top bar must have a grouped audio menu toggle button (#btn-audio-menu-toggle)")
+
+        # The grouped audio menu container must exist
+        self.assertIn('id="audio-menu-dropdown"', html_text,
+                      "Audio menu container (#audio-menu-dropdown) must exist")
+
+        # Ensure the audio dropdown contains the related tools
+        wrapper_match = re.search(r'<div class="audio-menu-dropdown-wrapper">(.*?)<!-- Giữ độc lập', html_text, re.DOTALL)
+        self.assertIsNotNone(wrapper_match, "Could not find .audio-menu-dropdown-wrapper container in HTML")
+        menu_html = wrapper_match.group(1)
+
+        self.assertIn('id="preset-selector"', menu_html)
+        self.assertIn('id="btn-select-voice"', menu_html)
+        self.assertIn('id="btn-audio-fx"', menu_html)
+        self.assertIn('id="btn-paragraph-takes"', menu_html)
+        self.assertIn('id="btn-preview-audio"', menu_html)
+        self.assertIn('id="btn-export-history"', menu_html)
+
+        # Ensure Auto-Pace and Export Audio remain standalone in .top-actions outside the dropdown
+        self.assertNotIn('id="btn-auto-pace"', menu_html)
+        self.assertNotIn('id="btn-export-project"', menu_html)
+
 if __name__ == "__main__":
     unittest.main()
