@@ -1,320 +1,38 @@
 """
-captions.py - Word-level Subtitle Generation and SRT Export using faster-whisper.
-
-Features:
-- Transcribes narration audio locally with faster-whisper (word-level timestamps).
-- Groups words into full natural phrases of about 5-8 words per line.
-- Formats standard SubRip (.srt) subtitle files with precision timestamps.
-- Preserves backwards-compatible .ass generator for karaoke highlighting if needed.
+captions.py - Thin facade. All logic lives in infrastructure/whisper_adapter.py.
+Tests import from this module directly; it re-exports everything they need.
 """
 
-from dataclasses import dataclass
-import os
-from pathlib import Path
-import re
-from typing import List, Optional
+from infrastructure.whisper_adapter import (
+    WordTiming,
+    CaptionChunk,
+    format_srt_time,
+    chunk_words_for_srt,
+    build_srt_content,
+    get_word_timings,
+    group_into_chunks,
+    chunks_to_srt,
+    transcribe_to_srt,
+    format_ass_time,
+    get_ass_header,
+    chunk_words,
+    build_ass_events,
+    transcribe_and_build_ass,
+)
 
-# Disable Windows symlink warning for huggingface hub cache
-os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-
-# Monkey-patch PyAV av.open to maintain compatibility with faster-whisper across all av versions (av >= 14 removed metadata_errors)
-try:
-    import av
-    _orig_av_open = av.open
-
-    def _safe_av_open(*args, **kwargs):
-        kwargs.pop("metadata_errors", None)
-        return _orig_av_open(*args, **kwargs)
-
-    av.open = _safe_av_open
-except Exception:
-    pass
-
-from faster_whisper import WhisperModel
-
-@dataclass
-class WordTiming:
-    word: str
-    start: float
-    end: float
-
-@dataclass
-class CaptionChunk:
-    words: List[WordTiming]
-    start: float
-    end: float
-
-# ==========================================
-# 1. Standard SRT Subtitles (5-8 words/line)
-# ==========================================
-
-def format_srt_time(seconds: float) -> str:
-    """Format float seconds to SRT timestamp format HH:MM:SS,mmm."""
-    if seconds < 0:
-        seconds = 0.0
-    hrs = int(seconds // 3600)
-    mins = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
-    millis = int(round((seconds - int(seconds)) * 1000))
-    if millis >= 1000:
-        millis = 999
-    return f"{hrs:02d}:{mins:02d}:{secs:02d},{millis:03d}"
-
-def chunk_words_for_srt(
-    words: List[WordTiming],
-    min_words: int = 5,
-    max_words: int = 8,
-    max_gap: float = 0.55
-) -> List[CaptionChunk]:
-    """
-    Group words into full, natural spoken phrases of about 5-8 words per line.
-    Breaks on sentence-ending punctuation or natural pauses.
-    """
-    if not words:
-        return []
-
-    chunks: List[CaptionChunk] = []
-    current_chunk: List[WordTiming] = []
-
-    for i, w in enumerate(words):
-        current_chunk.append(w)
-
-        clean_word = w.word.strip()
-        ends_sentence = bool(re.search(r"[.!?]+$", clean_word))
-        has_big_gap = False
-        if i < len(words) - 1:
-            next_start = words[i + 1].start
-            if next_start - w.end > max_gap:
-                has_big_gap = True
-
-        # Break chunk if max_words reached, sentence ended, significant pause, or end of words
-        should_break = (
-            len(current_chunk) >= max_words
-            or (ends_sentence and len(current_chunk) >= 3)
-            or (has_big_gap and len(current_chunk) >= min_words)
-            or i == len(words) - 1
-        )
-
-        if should_break:
-            c_start = current_chunk[0].start
-            c_end = current_chunk[-1].end
-            chunks.append(CaptionChunk(words=list(current_chunk), start=c_start, end=c_end))
-            current_chunk = []
-
-    return chunks
-
-def build_srt_content(chunks: List[CaptionChunk]) -> str:
-    """
-    Build standard SRT subtitle content with index, timestamps, and phrase text.
-    """
-    blocks = []
-    for idx, chunk in enumerate(chunks, start=1):
-        start_str = format_srt_time(chunk.start)
-        end_str = format_srt_time(chunk.end)
-        phrase_text = " ".join(w.word.strip() for w in chunk.words)
-
-        block = f"{idx}\n{start_str} --> {end_str}\n{phrase_text}\n"
-        blocks.append(block)
-
-    return "\n".join(blocks)
-
-def transcribe_to_srt(
-    audio_path: Path,
-    output_srt_path: Path,
-    model_size: str = "base.en",
-    device: Optional[str] = None
-) -> Path:
-    """
-    Transcribe audio with faster-whisper and export clean .srt subtitle file
-    with natural phrases of about 5-8 words per line.
-    """
-    audio_path = Path(audio_path)
-    output_srt_path = Path(output_srt_path)
-
-    if not audio_path.exists():
-        raise FileNotFoundError(f"Không tìm thấy file âm thanh: {audio_path}")
-
-    # Determine execution device
-    if device is None:
-        try:
-            import torch
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        except Exception:
-            device = "cpu"
-
-    compute_type = "float16" if device == "cuda" else "int8"
-
-    try:
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    except Exception:
-        model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-    segments_gen, info = model.transcribe(
-        str(audio_path),
-        word_timestamps=True,
-        language="en"
-    )
-
-    words: List[WordTiming] = []
-    for segment in segments_gen:
-        if segment.words:
-            for w in segment.words:
-                cleaned = w.word.strip()
-                if cleaned:
-                    words.append(WordTiming(word=cleaned, start=w.start, end=w.end))
-
-    chunks = chunk_words_for_srt(words, min_words=5, max_words=8)
-    srt_content = build_srt_content(chunks)
-
-    output_srt_path.parent.mkdir(parents=True, exist_ok=True)
-    output_srt_path.write_text(srt_content, encoding="utf-8")
-
-    return output_srt_path
-
-# ==========================================
-# 2. Backwards-compatible ASS Subtitles
-# ==========================================
-
-def format_ass_time(seconds: float) -> str:
-    """Format float seconds to ASS timestamp format H:MM:SS.cc."""
-    if seconds < 0:
-        seconds = 0.0
-    hrs = int(seconds // 3600)
-    mins = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
-    centis = int(round((seconds - int(seconds)) * 100))
-    if centis >= 100:
-        centis = 99
-    return f"{hrs}:{mins:02d}:{secs:02d}.{centis:02d}"
-
-def get_ass_header(
-    width: int = 1080,
-    height: int = 1920,
-    font_name: str = "Arial Black",
-    font_size: int = 72,
-    margin_v: int = 860
-) -> str:
-    return f"""[Script Info]
-ScriptType: v4.00+
-PlayResX: {width}
-PlayResY: {height}
-ScaledBorderAndShadow: yes
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,{font_name},{font_size},&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,60,60,{margin_v},1
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-"""
-
-def chunk_words(
-    words: List[WordTiming],
-    min_words: int = 2,
-    max_words: int = 4,
-    max_gap: float = 0.4
-) -> List[CaptionChunk]:
-    if not words:
-        return []
-
-    chunks: List[CaptionChunk] = []
-    current_chunk: List[WordTiming] = []
-
-    for i, w in enumerate(words):
-        current_chunk.append(w)
-        clean_word = w.word.strip()
-        ends_sentence = bool(re.search(r"[.!?]+$", clean_word))
-        has_big_gap = False
-        if i < len(words) - 1:
-            next_start = words[i + 1].start
-            if next_start - w.end > max_gap:
-                has_big_gap = True
-
-        if len(current_chunk) >= max_words or ends_sentence or has_big_gap or i == len(words) - 1:
-            c_start = current_chunk[0].start
-            c_end = current_chunk[-1].end
-            chunks.append(CaptionChunk(words=list(current_chunk), start=c_start, end=c_end))
-            current_chunk = []
-
-    return chunks
-
-def build_ass_events(
-    chunks: List[CaptionChunk],
-    highlight_color: str = "&H0000FFFF&",
-    default_color: str = "&H00FFFFFF&"
-) -> str:
-    lines = []
-    for chunk in chunks:
-        words = chunk.words
-        num_words = len(words)
-
-        for active_idx in range(num_words):
-            curr_w = words[active_idx]
-            w_start = curr_w.start
-            w_end = words[active_idx + 1].start if active_idx < num_words - 1 else curr_w.end
-            if w_end <= w_start:
-                w_end = w_start + 0.1
-
-            formatted_words = []
-            for j, w in enumerate(words):
-                upper_word = w.word.strip().upper()
-                if not upper_word:
-                    continue
-                if j == active_idx:
-                    formatted_words.append(f"{{\\c{highlight_color}}}{upper_word}{{\\c{default_color}}}")
-                else:
-                    formatted_words.append(upper_word)
-
-            dialogue_text = " ".join(formatted_words)
-            start_str = format_ass_time(w_start)
-            end_str = format_ass_time(w_end)
-            lines.append(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{dialogue_text}")
-
-    return "\n".join(lines)
-
-def transcribe_and_build_ass(
-    audio_path: Path,
-    output_ass_path: Path,
-    model_size: str = "base.en",
-    device: Optional[str] = None
-) -> Path:
-    audio_path = Path(audio_path)
-    output_ass_path = Path(output_ass_path)
-
-    if not audio_path.exists():
-        raise FileNotFoundError(f"Audio file not found: {audio_path}")
-
-    if device is None:
-        try:
-            import torch
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        except Exception:
-            device = "cpu"
-
-    compute_type = "float16" if device == "cuda" else "int8"
-    try:
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    except Exception:
-        model = WhisperModel(model_size, device="cpu", compute_type="int8")
-
-    segments_gen, info = model.transcribe(
-        str(audio_path),
-        word_timestamps=True,
-        language="en"
-    )
-
-    words: List[WordTiming] = []
-    for segment in segments_gen:
-        if segment.words:
-            for w in segment.words:
-                cleaned = w.word.strip()
-                if cleaned:
-                    words.append(WordTiming(word=cleaned, start=w.start, end=w.end))
-
-    chunks = chunk_words(words)
-    header = get_ass_header()
-    events = build_ass_events(chunks)
-
-    output_ass_path.parent.mkdir(parents=True, exist_ok=True)
-    output_ass_path.write_text(header + "\n" + events + "\n", encoding="utf-8")
-    return output_ass_path
+__all__ = [
+    "WordTiming",
+    "CaptionChunk",
+    "format_srt_time",
+    "chunk_words_for_srt",
+    "build_srt_content",
+    "get_word_timings",
+    "group_into_chunks",
+    "chunks_to_srt",
+    "transcribe_to_srt",
+    "format_ass_time",
+    "get_ass_header",
+    "chunk_words",
+    "build_ass_events",
+    "transcribe_and_build_ass",
+]

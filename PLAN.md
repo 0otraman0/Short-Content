@@ -319,3 +319,12 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: python -m unittest discover tests -> 55/55 OK.
+
+### T12.5: Thin Facades Cleanup for Root Modules
+- **Goal**: Chuyển đổi các module gốc (`gemini_client.py`, `factcheck.py`, `captions.py`, `tts.py`) thành thin facades thuần túy (chỉ re-export); chuyển toàn bộ nghiệp vụ thực tế vào `services/` và `infrastructure/`.
+- **Files**: services/gemini_service.py, services/factcheck_service.py, infrastructure/whisper_adapter.py, gemini_client.py, factcheck.py, captions.py, tts.py
+- **Requirements**: R1-R7
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: python -m unittest discover tests -> 55/55 tests passing, zero regression.
+
