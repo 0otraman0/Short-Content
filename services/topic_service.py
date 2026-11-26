@@ -12,6 +12,7 @@ stateless TopicService facade, stdlib only.
 
 import json
 import random
+import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -87,6 +88,69 @@ def suggest_topics(count: int = 3, path: Optional[Path] = None) -> List[Dict]:
     return random.sample(unused, min(count, len(unused)))
 
 
+def parse_generated_topic(text: str) -> Dict:
+    """Parse Gemini's JSON reply into a topic dict. Raises ValueError on bad output."""
+    if not text or not str(text).strip():
+        raise ValueError("AI không trả về nội dung.")
+    match = re.search(r"\{.*\}", str(text), re.DOTALL)
+    if not match:
+        raise ValueError("AI không trả về JSON.")
+    try:
+        data = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        raise ValueError("AI trả về JSON sai định dạng.")
+    hook = str(data.get("hook") or "").strip()
+    fact = str(data.get("fact") or "").strip()
+    source = str(data.get("source") or "").strip()
+    if not hook or not fact:
+        raise ValueError("AI trả về chủ đề thiếu hook hoặc fact.")
+    return {"hook": hook, "fact": fact, "source": source or "AI gợi ý — chưa kiểm chứng nguồn."}
+
+
+async def generate_topic(path: Optional[Path] = None, attempts: int = 3, _generate_text=None) -> Dict:
+    """Ask Gemini for one NEW topic not already in the bank.
+
+    Returns {hook, fact, source, ai_generated: True}. The topic is NOT saved
+    to the bank — the caller decides whether to save it. Raises RuntimeError
+    when Gemini fails or only suggests duplicates after `attempts` tries.
+    The lazy import keeps this module stdlib-only at import time; the
+    `_generate_text` parameter exists only so tests can inject a stub.
+    """
+    if _generate_text is None:
+        from services.gemini_service import generate_text as _generate_text
+
+    existing = {t["hook"].strip().lower() for t in load_topics(path)}
+    avoid = "; ".join(sorted(existing)) if existing else "none"
+    prompt = (
+        "You are a fact-checker for a YouTube Shorts channel about surprising science facts.\n"
+        "Suggest ONE surprising, verified science fact suitable for a 60-second Short.\n"
+        f"It must NOT be any of these already-used hooks: {avoid}.\n"
+        "Reply with JSON ONLY, no other text:\n"
+        '{"hook": "One short surprising sentence, under 15 words.", '
+        '"fact": "One or two sentences explaining the fact with the key number or date.", '
+        '"source": "Name of a trustworthy source, e.g. NASA, Nature, Smithsonian Magazine."}\n'
+        "Rules: only facts you are confident about; if unsure, pick a different fact. "
+        "Write in English. Never invent numbers, dates, or names."
+    )
+    last_error = None
+    for _ in range(attempts):
+        try:
+            raw = await _generate_text(
+                prompt,
+                system_instruction="Reply with JSON only. Never invent statistics, dates, names, or sources.",
+            )
+            topic = parse_generated_topic(raw)
+        except Exception as e:
+            last_error = e
+            continue
+        if topic["hook"].strip().lower() in existing:
+            last_error = ValueError("Gemini gợi ý trùng chủ đề đã có.")
+            continue
+        topic["ai_generated"] = True
+        return topic
+    raise RuntimeError(f"Không tạo được chủ đề mới: {last_error}")
+
+
 def create_topic(hook: str, fact: str, source: str = "", path: Optional[Path] = None) -> Dict:
     """Append a new topic to the bank with the next id. Persists to data/topics.json."""
     hook = (hook or "").strip()
@@ -142,6 +206,10 @@ class TopicService:
     @staticmethod
     def create_topic(hook: str, fact: str, source: str = "") -> Dict:
         return create_topic(hook, fact, source)
+
+    @staticmethod
+    async def generate_topic() -> Dict:
+        return await generate_topic()
 
     @staticmethod
     def mark_used(topic_id: str, used: bool = True) -> Dict:

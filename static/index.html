@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Shorts Maker - Khoa học & Sự thật</title>
-    <link rel="stylesheet" href="/static/style.css?v=19">
+    <link rel="stylesheet" href="/static/style.css?v=20">
 </head>
 <body>
     <div class="app-layout">
@@ -243,8 +243,13 @@
                 </p>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px;">
                     <span id="topics-count" style="font-size: 0.85rem; color: var(--text-secondary);"></span>
-                    <button id="btn-new-topic" class="btn-primary" style="font-size: 0.82rem; padding: 6px 12px;">＋ Tạo chủ đề mới</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-generate-topic" class="btn-accent" style="font-size: 0.82rem; padding: 6px 12px;" title="Nhờ AI gợi ý 1 chủ đề mới chưa có trong ngân hàng">🔄 Tạo lại chủ đề</button>
+                        <button id="btn-new-topic" class="btn-primary" style="font-size: 0.82rem; padding: 6px 12px;">＋ Tạo chủ đề mới</button>
+                    </div>
                 </div>
+                <p id="topics-status" class="empty-hint" style="margin: 0 0 10px;"></p>
+                <div id="ai-topic-slot" style="margin-bottom: 12px;"></div>
                 <div id="new-topic-form" class="hidden" style="margin-bottom: 14px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius);">
                     <label for="new-topic-hook" style="display: block; font-weight: 500; margin-bottom: 4px;">Hook (câu mở đầu):</label>
                     <input type="text" id="new-topic-hook" placeholder="VD: Sharks are older than trees." style="width: 100%; padding: 8px 12px; border-radius: 6px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-primary); margin-bottom: 10px;">
@@ -594,6 +599,6 @@
 
     <!-- Main Client Script -->
     <script src="/static/app.js?v=19"></script>
-    <script src="/static/topics.js?v=19"></script>
+    <script src="/static/topics.js?v=20"></script>
 </body>
 </html>

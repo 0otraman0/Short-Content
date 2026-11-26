@@ -18,6 +18,19 @@ class TopicCreate(BaseModel):
     source: str = ""
 
 
+@router.post("/generate")
+async def api_generate_topic():
+    """Ask Gemini for one new topic not in the bank (AI-suggested, unverified)."""
+    try:
+        return {"success": True, "topic": await TopicService.generate_topic()}
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi tạo chủ đề bằng AI: {str(e)}")
+
+
 @router.post("")
 async def api_create_topic(payload: TopicCreate):
     """Add a new topic to the bank (id = next number, status unused)."""

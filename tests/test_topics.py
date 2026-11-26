@@ -9,14 +9,17 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from services.topic_service import (
     create_topic,
+    generate_topic,
     load_topics,
     list_topics,
     get_topic,
+    parse_generated_topic,
     suggest_topic,
     suggest_topics,
     mark_used,
@@ -92,6 +95,42 @@ class TestTopicBank(unittest.TestCase):
             mark_used(t["id"], used=True, path=self.path)
         self.assertIsNone(suggest_topic(self.path))
         self.assertEqual(suggest_topics(3, self.path), [])
+
+
+class TestGenerateTopicParsing(unittest.TestCase):
+    def test_parse_valid_json(self):
+        t = parse_generated_topic('{"hook": "A new hook.", "fact": "A new fact.", "source": "NASA"}')
+        self.assertEqual(t["hook"], "A new hook.")
+        self.assertEqual(t["source"], "NASA")
+
+    def test_parse_extracts_json_from_extra_text(self):
+        t = parse_generated_topic('Here it is:\n{"hook": "H.", "fact": "F.", "source": ""}\nDone.')
+        self.assertEqual(t["hook"], "H.")
+        self.assertIn("chưa kiểm chứng", t["source"])
+
+    def test_parse_rejects_missing_hook_or_fact(self):
+        with self.assertRaises(ValueError):
+            parse_generated_topic('{"hook": "", "fact": "F."}')
+        with self.assertRaises(ValueError):
+            parse_generated_topic('not json at all')
+
+
+class TestGenerateTopicAI(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.path = _bank_copy(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    async def test_generate_skips_duplicate_hook(self):
+        duplicate = json.dumps({"hook": "Oxford University is older than the Aztec Empire.",
+                                "fact": "Old fact.", "source": "Oxford"})
+        fresh = json.dumps({"hook": "A brand new hook.", "fact": "A brand new fact.", "source": "NASA"})
+        stub = AsyncMock(side_effect=[duplicate, fresh])
+        t = await generate_topic(path=self.path, _generate_text=stub)
+        self.assertEqual(t["hook"], "A brand new hook.")
+        self.assertTrue(t["ai_generated"])
 
 
 if __name__ == "__main__":
