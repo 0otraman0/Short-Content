@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi.testclient import TestClient
 from main import app, CACHE_DIR
-import tts
+from infrastructure.tts_providers import get_locked_voice
 
 def test_tts_endpoints():
     client = TestClient(app)
@@ -54,11 +54,11 @@ def test_tts_endpoints():
     res = client.post("/api/tts/lock-voice", json={"voice": "en-US-GuyNeural"})
     assert res.status_code == 200
     assert res.json()["voice"] == "en-US-GuyNeural"
-    assert tts.get_locked_voice() == "en-US-GuyNeural"
+    assert get_locked_voice() == "en-US-GuyNeural"
 
     # Restore original voice
     client.post("/api/tts/lock-voice", json={"voice": original_voice})
-    assert tts.get_locked_voice() == original_voice
+    assert get_locked_voice() == original_voice
 
     print("TTS Preview & Voice API tests passed successfully!")
 

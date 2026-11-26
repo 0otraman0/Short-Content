@@ -5,14 +5,14 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from captions import (
+from infrastructure.whisper_adapter import (
     WordTiming,
     build_srt_content,
     chunk_words_for_srt,
     format_srt_time,
     transcribe_to_srt,
 )
-from tts import synthesize_narration
+from services.tts_service import synthesize_narration
 
 class TestCaptionsSRT(unittest.TestCase):
 

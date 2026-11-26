@@ -5,7 +5,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from factcheck import clean_pacing_tags, extract_and_verify_claims, rewrite_claim_safely
+from services.factcheck_service import clean_pacing_tags, extract_and_verify_claims, rewrite_claim_safely
 
 class TestFactCheck(unittest.TestCase):
     def test_clean_pacing_tags(self):

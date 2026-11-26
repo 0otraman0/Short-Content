@@ -6,18 +6,20 @@ from unittest.mock import AsyncMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from tts import (
+from infrastructure.tts_providers import (
     EdgeTTSProvider,
     KokoroTTSProvider,
+    get_locked_voice,
+    get_tts_provider,
+    lock_voice,
+)
+from infrastructure.ffmpeg_processor import (
     build_audio_filter_chain,
     generate_silence,
     get_audio_duration,
     get_audio_enhancements,
-    get_locked_voice,
-    get_tts_provider,
-    lock_voice,
-    synthesize_narration,
 )
+from services.tts_service import synthesize_narration
 
 class TestTTSEngine(unittest.TestCase):
 

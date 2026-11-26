@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from gemini_client import (
+from services.gemini_service import (
     get_gemini_client,
     get_configured_model,
     generate_text,
@@ -40,7 +40,7 @@ class TestGeminiClient(unittest.TestCase):
         print("Option 1:", options[0][:80], "...")
 
     def test_format_gemini_error(self):
-        from gemini_client import format_gemini_error
+        from services.gemini_service import format_gemini_error
         err_429 = Exception("429 ResourceExhausted: quota exceeded")
         msg_429 = format_gemini_error(err_429)
         self.assertIn("429", msg_429)
@@ -51,7 +51,7 @@ class TestGeminiClient(unittest.TestCase):
         self.assertIn("kết nối", msg_net)
 
     def test_speakability_rules_in_system_prompt(self):
-        from gemini_client import SYSTEM_INSTRUCTION_WRITING
+        from services.gemini_service import SYSTEM_INSTRUCTION_WRITING
         self.assertIn("SPEAKABILITY & NARRATION RULES", SYSTEM_INSTRUCTION_WRITING)
         self.assertIn("Alternate short, punchy sentences", SYSTEM_INSTRUCTION_WRITING)
         self.assertIn("end of the sentence", SYSTEM_INSTRUCTION_WRITING)

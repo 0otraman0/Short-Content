@@ -289,8 +289,11 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 ## Phase 12: Refactoring to 3-Layer Architecture
 
 ### T12.1: Data Access & Infrastructure Layer
-- **Goal**: Xây dựng tầng 3 (Data Access & Infrastructure): tách logic file I/O dự án vào epositories/project_repository.py; tách EdgeTTS/Kokoro providers vào infrastructure/tts_providers.py, FFmpeg filters vào infrastructure/ffmpeg_processor.py, whisper engine vào infrastructure/whisper_adapter.py.
-- **Files**: epositories/__init__.py, epositories/project_repository.py, infrastructure/__init__.py, infrastructure/tts_providers.py, infrastructure/ffmpeg_processor.py, infrastructure/whisper_adapter.py
+- **Goal**: Xây dựng tầng 3 (Data Access & Infrastructure): tách logic file I/O dự án vào 
+epositories/project_repository.py; tách EdgeTTS/Kokoro providers vào infrastructure/tts_providers.py, FFmpeg filters vào infrastructure/ffmpeg_processor.py, whisper engine vào infrastructure/whisper_adapter.py.
+- **Files**: 
+epositories/__init__.py, 
+epositories/project_repository.py, infrastructure/__init__.py, infrastructure/tts_providers.py, infrastructure/ffmpeg_processor.py, infrastructure/whisper_adapter.py
 - **Requirements**: R6.1, R6.2, R2.12, R5.3
 - **Owner**: Builder
 - **Status**: done
@@ -305,8 +308,15 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Import tất cả services; verify enhancements keys, GeminiService methods. All OK.
 
 ### T12.3: Presentation Layer & Routers
-- **Goal**: Xây dựng tầng 1 (Presentation / Routers): phân tách các endpoints từ main.py sang outers/ (5 router file), tinh gọn main.py thành bootstrap loader (~120 dòng).
-- **Files**: outers/__init__.py, outers/projects_router.py, outers/tts_router.py, outers/gemini_router.py, outers/factcheck_router.py, outers/export_router.py, main.py
+- **Goal**: Xây dựng tầng 1 (Presentation / Routers): phân tách các endpoints từ main.py sang 
+outers/ (5 router file), tinh gọn main.py thành bootstrap loader (~120 dòng).
+- **Files**: 
+outers/__init__.py, 
+outers/projects_router.py, 
+outers/tts_router.py, 
+outers/gemini_router.py, 
+outers/factcheck_router.py, 
+outers/export_router.py, main.py
 - **Requirements**: R1-R6
 - **Owner**: Builder
 - **Status**: done
@@ -327,4 +337,13 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: python -m unittest discover tests -> 55/55 tests passing, zero regression.
+
+### T12.6: Root Directory Cleanup & Test Suite Modernization
+- **Goal**: Di chuyển `pacing.py` sang `services/pacing_service.py`, hiện đại hóa toàn bộ imports trong `tests/` trỏ trực tiếp vào `services/` và `infrastructure/`, xóa hoàn toàn 5 file `.py` ở thư mục gốc (`captions.py`, `factcheck.py`, `gemini_client.py`, `pacing.py`, `tts.py`). Thư mục gốc chỉ còn duy nhất `main.py`.
+- **Files**: services/pacing_service.py, services/tts_service.py, services/__init__.py, tests/test_captions.py, tests/test_factcheck.py, tests/test_gemini.py, tests/test_pacing.py, tests/test_tts.py, tests/test_tts_preview.py
+- **Requirements**: R1-R7
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: python -m unittest discover tests (55/55 OK) & python tests/test_tts_preview.py (OK). Root directory has ONLY main.py.
+
 

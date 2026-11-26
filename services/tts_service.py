@@ -24,7 +24,7 @@ from infrastructure.tts_providers import (
     get_locked_voice,
     get_config,
 )
-from pacing import PauseSegment, SpeechSegment, parse_script
+from services.pacing_service import PauseSegment, SpeechSegment, parse_script
 
 
 class TTSService:

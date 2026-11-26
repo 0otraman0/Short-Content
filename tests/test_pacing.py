@@ -5,7 +5,7 @@ import unittest
 # Ensure project root is in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from pacing import (
+from services.pacing_service import (
     parse_script,
     SpeechSegment,
     PauseSegment,

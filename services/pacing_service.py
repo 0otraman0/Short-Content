@@ -1,17 +1,6 @@
 """
-pacing.py - Script pacing markup parser and segment splitter.
-
-Supported tags:
-  [pause 0.5]            - Silence in seconds
-  [slow]...[/slow]       - Slower narration rate (-15%)
-  [fast]...[/fast]       - Faster narration rate (+12%)
-  *word or phrase*       - Emphasis (louder, higher pitch, tiny pause before)
-  [whisper]...[/whisper] - Lower pitch (-4Hz), lower volume (-30%), slightly slower (-10%)
-  [deep]...[/deep]       - Deep bass voice for mysteries and chilling facts (-6Hz pitch, -8% rate, +10% vol)
-  [shock]...[/shock]     - High dramatic revelation and disbelief (+6Hz pitch, +15% rate, +15% vol)
-  [urgent]...[/urgent]   - Ticking clock, fast-paced intensity (+22% rate, +10% vol, +1Hz pitch)
-  [solemn]...[/solemn]   - Slow reflective ending and ancient history (-20% rate, -3Hz pitch)
-  [loud]...[/loud]       - Powerful wake-up attention grabber (+30% vol, +2Hz pitch)
+pacing_service.py - Script pacing markup parser and segment splitter.
+Part of 3-Layer Architecture (Services Layer).
 """
 
 from dataclasses import dataclass
@@ -104,10 +93,6 @@ def parse_script(
     baseline_pitch_hz = parse_pitch_hz(preset.get("baseline_pitch", "+0Hz"))
     sentence_pause = float(preset.get("sentence_pause", 0.6))
 
-    # Token patterns
-    # Matches: [pause X], [slow]...[/slow], [fast]...[/fast], [whisper]...[/whisper],
-    #          [deep]...[/deep], [shock]...[/shock], [urgent]...[/urgent],
-    #          [solemn]...[/solemn], [loud]...[/loud], *emphasis*
     token_pattern = re.compile(
         r"(\[pause\s+([0-9.]+)\])"
         r"|(\[slow\]([\s\S]*?)\[/slow\])"
@@ -245,7 +230,6 @@ def parse_script(
         elif match.group(19):
             inner_text = match.group(20).strip()
             if inner_text:
-                # Insert tiny pause (0.15s) before emphasis if previous segment isn't already a pause
                 if not raw_segments or not isinstance(raw_segments[-1], PauseSegment):
                     raw_segments.append(PauseSegment(duration=0.15))
 
@@ -276,7 +260,6 @@ def _append_plain_text(
     sentence_pause: float,
     auto_sentence_pauses: bool
 ):
-    """Split plain text by sentence boundaries if auto_sentence_pauses is True."""
     clean_text = text.strip()
     if not clean_text:
         return
@@ -290,7 +273,6 @@ def _append_plain_text(
         ))
         return
 
-    # Split by sentence ending punctuation (. ? !)
     sentences = re.split(r"([.?!]+(?:\s+|$))", clean_text)
     current_sentence = ""
 
@@ -307,7 +289,6 @@ def _append_plain_text(
                     pitch=format_pitch(pitch_hz),
                     volume="+0%"
                 ))
-                # Add natural sentence pause
                 segments.append(PauseSegment(duration=sentence_pause))
             current_sentence = ""
 
@@ -320,7 +301,6 @@ def _append_plain_text(
         ))
 
 def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
-    """Merge adjacent pauses and coalesce adjacent speech segments with identical audio settings (R2.6)."""
     result: List[Segment] = []
 
     for seg in segments:
@@ -328,7 +308,6 @@ def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
             if seg.duration <= 0.01:
                 continue
             if result and isinstance(result[-1], PauseSegment):
-                # Keep the longer pause rather than stacking indefinitely
                 result[-1].duration = max(result[-1].duration, seg.duration)
             else:
                 result.append(seg)
@@ -336,13 +315,11 @@ def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
             clean_text = seg.text.strip()
             if not clean_text:
                 continue
-            # If segment has no speakable words (only punctuation like '.' or '?')
             if not re.search(r"\w", clean_text):
                 if result and isinstance(result[-1], SpeechSegment):
                     result[-1].text = (result[-1].text + clean_text).strip()
                 continue
 
-            # Coalesce with preceding SpeechSegment if parameters match exactly (R2.6)
             if (
                 result
                 and isinstance(result[-1], SpeechSegment)
@@ -356,8 +333,14 @@ def _clean_and_coalesce_segments(segments: List[Segment]) -> List[Segment]:
             else:
                 result.append(seg)
 
-    # Trim trailing pause
     if result and isinstance(result[-1], PauseSegment):
         result.pop()
 
     return result
+
+
+class PacingService:
+    """Service facade for script pacing operations."""
+    @staticmethod
+    def parse(script: str, preset_name: str = "mystery", config_path: Optional[Path] = None, auto_sentence_pauses: bool = False) -> List[Segment]:
+        return parse_script(script, preset_name=preset_name, config_path=config_path, auto_sentence_pauses=auto_sentence_pauses)
