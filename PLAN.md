@@ -283,3 +283,39 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Status**: done
 - **How to test**: Äá»•i tÃªn dá»± Ã¡n tá»« Ã´ Top Bar hoáº·c nÃºt `âœï¸` á»Ÿ Sidebar, kiá»ƒm tra tÃªn má»›i Ä‘Æ°á»£c lÆ°u vÃ o `project.json` vÃ  hiá»ƒn thá»‹ Ä‘á»“ng bá»™ á»Ÿ cáº£ hai vá»‹ trÃ­. Test passed.
 
+
+---
+
+## Phase 12: Refactoring to 3-Layer Architecture
+
+### T12.1: Data Access & Infrastructure Layer
+- **Goal**: Xây dựng tầng 3 (Data Access & Infrastructure): tách logic file I/O dự án vào epositories/project_repository.py; tách EdgeTTS/Kokoro providers vào infrastructure/tts_providers.py, FFmpeg filters vào infrastructure/ffmpeg_processor.py, whisper engine vào infrastructure/whisper_adapter.py.
+- **Files**: epositories/__init__.py, epositories/project_repository.py, infrastructure/__init__.py, infrastructure/tts_providers.py, infrastructure/ffmpeg_processor.py, infrastructure/whisper_adapter.py
+- **Requirements**: R6.1, R6.2, R2.12, R5.3
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Import infrastructure/repositories; check locked voice, enhancements, project CRUD. All OK.
+
+### T12.2: Business Logic Layer (Services)
+- **Goal**: Xây dựng tầng 2 (Services): tổ chức các dịch vụ nghiệp vụ độc lập vào services/ (project_service.py, 	ts_service.py, gemini_service.py, actcheck_service.py, export_service.py). Facade pattern giữ root modules tương thích.
+- **Files**: services/__init__.py, services/project_service.py, services/tts_service.py, services/gemini_service.py, services/factcheck_service.py, services/export_service.py
+- **Requirements**: R1-R6
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Import tất cả services; verify enhancements keys, GeminiService methods. All OK.
+
+### T12.3: Presentation Layer & Routers
+- **Goal**: Xây dựng tầng 1 (Presentation / Routers): phân tách các endpoints từ main.py sang outers/ (5 router file), tinh gọn main.py thành bootstrap loader (~120 dòng).
+- **Files**: outers/__init__.py, outers/projects_router.py, outers/tts_router.py, outers/gemini_router.py, outers/factcheck_router.py, outers/export_router.py, main.py
+- **Requirements**: R1-R6
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: Import main app; verify routes list loads correctly. All OK.
+
+### T12.4: Verification & Documentation
+- **Goal**: Chạy toàn bộ 55 tests, cập nhật CHANGELOG, DECISIONS, PLAN, STATE.
+- **Files**: 	ests/test_*.py, CHANGELOG.md, DECISIONS.md, PLAN.md, STATE.md
+- **Requirements**: R7
+- **Owner**: Builder
+- **Status**: done
+- **How to test**: python -m unittest discover tests -> 55/55 OK.
