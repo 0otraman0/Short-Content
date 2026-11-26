@@ -170,7 +170,7 @@ class ProjectRepository:
         new_data = {
             **data,
             "id": new_id,
-            "title": data.get("title", "Untitled") + " (copy)",
+            "title": data.get("title", "Untitled") + " (Bản sao)",
             "status": "draft",
             "claims": [],
             "takes": {},
