@@ -1905,6 +1905,52 @@ function setupTabs() {
     });
 }
 
+// Phase 15: Workflow steps, collapsible sidebar/panel, pacing "more" toggle.
+// Steps reuse the existing handlers (no new backend calls): write focuses the
+// editor, preview clicks #btn-preview-audio, factcheck opens the fact-check
+// tab, export clicks #btn-export-project.
+function setupWorkflowUI() {
+    const layout = document.querySelector('.app-layout');
+
+    const sidebarToggle = document.getElementById('btn-toggle-sidebar');
+    if (sidebarToggle && layout) {
+        sidebarToggle.addEventListener('click', () => layout.classList.toggle('sidebar-collapsed'));
+    }
+
+    const panelToggle = document.getElementById('btn-toggle-panel');
+    if (panelToggle && layout) {
+        panelToggle.addEventListener('click', () => layout.classList.toggle('panel-collapsed'));
+    }
+
+    const moreBtn = document.getElementById('btn-pacing-more');
+    const extra = document.querySelector('.pacing-extra');
+    if (moreBtn && extra) {
+        moreBtn.addEventListener('click', () => {
+            const hidden = extra.classList.toggle('hidden');
+            moreBtn.textContent = hidden ? '＋ Thêm nhịp ▾' : '－ Thu gọn ▴';
+        });
+    }
+
+    document.querySelectorAll('.workflow-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.workflow-step').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const step = btn.getAttribute('data-step');
+            if (step === 'write') {
+                if (DOM.scriptEditor) DOM.scriptEditor.focus();
+            } else if (step === 'preview') {
+                if (DOM.btnPreviewAudio) DOM.btnPreviewAudio.click();
+            } else if (step === 'factcheck') {
+                if (layout) layout.classList.remove('panel-collapsed');
+                const tab = document.querySelector('.tab-btn[data-tab="factcheck-tab"]');
+                if (tab) tab.click();
+            } else if (step === 'export') {
+                if (DOM.btnExportProject) DOM.btnExportProject.click();
+            }
+        });
+    });
+}
+
 // ==========================================
 // 7. Initialization
 // ==========================================
@@ -1913,6 +1959,7 @@ async function init() {
     setupTabs();
     setupCheatsheet();
     setupQuickPacingToolbar();
+    setupWorkflowUI();
 
     // Event Listeners
     DOM.btnNewProject.addEventListener('click', createNewProject);

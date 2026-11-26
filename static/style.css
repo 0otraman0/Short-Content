@@ -4,11 +4,11 @@
     --bg-surface-elevated: #222636;
     --border-color: #2b3044;
     --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-secondary: #b0bdd0;
+    --text-muted: #8a9bb5;
     --primary: #6366f1;
     --primary-hover: #4f46e5;
-    --accent: #8b5cf6;
+    --accent: #818cf8;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
@@ -36,6 +36,24 @@ body {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+}
+
+/* Phase 15: Thu gọn sidebar / panel trợ lý để khung viết rộng ra */
+.app-layout.sidebar-collapsed {
+    grid-template-columns: 0 minmax(0, 1fr) 320px;
+}
+
+.app-layout.panel-collapsed {
+    grid-template-columns: 240px minmax(0, 1fr) 0;
+}
+
+.app-layout.sidebar-collapsed.panel-collapsed {
+    grid-template-columns: 0 minmax(0, 1fr) 0;
+}
+
+.app-layout.sidebar-collapsed .sidebar,
+.app-layout.panel-collapsed .assistant-panel {
+    display: none;
 }
 
 /* Sidebar */
@@ -102,13 +120,72 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 8px 16px;
-    min-height: 52px;
+    min-height: 56px;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-surface);
     gap: 12px;
     position: relative;
     z-index: 50;
     overflow: visible;
+}
+
+/* Phase 15: Thanh quy trình 4 bước Viết → Nghe thử → Kiểm chứng → Xuất */
+.workflow-steps {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.workflow-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    min-height: 36px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.workflow-step:hover {
+    border-color: var(--primary);
+    color: var(--text-primary);
+}
+
+.workflow-step.active {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.workflow-step .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.16);
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.workflow-step:not(.active) .step-num {
+    background-color: var(--bg-surface-elevated);
+    color: var(--text-secondary);
+}
+
+.step-connector {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 .project-title-bar {
@@ -360,9 +437,10 @@ body {
 }
 
 .btn-pacing-tag {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    padding: 3px 8px;
+    padding: 6px 10px;
+    min-height: 32px;
     border-radius: 4px;
     background: var(--bg-surface-elevated);
     border: 1px solid var(--border-color);
@@ -370,6 +448,22 @@ body {
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.15s ease;
+}
+
+/* Phase 15: Nhóm 6 nhịp ít dùng, ẩn sau nút "Thêm nhịp" */
+.pacing-extra {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pacing-extra.hidden {
+    display: none;
+}
+
+.btn-pacing-more {
+    border-style: dashed;
+    color: var(--text-primary);
 }
 
 .btn-pacing-tag:hover {
@@ -385,9 +479,9 @@ body {
     border: 1px solid var(--border-color);
     border-top: none;
     border-radius: 0 0 var(--radius) var(--radius);
-    padding: 16px;
+    padding: 20px;
     color: var(--text-primary);
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1.7;
     resize: none;
     outline: none;
@@ -603,6 +697,7 @@ button {
     font-size: 0.85rem;
     font-weight: 500;
     padding: 8px 14px;
+    min-height: 36px;
     border-radius: var(--radius);
     border: none;
     cursor: pointer;
@@ -707,7 +802,9 @@ button {
 .btn-icon {
     background: transparent;
     border: none;
-    padding: 4px;
+    padding: 6px;
+    min-width: 36px;
+    min-height: 36px;
     font-size: 0.85rem;
     cursor: pointer;
     border-radius: 4px;
@@ -1313,8 +1410,54 @@ button {
 }
 
 @media (max-width: 1024px) {
-    .app-layout {
-        grid-template-columns: 200px minmax(0, 1fr) 280px;
+    /* Phase 15: Màn nhỏ xếp dọc — sidebar lên trên, panel AI xuống dưới, khung viết ở giữa */
+    body {
+        overflow: auto;
+        height: auto;
+    }
+
+    .app-layout,
+    .app-layout.sidebar-collapsed,
+    .app-layout.panel-collapsed,
+    .app-layout.sidebar-collapsed.panel-collapsed {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .app-layout.sidebar-collapsed .sidebar,
+    .app-layout.panel-collapsed .assistant-panel {
+        display: flex;
+    }
+
+    .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .projects-list {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 12px;
+    }
+
+    .project-item {
+        min-width: 200px;
+        margin-bottom: 0;
+    }
+
+    .main-content {
+        min-height: 70vh;
+    }
+
+    .assistant-panel {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        min-height: 40vh;
     }
 }
 

@@ -27,6 +27,7 @@
         <!-- Main Content: Trình soạn thảo kịch bản -->
         <main class="main-content">
             <header class="top-nav">
+                <button id="btn-toggle-sidebar" class="btn-icon" title="Ẩn/hiện danh sách dự án">☰</button>
                 <div class="project-title-bar">
                     <input type="text" id="project-title-input" value="Dự án chưa đặt tên" placeholder="Nhập tên dự án..." title="Bấm để sửa tên dự án (Nhấn Enter để lưu)">
                     <button id="btn-edit-title" class="btn-icon" title="Sửa tên dự án">✏️</button>
@@ -90,8 +91,20 @@
                     <!-- Giữ độc lập trên thanh công cụ: Tự thêm nhịp & Xuất audio -->
                     <button id="btn-auto-pace" class="btn-accent" title="AI tự thêm nhịp đọc">⚡ Tự thêm nhịp</button>
                     <button id="btn-export-project" class="btn-success" title="Xuất Audio & Phụ đề">📦 Xuất Audio</button>
+                    <button id="btn-toggle-panel" class="btn-icon" title="Ẩn/hiện trợ lý AI">🤖</button>
                 </div>
             </header>
+
+            <!-- Phase 15: Thanh quy trình 4 bước Viết → Nghe thử → Kiểm chứng → Xuất -->
+            <nav class="workflow-steps" aria-label="Quy trình làm video">
+                <button type="button" class="workflow-step active" data-step="write" title="Viết hoặc dán kịch bản vào khung soạn thảo"><span class="step-num">1</span><span class="step-label">Viết kịch bản</span></button>
+                <span class="step-connector" aria-hidden="true">›</span>
+                <button type="button" class="workflow-step" data-step="preview" title="Nghe thử giọng đọc trước khi xuất"><span class="step-num">2</span><span class="step-label">Nghe thử</span></button>
+                <span class="step-connector" aria-hidden="true">›</span>
+                <button type="button" class="workflow-step" data-step="factcheck" title="Mở tab Kiểm chứng để bóc tách và đối chiếu luận điểm"><span class="step-num">3</span><span class="step-label">Kiểm chứng</span></button>
+                <span class="step-connector" aria-hidden="true">›</span>
+                <button type="button" class="workflow-step" data-step="export" title="Xuất Audio, phụ đề SRT và nguồn trích dẫn"><span class="step-num">4</span><span class="step-label">Xuất Audio</span></button>
+            </nav>
 
             <div class="editor-container">
                 <div class="editor-toolbar">
@@ -128,12 +141,15 @@
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="slow" title="Đọc chậm (-15%) - Tạo hồi hộp, chờ đợi">🐢 Chậm</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="pause" data-val="0.5" title="Chèn khoảng lặng 0.5s">⏸️ Nghỉ 0.5s</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="emphasis" title="Nhấn giọng mạnh hơn vào từ khóa">🔥 Nhấn mạnh</button>
+                        <span class="pacing-extra hidden">
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="whisper" title="Thì thầm bí mật (-30% volume, -4Hz pitch)">🤫 Thì thầm</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="deep" title="Giọng trầm sâu rùng mình (-6Hz pitch, đáy biển/vũ trụ)">🌊 Trầm sâu</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="shock" title="Giọng kinh ngạc, giật gân (+6Hz pitch, cao trào)">⚡ Giật gân</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="urgent" title="Nhịp dồn dập, khẩn cấp (+22% speed)">⏱️ Dồn dập</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="solemn" title="Lắng đọng, trang nghiêm (-20% speed, triết lý)">🏛️ Lắng đọng</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="loud" title="To vang, cảnh báo (+30% volume)">📢 To vang</button>
+                        </span>
+                        <button type="button" id="btn-pacing-more" class="btn-pacing-tag btn-pacing-more" title="Hiện thêm các nhịp điệu ít dùng">＋ Thêm nhịp ▾</button>
                     </div>
                 </div>
 
