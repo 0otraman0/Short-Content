@@ -2,6 +2,11 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 15.1
+- **T15.5**: Removed step 1 ("Viết kịch bản") from the workflow bar in `static/index.html`, since writing is the default state of the editor. Renumbered the remaining steps 1–3 (`Nghe thử → Kiểm chứng → Xuất Audio`) and removed the unused `write` branch from `setupWorkflowUI()` in `static/app.js`. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
+- **T15.6**: Moved topic suggestions to the top of the assistant panel in `static/index.html`. The `#btn-suggest-topics` card and `#topics-list` now sit at the top of `#gemini-tab`, above the AI notes box and the three writing cards (suggest next, rewrite, outline), so the topic list drops down with the full panel height available. Added a `#topics-list` rule in `static/style.css` removing the shared `.claims-list` height cap, so all 10 topics show in full instead of inside a small scrolled box. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
+- **Tests**: Ran the 9 layout tests in `tests/test_ui_layout.py` against the edited files; 9/9 passed. Full suite to be re-run on Windows.
+
 ## [2026-11-26] - Phase 15
 - **T15.1**: Added a 4-step workflow bar in `static/index.html` (`Viết kịch bản → Nghe thử → Kiểm chứng → Xuất Audio`). Each step reuses the existing action in `static/app.js` (`setupWorkflowUI()`): step 1 focuses the script editor, step 2 clicks `#btn-preview-audio`, step 3 opens the fact-check tab, step 4 clicks `#btn-export-project`. No backend logic changed and no element id was removed. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
 - **T15.2**: Made the sidebar and assistant panel collapsible in `static/index.html` and `static/style.css`. Added `#btn-toggle-sidebar` (☰) and `#btn-toggle-panel` (🤖) in the top bar; clicking them toggles `sidebar-collapsed` / `panel-collapsed` on `.app-layout`, hiding the panel so the editor gets the full width. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Shorts Maker - Khoa học & Sự thật</title>
-    <link rel="stylesheet" href="/static/style.css?v=15">
+    <link rel="stylesheet" href="/static/style.css?v=16">
 </head>
 <body>
     <div class="app-layout">
@@ -95,15 +95,13 @@
                 </div>
             </header>
 
-            <!-- Phase 15: Thanh quy trình 4 bước Viết → Nghe thử → Kiểm chứng → Xuất -->
+            <!-- Phase 15.1: Chỉ còn 3 bước (Viết là trạng thái mặc định, không cần bước riêng) -->
             <nav class="workflow-steps" aria-label="Quy trình làm video">
-                <button type="button" class="workflow-step active" data-step="write" title="Viết hoặc dán kịch bản vào khung soạn thảo"><span class="step-num">1</span><span class="step-label">Viết kịch bản</span></button>
+                <button type="button" class="workflow-step" data-step="preview" title="Nghe thử giọng đọc trước khi xuất"><span class="step-num">1</span><span class="step-label">Nghe thử</span></button>
                 <span class="step-connector" aria-hidden="true">›</span>
-                <button type="button" class="workflow-step" data-step="preview" title="Nghe thử giọng đọc trước khi xuất"><span class="step-num">2</span><span class="step-label">Nghe thử</span></button>
+                <button type="button" class="workflow-step" data-step="factcheck" title="Mở tab Kiểm chứng để bóc tách và đối chiếu luận điểm"><span class="step-num">2</span><span class="step-label">Kiểm chứng</span></button>
                 <span class="step-connector" aria-hidden="true">›</span>
-                <button type="button" class="workflow-step" data-step="factcheck" title="Mở tab Kiểm chứng để bóc tách và đối chiếu luận điểm"><span class="step-num">3</span><span class="step-label">Kiểm chứng</span></button>
-                <span class="step-connector" aria-hidden="true">›</span>
-                <button type="button" class="workflow-step" data-step="export" title="Xuất Audio, phụ đề SRT và nguồn trích dẫn"><span class="step-num">4</span><span class="step-label">Xuất Audio</span></button>
+                <button type="button" class="workflow-step" data-step="export" title="Xuất Audio, phụ đề SRT và nguồn trích dẫn"><span class="step-num">3</span><span class="step-label">Xuất Audio</span></button>
             </nav>
 
             <div class="editor-container">
@@ -181,6 +179,14 @@
 
             <!-- Tab Trợ lý viết -->
             <div id="gemini-tab" class="tab-content active">
+                <!-- Phase 15.1: Gợi ý chủ đề lên đầu tab để danh sách sổ ra đủ mục -->
+                <div class="ai-actions">
+                    <button id="btn-suggest-topics" class="btn-card">
+                        <strong>🎲 Gợi ý chủ đề</strong>
+                        <small>Ngân hàng 10 chủ đề đã kiểm chứng, chưa dùng không trùng</small>
+                    </button>
+                </div>
+                <div id="topics-list" class="claims-list"></div>
                 <div class="ai-box">
                     <label for="ai-notes">Ghi chú cho AI:</label>
                     <input type="text" id="ai-notes" placeholder="VD: Tập trung vào chi tiết bất ngờ...">
@@ -199,13 +205,6 @@
                         <small>Từ ý tưởng tạo dàn bài Hook - Thân bài - Cao trào</small>
                     </button>
                 </div>
-                <div class="ai-actions" style="margin-top: 10px;">
-                    <button id="btn-suggest-topics" class="btn-card">
-                        <strong>🎲 Gợi ý chủ đề</strong>
-                        <small>Ngân hàng 10 chủ đề đã kiểm chứng, chưa dùng không trùng</small>
-                    </button>
-                </div>
-                <div id="topics-list" class="claims-list"></div>
             </div>
 
             <!-- Tab Fact Check (R4) -->
@@ -574,7 +573,7 @@
     </div>
 
     <!-- Main Client Script -->
-    <script src="/static/app.js?v=15"></script>
+    <script src="/static/app.js?v=16"></script>
     <script src="/static/topics.js"></script>
 </body>
 </html>

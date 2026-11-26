@@ -1906,9 +1906,9 @@ function setupTabs() {
 }
 
 // Phase 15: Workflow steps, collapsible sidebar/panel, pacing "more" toggle.
-// Steps reuse the existing handlers (no new backend calls): write focuses the
-// editor, preview clicks #btn-preview-audio, factcheck opens the fact-check
-// tab, export clicks #btn-export-project.
+// Steps reuse the existing handlers (no new backend calls): preview clicks
+// #btn-preview-audio, factcheck opens the fact-check tab, export clicks
+// #btn-export-project.
 function setupWorkflowUI() {
     const layout = document.querySelector('.app-layout');
 
@@ -1936,9 +1936,7 @@ function setupWorkflowUI() {
             document.querySelectorAll('.workflow-step').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const step = btn.getAttribute('data-step');
-            if (step === 'write') {
-                if (DOM.scriptEditor) DOM.scriptEditor.focus();
-            } else if (step === 'preview') {
+            if (step === 'preview') {
                 if (DOM.btnPreviewAudio) DOM.btnPreviewAudio.click();
             } else if (step === 'factcheck') {
                 if (layout) layout.classList.remove('panel-collapsed');

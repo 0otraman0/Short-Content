@@ -971,6 +971,12 @@ button {
     overflow-y: auto;
 }
 
+/* Phase 15.1: Danh sách chủ đề sổ ra toàn bộ mục, không giới hạn chiều cao */
+#topics-list {
+    max-height: none;
+    overflow-y: visible;
+}
+
 .claim-card {
     background: var(--bg-surface-elevated);
     border: 1px solid var(--border-color);
