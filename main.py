@@ -24,6 +24,7 @@ from routers import (
     gemini_router,
     factcheck_router,
     export_router,
+    topics_router,
 )
 
 # ---------------------------------------------------------------------------
@@ -53,6 +54,7 @@ app.include_router(tts_router)
 app.include_router(gemini_router)
 app.include_router(factcheck_router)
 app.include_router(export_router)
+app.include_router(topics_router)
 
 
 # ---------------------------------------------------------------------------

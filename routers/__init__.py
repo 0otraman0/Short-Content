@@ -6,6 +6,7 @@ from .tts_router import router as tts_router
 from .gemini_router import router as gemini_router
 from .factcheck_router import router as factcheck_router
 from .export_router import router as export_router
+from .topics_router import router as topics_router
 
 __all__ = [
     "projects_router",
@@ -13,5 +14,6 @@ __all__ = [
     "gemini_router",
     "factcheck_router",
     "export_router",
+    "topics_router",
 ]
 

@@ -1,11 +1,11 @@
 # Project State (2026-11-26)
-- Scope: YouTube Shorts Narration Tool + Expressiveness & Audio Audition.
-- Git: Branch `main`, synced with GitHub origin (`https://github.com/0otraman0/Short-Content.git`).
-- Completed: Phases 0-12 (T12.1 - T12.6) ALL DONE (55/55 tests passing).
-- Architecture: 100% 3-Layer (Presentation: main.py, routers/ | Services: services/ | Infra & Repo: infrastructure/, repositories/).
-- Root Directory: Clean, ONLY main.py exists at root (zero loose .py files).
-- Documentation: CHANGELOG.md, README.md, PLAN.md 100% in professional English.
-- In progress: None.
-- Next step: User review / next instructions.
-- Verification: 55/55 unit & integration tests passing across entire test suite.
-- Runtime: Windows, Python 3.13 venv, FastAPI on http://127.0.0.1:8000 via `start.bat`.
+- Scope: YouTube Shorts Narration Tool + Expressiveness & Audio Audition + Topic Suggestions.
+- Git: Branch `main`, Phase 13 (T13.1 Topic Suggestions) complete and verified.
+- Completed: Phases 0-13 (T13.1) ALL DONE (61/61 tests passing across test suite).
+- Architecture: 100% 3-Layer (routers/ | services/ | infrastructure/, repositories/).
+- Root Directory: Clean, ONLY main.py exists at root.
+- Topics Feature: 10 pre-verified facts in data/topics.json, zero API/Gemini dependency.
+- In progress: T13.1 complete, awaiting user manual UI review.
+- Next step: Run start.bat, test clicking "Goi y chu de" in browser, delete integration folder when ready.
+- Verification: 61/61 unit & integration tests passing (6 new + 55 existing).
+- Runtime: Windows, Python 3.13 venv, FastAPI on http://127.0.0.1:8000 via start.bat.

@@ -334,3 +334,19 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: `python -m unittest discover tests` (55/55 OK) & `python tests/test_tts_preview.py` (OK). Root directory contains ONLY `main.py`.
+
+---
+
+## Phase 13: Topic Suggestion Integration (Offline Verified Bank)
+
+### T13.1: Topic Suggestion Integration Pack Wiring & Verification
+- **Goal**: Integrate ready-made topic suggestion pack from `shorts-topic-integration/` into 3-layer architecture (`data/topics.json`, `services/topic_service.py`, `routers/topics_router.py`, `static/topics.js`, `tests/test_topics.py`). Wire router into `main.py` and UI into `static/index.html`.
+- **Files**: `data/topics.json`, `services/topic_service.py`, `routers/topics_router.py`, `routers/__init__.py`, `main.py`, `static/index.html`, `static/topics.js`, `tests/test_topics.py`
+- **Requirements**: Offline topic suggestion bank (10 verified facts, id 07-16), mark used/unused, zero API key/Gemini dependency.
+- **Owner**: Builder
+- **Status**: done
+- **Where I stopped**:
+  - What is done: All 5 pack files copied to correct locations; `topics_router` wired into `routers/__init__.py` and `main.py`; UI button `#btn-suggest-topics`, `#topics-list`, and script tag added to `static/index.html`. Unit test `test_topics.py` (6/6 passed); full test suite (61/61 passed); endpoint `GET /api/topics?only_unused=true` verified returning 10 topics.
+  - What is left: User manual review in browser (`start.bat`). User can subsequently delete `shorts-topic-integration/` and `shorts-topic-integration.zip` after reviewing.
+  - Exact next step: Run `.\start.bat`, open browser to `http://127.0.0.1:8000`, test clicking "🎲 Gợi ý chủ đề" in the "Trợ lý AI" tab, and verify topics render and inject hook+fact into the script editor.
+- **How to test**: `python -m unittest discover -s tests -p "test_topics.py" -v` (6/6 OK) & `python -m unittest discover tests` (61/61 OK).

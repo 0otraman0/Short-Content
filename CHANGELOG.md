@@ -2,7 +2,11 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 13
+- **T13.1**: Integrated Topic Suggestion feature from `shorts-topic-integration/` pack. Added local offline topic bank (`data/topics.json`) containing 10 pre-verified scientific facts (ids 07–16), business logic in `services/topic_service.py`, FastAPI endpoints in `routers/topics_router.py`, UI button `#btn-suggest-topics` and `#topics-list` in `static/index.html` via `static/topics.js`. Wired router into `main.py`. Verified 6/6 unit tests in `tests/test_topics.py` and 61/61 overall test suite (zero regressions).
+
 ## [2026-11-26] - Phase 12
+- **Topic Suggestion**: Integrated verified Topic Suggestion bank from `shorts-topic-integration/` (`data/topics.json`, `services/topic_service.py`, `routers/topics_router.py`, `static/topics.js`, `tests/test_topics.py`) with UI button `#btn-suggest-topics` and `#topics-list`. Verified 6/6 new unit tests and 61/61 overall test suite.
 - **Docs**: Translated `CHANGELOG.md`, `README.md`, and `PLAN.md` into professional technical English.
 - **T12.6**: Standardized 100% 3-Layer Architecture and cleaned up root directory. Moved `pacing.py` to `services/pacing_service.py`; updated all imports in `tests/` to target `services/` and `infrastructure/` directly; completely deleted the 5 redundant root Python files (`captions.py`, `factcheck.py`, `gemini_client.py`, `pacing.py`, `tts.py`). The project root now contains `main.py` as the sole Python entry point. All 55 test suite tests continue to pass seamlessly.
 - **T12.5**: Converted root modules into pure thin facades. Moved Gemini business logic into `services/gemini_service.py`, Fact Check logic into `services/factcheck_service.py`, Whisper/SRT logic into `infrastructure/whisper_adapter.py`, and TTS logic into `infrastructure/tts_providers.py`, `infrastructure/ffmpeg_processor.py`, and `services/tts_service.py`. Root files temporarily served as lightweight re-exports ensuring clean layer boundaries and continuous test passage.

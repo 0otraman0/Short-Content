@@ -48,3 +48,7 @@
 ## D12. 3-Layer Architecture (Presentation / Services / Infrastructure+Repositories)
 - **Choice**: Reorganize codebase into 3 distinct layers: (1) **Presentation** — `main.py` (bootstrap) + `routers/` (HTTP endpoints, Pydantic request/response models); (2) **Business Logic** — `services/` (project orchestration, TTS pipeline, Gemini assistant, factcheck, export); (3) **Data Access & Infrastructure** — `repositories/` (project.json CRUD) + `infrastructure/` (FFmpeg processing, TTS provider implementations, faster-whisper adapter).
 - **Reason**: The original `main.py` had grown to 943 lines mixing HTTP routing, business logic, file I/O, and FFmpeg calls. 3-Layer separation improves testability, makes each concern independently modifiable, and mirrors industry-standard FastAPI project structures. Root modules (`pacing.py`, `tts.py`, `gemini_client.py`, `factcheck.py`, `captions.py`) are kept intact as facades so existing tests continue to pass with zero changes.
+
+## D13. Topic Suggestion Feature via Local Pre-Verified JSON Bank
+- **Choice**: Implement topic suggestions using a local JSON bank (`data/topics.json`) containing 10 pre-verified scientific facts (ids 07–16) with hook, fact, and source citations, tracking usage state (`unused`/`used`), without calling Gemini or Reddit RSS.
+- **Reason**: Reddit disabled RSS on 2026-11-13 making external feeds unreliable. A local JSON bank operates 100% offline with zero latency, zero API costs, zero hallucination of fake facts, and persists used status locally so creators never get duplicate suggestions.
