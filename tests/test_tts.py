@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from infrastructure.tts_providers import (
+    ChatterboxTTSProvider,
     EdgeTTSProvider,
     KokoroTTSProvider,
     get_locked_voice,
@@ -79,6 +80,8 @@ class TestTTSEngine(unittest.TestCase):
         self.assertIsInstance(p_edge, EdgeTTSProvider)
         p_kokoro = get_tts_provider("kokoro")
         self.assertIsInstance(p_kokoro, KokoroTTSProvider)
+        p_cb = get_tts_provider("chatterbox")
+        self.assertIsInstance(p_cb, ChatterboxTTSProvider)
 
     def test_fallback_to_kokoro_on_network_error(self):
         output_file = self.test_dir / "fallback_narration.mp3"

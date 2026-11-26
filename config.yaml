@@ -6,6 +6,21 @@ tts:
     voice: am_adam
     model_path: assets/kokoro/kokoro-v0_19.onnx
     voices_path: assets/kokoro/voices.json
+  # Chatterbox (Phase 16): expressive local TTS. To use it, set
+  # provider: chatterbox above (after pip install -r requirements.txt;
+  # first run downloads the model from HuggingFace, ~1-2GB, needs internet).
+  # exaggeration 0.25-2.0: how dramatic the delivery is (storytelling: 0.7).
+  # cfg_weight 0.2-1.0: how closely it follows the text (storytelling: 0.3).
+  # device: auto (cuda if available else cpu), cuda, or cpu.
+  # audio_prompt_path: optional short .wav to clone a voice. The default
+  # Chatterbox voice is female-sounding; for a male narrator, point this at
+  # a 5-10s male clip, e.g. a GuyNeural sample exported from this tool.
+  # Empty = default voice. The locked Edge voice above is ignored by Chatterbox.
+  chatterbox:
+    exaggeration: 0.7
+    cfg_weight: 0.3
+    device: auto
+    audio_prompt_path: ""
 gemini:
   model: gemini-3.5-flash-lite
 pacing_presets:

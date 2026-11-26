@@ -1,13 +1,13 @@
 # Project State (2026-11-26)
 - Scope: YouTube Shorts Narration Tool + Expressiveness & Audio Audition + Topic Suggestions.
-- Git: Branch `main`, Phase 15 (UI refresh: workflow steps, collapsible panels, readability, responsive layout) pushed via Muse + GitHub PAT.
-- Completed: Phases 0-15. Topic Suggestions (Phase 13) were already in the repo when Muse checked on 2026-11-26 (10 topics 07-16, router wired, 61/61 claimed by Antigravity) — Muse did NOT re-add them.
+- Git: Branch `main`, Phase 16 (Chatterbox TTS provider: expressive local TTS, exaggeration/cfg, optional voice-clone audio prompt) pushed via Muse + GitHub PAT.
+- Completed: Phases 0-16. Topic Suggestions (Phase 13) were already in the repo when Muse checked on 2026-11-26 (10 topics 07-16, router wired, 61/61 claimed by Antigravity) — Muse did NOT re-add them.
 - P0 fixes (Phase 14): P0-1 presets from config.yaml, P0-2 fact-check tags/URLs/labels, P0-3 id sanitizing, P0-4 atomic project.json writes, P0-5 Whisper cached model, P0-6 network-only Kokoro fallback with fallback_used flag.
 - Test fixes (Phase 14.1): project ids now `proj_<12 hex>` (code fix); export-pipeline SRT test accepts Whisper's "Green and" split of "Greenland" (test fix, core phrase "sharks live longer" still required).
 - Architecture: 100% 3-Layer (routers/ | services/ | infrastructure/, repositories/).
 - Root Directory: Clean, ONLY main.py exists at root.
 - Topics Feature: 10 pre-verified facts in data/topics.json, zero API/Gemini dependency.
-- In progress: Phase 15 pushed, awaiting user manual verification.
-- Next step: On Windows, run the full test suite and confirm 73/73, then run start.bat and check the new workflow bar, collapsible panels, and layout below 1024px. The Phase 15 UI tests were run by Muse against the edited files (9/9 layout tests passed); the full suite was NOT run on Muse's machine.
+- In progress: Phase 16 pushed, awaiting user install + manual verification.
+- Next step: On Windows, run `pip install -r requirements.txt` (pulls torch + chatterbox-tts; first Chatterbox run downloads the model from HuggingFace, ~1-2GB, needs internet), set `tts.provider: chatterbox` in config.yaml, then run start.bat and test the read/preview function. Full test suite to be re-run (expect 87/87: 78 + 8 new Chatterbox tests + 1 factory line). The 8 Chatterbox tests were run by Muse against the edited files with a stubbed model and ffmpeg (8/8 passed); the full suite was NOT run on Muse's machine.
 - Verification: local pytest run 2026-11-26 by the user, before Phase 14.1: 71 passed, 2 failed (73 total). Phase 14.1 fixes those 2; full suite NOT run by Muse, must be run locally.
 - Runtime: Windows, Python 3.13 venv, FastAPI on http://127.0.0.1:8000 via start.bat.
