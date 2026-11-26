@@ -1929,6 +1929,20 @@ function setupWorkflowUI() {
         });
     }
 
+    // Phase 15.3: Nút Chủ đề giữa toolbar — mở/đóng danh sách chủ đề trong
+    // panel (mở panel nếu đang thu gọn, chuyển về tab Trợ lý AI rồi bấm nút
+    // Gợi ý chủ đề, nút này tự toggle mở/đóng).
+    const topicsToolbarBtn = document.getElementById('btn-topics-toolbar');
+    if (topicsToolbarBtn) {
+        topicsToolbarBtn.addEventListener('click', () => {
+            if (layout) layout.classList.remove('panel-collapsed');
+            const geminiTab = document.querySelector('.tab-btn[data-tab="gemini-tab"]');
+            if (geminiTab) geminiTab.click();
+            const topicsBtn = document.getElementById('btn-suggest-topics');
+            if (topicsBtn) topicsBtn.click();
+        });
+    }
+
 }
 
 // ==========================================

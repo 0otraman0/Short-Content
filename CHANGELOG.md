@@ -2,6 +2,11 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 15.3
+- **T15.8**: Fixed the topic suggestion button having no way to collapse the list in `static/topics.js`. Added a toggle: the first click loads and drops the topic list down, the second click clears and hides it again. The button shows its state with a chevron (`▾` closed / `▴` open) and a highlighted border while open (`.topics-open` in `static/style.css`). The list starts hidden in `static/index.html`. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
+- **T15.9**: Added a "🎲 Chủ đề" quick button in the middle of the editor toolbar in `static/index.html` (between the word-count stats and the pacing cheatsheet), so topics are one click away while writing. Clicking it opens the assistant panel if collapsed, switches to the Trợ lý AI tab, and toggles the topic list via the existing `#btn-suggest-topics` button in `static/app.js`. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
+- **Tests**: Ran the 9 layout tests in `tests/test_ui_layout.py` against the edited files; 9/9 passed. Full suite to be re-run on Windows.
+
 ## [2026-11-26] - Phase 15.2
 - **T15.7**: Removed the workflow steps bar entirely from `static/index.html` at the user's request (the 3-step bar `Nghe thử → Kiểm chứng → Xuất Audio` added in Phase 15/15.1). Also removed the related `.workflow-step` styles from `static/style.css` and the step click handlers from `setupWorkflowUI()` in `static/app.js`; the collapsible sidebar/panel toggles and the pacing "more" toggle in the same function are unchanged. The top bar keeps the existing actions (audio settings, auto-pace, export). Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
 - **Tests**: Ran the 9 layout tests in `tests/test_ui_layout.py` against the edited files; 9/9 passed. Full suite to be re-run on Windows.

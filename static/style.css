@@ -918,6 +918,23 @@ button {
     overflow-y: visible;
 }
 
+/* Phase 15.3: Nút Gợi ý chủ đề 2 trạng thái mở/đóng */
+#btn-suggest-topics.topics-open {
+    border-color: var(--primary);
+    background-color: rgba(99, 102, 241, 0.15);
+}
+
+#btn-suggest-topics strong {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topics-chevron {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
 .claim-card {
     background: var(--bg-surface-elevated);
     border: 1px solid var(--border-color);

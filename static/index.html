@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Shorts Maker - Khoa học & Sự thật</title>
-    <link rel="stylesheet" href="/static/style.css?v=17">
+    <link rel="stylesheet" href="/static/style.css?v=18">
 </head>
 <body>
     <div class="app-layout">
@@ -105,6 +105,8 @@
                         <span id="target-duration-display" class="target-chip">Mục tiêu: 60s - 180s</span>
                         <button id="btn-random-length" class="btn-chip" title="Chọn ngẫu nhiên thời lượng mục tiêu 60-180s">🎲 Đổi mục tiêu</button>
                     </div>
+                    <!-- Phase 15.3: Nút Chủ đề ở giữa toolbar, tiện tay khi đang viết -->
+                    <button id="btn-topics-toolbar" class="btn-secondary" title="Mở/đóng danh sách chủ đề đã kiểm chứng (bấm lần nữa để thu lại)">🎲 Chủ đề ▾</button>
                     <details class="cheatsheet-dropdown">
                         <summary>📖 Hướng dẫn nhịp điệu (10 loại Pacing markup)</summary>
                         <div class="cheatsheet-content">
@@ -173,11 +175,11 @@
                 <!-- Phase 15.1: Gợi ý chủ đề lên đầu tab để danh sách sổ ra đủ mục -->
                 <div class="ai-actions">
                     <button id="btn-suggest-topics" class="btn-card">
-                        <strong>🎲 Gợi ý chủ đề</strong>
+                        <strong>🎲 Gợi ý chủ đề <span class="topics-chevron">▾</span></strong>
                         <small>Ngân hàng 10 chủ đề đã kiểm chứng, chưa dùng không trùng</small>
                     </button>
                 </div>
-                <div id="topics-list" class="claims-list"></div>
+                <div id="topics-list" class="claims-list hidden"></div>
                 <div class="ai-box">
                     <label for="ai-notes">Ghi chú cho AI:</label>
                     <input type="text" id="ai-notes" placeholder="VD: Tập trung vào chi tiết bất ngờ...">
@@ -564,7 +566,7 @@
     </div>
 
     <!-- Main Client Script -->
-    <script src="/static/app.js?v=17"></script>
-    <script src="/static/topics.js"></script>
+    <script src="/static/app.js?v=18"></script>
+    <script src="/static/topics.js?v=18"></script>
 </body>
 </html>

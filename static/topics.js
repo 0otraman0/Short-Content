@@ -12,6 +12,29 @@
   const btnEl = document.getElementById("btn-suggest-topics");
   if (!listEl || !btnEl) return; // HTML snippet not added yet: do nothing.
 
+  // Phase 15.3: One button, two states — click once to drop the topic list
+  // down, click again to collapse it. Previously every click reloaded the
+  // list with no way to hide it again.
+  let topicsOpen = false;
+  const chevronEl = btnEl.querySelector(".topics-chevron");
+
+  function setOpen(open) {
+    topicsOpen = open;
+    btnEl.classList.toggle("topics-open", open);
+    if (chevronEl) chevronEl.textContent = open ? "▴" : "▾";
+    listEl.classList.toggle("hidden", !open);
+  }
+
+  function toggleTopics() {
+    if (topicsOpen) {
+      listEl.innerHTML = "";
+      setOpen(false);
+      return;
+    }
+    setOpen(true);
+    loadTopics();
+  }
+
   async function loadTopics() {
     listEl.innerHTML = "<p class='empty-hint'>Dang tai chu de...</p>";
     try {
@@ -78,5 +101,5 @@
     });
   }
 
-  btnEl.addEventListener("click", loadTopics);
+  btnEl.addEventListener("click", toggleTopics);
 })();
