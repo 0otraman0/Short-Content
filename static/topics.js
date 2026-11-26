@@ -1,71 +1,66 @@
-// topics.js - Topic Suggestion UI for Short-Content.
-// Loads AFTER static/app.js. No dependency on app.js internals:
-// "Dung chu de nay" only puts hook + fact into #script-editor,
-// then the user presses the existing "Dung khung tu dau" button.
-//
-// Wire-up (see README-TOPIC-INTEGRATION.md):
-//   1. Add the HTML snippet (button + #topics-list) inside #gemini-tab.
-//   2. Add <script src="/static/topics.js"></script> after app.js in index.html.
+// topics.js - Topic Suggestion modal for Short-Content.
+// Opens like the voice modal: a centered overlay listing all unused topics
+// plus a form to add a new one. Triggered by #btn-topics-toolbar in the
+// editor toolbar. No dependency on app.js internals:
+// "Dung chu de nay" only puts hook + fact into #script-editor, closes the
+// modal, then the user presses the existing "Dung khung tu dau" button.
 
 (function () {
-  const listEl = document.getElementById("topics-list");
-  const btnEl = document.getElementById("btn-suggest-topics");
-  if (!listEl || !btnEl) return; // HTML snippet not added yet: do nothing.
+  const modalEl = document.getElementById("topics-modal");
+  const listEl = document.getElementById("topics-modal-list");
+  const countEl = document.getElementById("topics-count");
+  const openBtn = document.getElementById("btn-topics-toolbar");
+  const closeBtn = document.getElementById("btn-close-topics-modal");
+  const cancelBtn = document.getElementById("btn-cancel-topics");
+  const newBtn = document.getElementById("btn-new-topic");
+  const formEl = document.getElementById("new-topic-form");
+  const hookInput = document.getElementById("new-topic-hook");
+  const factInput = document.getElementById("new-topic-fact");
+  const sourceInput = document.getElementById("new-topic-source");
+  const saveBtn = document.getElementById("btn-save-new-topic");
+  const statusEl = document.getElementById("new-topic-status");
+  if (!modalEl || !listEl || !openBtn) return; // Modal HTML not added yet: do nothing.
 
-  // Phase 15.3: One button, two states — click once to drop the topic list
-  // down, click again to collapse it. Previously every click reloaded the
-  // list with no way to hide it again.
-  let topicsOpen = false;
-  const chevronEl = btnEl.querySelector(".topics-chevron");
-
-  function setOpen(open) {
-    topicsOpen = open;
-    btnEl.classList.toggle("topics-open", open);
-    if (chevronEl) chevronEl.textContent = open ? "▴" : "▾";
-    listEl.classList.toggle("hidden", !open);
-  }
-
-  function toggleTopics() {
-    if (topicsOpen) {
-      listEl.innerHTML = "";
-      setOpen(false);
-      return;
-    }
-    setOpen(true);
+  function openModal() {
+    modalEl.classList.remove("hidden");
     loadTopics();
   }
 
+  function closeModal() {
+    modalEl.classList.add("hidden");
+    if (formEl) formEl.classList.add("hidden");
+    if (newBtn) newBtn.textContent = "＋ Tạo chủ đề mới";
+    if (statusEl) statusEl.textContent = "";
+  }
+
   async function loadTopics() {
-    listEl.innerHTML = "<p class='empty-hint'>Dang tai chu de...</p>";
+    listEl.innerHTML = "<p class='empty-hint'>Đang tải chủ đề...</p>";
     try {
       const res = await fetch("/api/topics?only_unused=true");
       const data = await res.json();
-      if (!data.success) throw new Error(data.detail || "Khong tai duoc chu de.");
+      if (!data.success) throw new Error(data.detail || "Không tải được chủ đề.");
       renderTopics(data.topics || [], data);
     } catch (e) {
-      listEl.innerHTML = "<p class='empty-hint'>Loi: " + e.message + "</p>";
+      listEl.innerHTML = "<p class='empty-hint'>Lỗi: " + escapeHtml(e.message) + "</p>";
     }
   }
 
   function renderTopics(topics, meta) {
+    if (countEl) countEl.textContent = "Còn " + meta.unused + "/" + meta.total + " chủ đề chưa dùng.";
     if (!topics.length) {
-      listEl.innerHTML = "<p class='empty-hint'>Da dung het chu de. Them chu de moi vao data/topics.json nhe.</p>";
+      listEl.innerHTML = "<p class='empty-hint'>Đã dùng hết chủ đề. Bấm '＋ Tạo chủ đề mới' để thêm chủ đề của bạn.</p>";
       return;
     }
-    const head = document.createElement("p");
-    head.className = "empty-hint";
-    head.textContent = "Con " + meta.unused + "/" + meta.total + " chu de chua dung. Bam 1 chu de de dung.";
     listEl.innerHTML = "";
-    listEl.appendChild(head);
 
     topics.forEach(function (t) {
       const card = document.createElement("div");
       card.className = "topic-card";
-      card.style.cssText = "border:1px solid var(--border-color);border-radius:8px;padding:10px;margin:8px 0;";
+      card.style.cssText = "border:1px solid var(--border-color);border-radius:8px;padding:12px;margin:0;";
       card.innerHTML =
-        "<strong>#" + t.id + " - " + escapeHtml(t.hook) + "</strong>" +
+        "<strong>#" + escapeHtml(t.id) + " - " + escapeHtml(t.hook) + "</strong>" +
         "<p style='font-size:0.85rem;margin:6px 0;'>" + escapeHtml(t.fact) + "</p>" +
-        "<p style='font-size:0.75rem;color:var(--text-muted);margin:0 0 8px;'>Nguon: " + escapeHtml(t.source) + "</p>";
+        "<p style='font-size:0.75rem;color:var(--text-muted);margin:0 0 8px;'>Nguồn: " + escapeHtml(t.source) + "</p>";
 
       const useBtn = document.createElement("button");
       useBtn.className = "btn-secondary";
@@ -75,9 +70,8 @@
         if (editor) {
           editor.value = t.hook + " " + t.fact;
           editor.focus();
-          editor.scrollIntoView({ behavior: "smooth", block: "center" });
         }
-        alert("Da dua hook + fact vao khung viet. Bam 'Dung khung tu dau' de Gemini viet kich ban, roi nho kiem chung lai con so truoc khi xuat.");
+        closeModal();
       };
 
       const doneBtn = document.createElement("button");
@@ -85,7 +79,7 @@
       doneBtn.style.marginLeft = "8px";
       doneBtn.textContent = "✅ Đã dùng";
       doneBtn.onclick = async function () {
-        await fetch("/api/topics/" + t.id + "/use", { method: "POST" });
+        await fetch("/api/topics/" + encodeURIComponent(t.id) + "/use", { method: "POST" });
         loadTopics();
       };
 
@@ -95,11 +89,56 @@
     });
   }
 
+  async function saveNewTopic() {
+    const hook = hookInput.value.trim();
+    const fact = factInput.value.trim();
+    const source = sourceInput.value.trim();
+    if (!hook || !fact) {
+      statusEl.textContent = "Nhập hook và fact rồi mới lưu.";
+      return;
+    }
+    saveBtn.disabled = true;
+    statusEl.textContent = "Đang lưu...";
+    try {
+      const res = await fetch("/api/topics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hook: hook, fact: fact, source: source }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error((data && data.detail) || "Không lưu được chủ đề.");
+      hookInput.value = "";
+      factInput.value = "";
+      sourceInput.value = "";
+      formEl.classList.add("hidden");
+      newBtn.textContent = "＋ Tạo chủ đề mới";
+      statusEl.textContent = "Đã thêm chủ đề #" + data.topic.id + ".";
+      loadTopics();
+    } catch (e) {
+      statusEl.textContent = "Lỗi: " + e.message;
+    } finally {
+      saveBtn.disabled = false;
+    }
+  }
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
 
-  btnEl.addEventListener("click", toggleTopics);
+  openBtn.addEventListener("click", openModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+  modalEl.addEventListener("click", function (e) {
+    if (e.target === modalEl) closeModal();
+  });
+  if (newBtn) {
+    newBtn.addEventListener("click", function () {
+      const hidden = formEl.classList.toggle("hidden");
+      newBtn.textContent = hidden ? "＋ Tạo chủ đề mới" : "－ Đóng form";
+      if (!hidden) hookInput.focus();
+    });
+  }
+  if (saveBtn) saveBtn.addEventListener("click", saveNewTopic);
 })();

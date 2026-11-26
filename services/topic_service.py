@@ -87,6 +87,21 @@ def suggest_topics(count: int = 3, path: Optional[Path] = None) -> List[Dict]:
     return random.sample(unused, min(count, len(unused)))
 
 
+def create_topic(hook: str, fact: str, source: str = "", path: Optional[Path] = None) -> Dict:
+    """Append a new topic to the bank with the next id. Persists to data/topics.json."""
+    hook = (hook or "").strip()
+    fact = (fact or "").strip()
+    source = (source or "").strip() or "Tự thêm — chưa kiểm chứng nguồn."
+    if not hook or not fact:
+        raise ValueError("Chủ đề mới cần có hook và fact.")
+    topics = load_topics(path)
+    next_id = max((int(t["id"]) for t in topics), default=0) + 1
+    topic = {"id": f"{next_id:02d}", "hook": hook, "fact": fact, "source": source, "status": "unused"}
+    topics.append(topic)
+    _save_topics(topics, path)
+    return topic
+
+
 def mark_used(topic_id: str, used: bool = True, path: Optional[Path] = None) -> Dict:
     """Mark a topic used (or unused again). Persists to data/topics.json."""
     topics = load_topics(path)
@@ -123,6 +138,10 @@ class TopicService:
     @staticmethod
     def suggest_topics(count: int = 3) -> List[Dict]:
         return suggest_topics(count)
+
+    @staticmethod
+    def create_topic(hook: str, fact: str, source: str = "") -> Dict:
+        return create_topic(hook, fact, source)
 
     @staticmethod
     def mark_used(topic_id: str, used: bool = True) -> Dict:

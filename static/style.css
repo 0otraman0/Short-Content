@@ -403,8 +403,21 @@ body {
 }
 
 .btn-pacing-more {
-    border-style: dashed;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 10px;
+    min-height: 32px;
+    border-radius: 4px;
+    background: var(--bg-surface-elevated);
+    border: 1px dashed var(--border-color);
     color: var(--text-primary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.btn-pacing-more:hover {
+    border-color: var(--primary);
 }
 
 .btn-pacing-tag:hover {
@@ -912,27 +925,11 @@ button {
     overflow-y: auto;
 }
 
-/* Phase 15.1: Danh sách chủ đề sổ ra toàn bộ mục, không giới hạn chiều cao */
-#topics-list {
-    max-height: none;
-    overflow-y: visible;
-}
-
-/* Phase 15.3: Nút Gợi ý chủ đề 2 trạng thái mở/đóng */
-#btn-suggest-topics.topics-open {
-    border-color: var(--primary);
-    background-color: rgba(99, 102, 241, 0.15);
-}
-
-#btn-suggest-topics strong {
+/* Phase 15.4: Danh sách chủ đề trong modal chọn chủ đề */
+.topics-modal-list {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.topics-chevron {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
+    flex-direction: column;
+    gap: 12px;
 }
 
 .claim-card {

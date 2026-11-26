@@ -5,10 +5,30 @@ with friendly Vietnamese messages, no business logic here.
 """
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
 from services.topic_service import TopicService
 
 router = APIRouter(prefix="/api/topics", tags=["topics"])
+
+
+class TopicCreate(BaseModel):
+    hook: str = Field(min_length=1)
+    fact: str = Field(min_length=1)
+    source: str = ""
+
+
+@router.post("")
+async def api_create_topic(payload: TopicCreate):
+    """Add a new topic to the bank (id = next number, status unused)."""
+    try:
+        return {"success": True, "topic": TopicService.create_topic(payload.hook, payload.fact, payload.source)}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi thêm chủ đề: {str(e)}")
 
 
 @router.get("")

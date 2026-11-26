@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Shorts Maker - Khoa học & Sự thật</title>
-    <link rel="stylesheet" href="/static/style.css?v=18">
+    <link rel="stylesheet" href="/static/style.css?v=19">
 </head>
 <body>
     <div class="app-layout">
@@ -106,7 +106,7 @@
                         <button id="btn-random-length" class="btn-chip" title="Chọn ngẫu nhiên thời lượng mục tiêu 60-180s">🎲 Đổi mục tiêu</button>
                     </div>
                     <!-- Phase 15.3: Nút Chủ đề ở giữa toolbar, tiện tay khi đang viết -->
-                    <button id="btn-topics-toolbar" class="btn-secondary" title="Mở/đóng danh sách chủ đề đã kiểm chứng (bấm lần nữa để thu lại)">🎲 Chủ đề ▾</button>
+                    <button id="btn-topics-toolbar" class="btn-secondary" title="Mở bảng chọn chủ đề">🎲 Chủ đề ▾</button>
                     <details class="cheatsheet-dropdown">
                         <summary>📖 Hướng dẫn nhịp điệu (10 loại Pacing markup)</summary>
                         <div class="cheatsheet-content">
@@ -140,7 +140,7 @@
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="solemn" title="Lắng đọng, trang nghiêm (-20% speed, triết lý)">🏛️ Lắng đọng</button>
                         <button type="button" class="btn-pacing-tag" data-pacing-tag="loud" title="To vang, cảnh báo (+30% volume)">📢 To vang</button>
                         </span>
-                        <button type="button" id="btn-pacing-more" class="btn-pacing-tag btn-pacing-more" title="Hiện thêm các nhịp điệu ít dùng">＋ Thêm nhịp ▾</button>
+                        <button type="button" id="btn-pacing-more" class="btn-pacing-more" title="Hiện thêm các nhịp điệu ít dùng">＋ Thêm nhịp ▾</button>
                     </div>
                 </div>
 
@@ -172,14 +172,6 @@
 
             <!-- Tab Trợ lý viết -->
             <div id="gemini-tab" class="tab-content active">
-                <!-- Phase 15.1: Gợi ý chủ đề lên đầu tab để danh sách sổ ra đủ mục -->
-                <div class="ai-actions">
-                    <button id="btn-suggest-topics" class="btn-card">
-                        <strong>🎲 Gợi ý chủ đề <span class="topics-chevron">▾</span></strong>
-                        <small>Ngân hàng 10 chủ đề đã kiểm chứng, chưa dùng không trùng</small>
-                    </button>
-                </div>
-                <div id="topics-list" class="claims-list hidden"></div>
                 <div class="ai-box">
                     <label for="ai-notes">Ghi chú cho AI:</label>
                     <input type="text" id="ai-notes" placeholder="VD: Tập trung vào chi tiết bất ngờ...">
@@ -234,6 +226,41 @@
             <div class="modal-footer">
                 <button id="btn-cancel-voice" class="btn-secondary">Hủy</button>
                 <button id="btn-save-voice" class="btn-primary">Khóa giọng đọc này</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Selection Modal (Phase 15.4, giống modal chọn giọng đọc) -->
+    <div id="topics-modal" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 720px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>🎲 Chọn chủ đề</h3>
+                <button id="btn-close-topics-modal" class="btn-icon">✕</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 1rem 1.5rem;">
+                <p class="modal-desc" style="margin-bottom: 12px;">
+                    Ngân hàng chủ đề đã kiểm chứng — bấm "Dùng chủ đề này" để đưa hook + fact vào khung viết, rồi bấm "Dựng khung từ đầu" để Gemini viết kịch bản. Nhớ kiểm chứng lại con số trước khi xuất.
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px;">
+                    <span id="topics-count" style="font-size: 0.85rem; color: var(--text-secondary);"></span>
+                    <button id="btn-new-topic" class="btn-primary" style="font-size: 0.82rem; padding: 6px 12px;">＋ Tạo chủ đề mới</button>
+                </div>
+                <div id="new-topic-form" class="hidden" style="margin-bottom: 14px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius);">
+                    <label for="new-topic-hook" style="display: block; font-weight: 500; margin-bottom: 4px;">Hook (câu mở đầu):</label>
+                    <input type="text" id="new-topic-hook" placeholder="VD: Sharks are older than trees." style="width: 100%; padding: 8px 12px; border-radius: 6px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-primary); margin-bottom: 10px;">
+                    <label for="new-topic-fact" style="display: block; font-weight: 500; margin-bottom: 4px;">Fact (sự thật):</label>
+                    <textarea id="new-topic-fact" placeholder="VD: Sharks first appeared about 450 million years ago, long before trees." style="width: 100%; height: 80px; font-size: 0.9rem; padding: 8px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; resize: vertical; margin-bottom: 10px;"></textarea>
+                    <label for="new-topic-source" style="display: block; font-weight: 500; margin-bottom: 4px;">Nguồn (không bắt buộc):</label>
+                    <input type="text" id="new-topic-source" placeholder="VD: Smithsonian Magazine" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); color: var(--text-primary); margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                        <span id="new-topic-status" style="font-size: 0.85rem; color: var(--text-secondary);"></span>
+                        <button id="btn-save-new-topic" class="btn-primary">Lưu chủ đề</button>
+                    </div>
+                </div>
+                <div id="topics-modal-list" class="topics-modal-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cancel-topics" class="btn-secondary">Đóng</button>
             </div>
         </div>
     </div>
@@ -566,7 +593,7 @@
     </div>
 
     <!-- Main Client Script -->
-    <script src="/static/app.js?v=18"></script>
-    <script src="/static/topics.js?v=18"></script>
+    <script src="/static/app.js?v=19"></script>
+    <script src="/static/topics.js?v=19"></script>
 </body>
 </html>

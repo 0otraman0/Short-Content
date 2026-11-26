@@ -493,7 +493,10 @@ function setupQuickPacingToolbar() {
 
     toolbar.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-pacing-tag');
-        if (!btn) return;
+        // Phase 15.4: Ignore clicks on non-tag buttons in the toolbar (the
+        // "Thêm nhịp" toggle used to carry .btn-pacing-tag and inserted
+        // "[undefined]text[/undefined]" into the script).
+        if (!btn || !btn.dataset.pacingTag) return;
         e.preventDefault();
 
         const tag = btn.dataset.pacingTag;
@@ -1929,19 +1932,8 @@ function setupWorkflowUI() {
         });
     }
 
-    // Phase 15.3: Nút Chủ đề giữa toolbar — mở/đóng danh sách chủ đề trong
-    // panel (mở panel nếu đang thu gọn, chuyển về tab Trợ lý AI rồi bấm nút
-    // Gợi ý chủ đề, nút này tự toggle mở/đóng).
-    const topicsToolbarBtn = document.getElementById('btn-topics-toolbar');
-    if (topicsToolbarBtn) {
-        topicsToolbarBtn.addEventListener('click', () => {
-            if (layout) layout.classList.remove('panel-collapsed');
-            const geminiTab = document.querySelector('.tab-btn[data-tab="gemini-tab"]');
-            if (geminiTab) geminiTab.click();
-            const topicsBtn = document.getElementById('btn-suggest-topics');
-            if (topicsBtn) topicsBtn.click();
-        });
-    }
+    // Phase 15.4: The toolbar Topics button is owned by static/topics.js
+    // (it opens the topics modal); nothing to wire here.
 
 }
 

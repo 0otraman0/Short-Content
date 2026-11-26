@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from services.topic_service import (
+    create_topic,
     load_topics,
     list_topics,
     get_topic,
@@ -74,6 +75,17 @@ class TestTopicBank(unittest.TestCase):
         # Undo works
         mark_used("07", used=False, path=self.path)
         self.assertEqual(get_topic("07", self.path)["status"], "unused")
+
+    def test_create_topic_appends_with_next_id(self):
+        t = create_topic("Test hook.", "Test fact.", "Test source.", path=self.path)
+        self.assertEqual(t["id"], "17")
+        self.assertEqual(t["status"], "unused")
+        self.assertEqual(len(load_topics(self.path)), 11)
+        self.assertEqual(get_topic("17", self.path)["hook"], "Test hook.")
+        with self.assertRaises(ValueError):
+            create_topic("", "Test fact.", path=self.path)
+        with self.assertRaises(ValueError):
+            create_topic("Test hook.", "", path=self.path)
 
     def test_suggest_none_when_all_used(self):
         for t in load_topics(self.path):
