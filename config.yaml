@@ -7,13 +7,7 @@ tts:
     model_path: assets/kokoro/kokoro-v0_19.onnx
     voices_path: assets/kokoro/voices.json
 gemini:
-<<<<<<< HEAD
-  model: gemini-flash-lite-latest
-=======
   model: gemini-3.5-flash-lite
-
-# Pacing Presets (multipliers and default pause values)
->>>>>>> aa65090412710448609d556e856010947e76b39d
 pacing_presets:
   mystery:
     name: Mystery
