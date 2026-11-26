@@ -1,160 +1,161 @@
 # YouTube Shorts Narration Tool
 
-**Công cụ tạo giọng đọc, phụ đề chuẩn SRT và nguồn dẫn chứng sự thật cho video ngắn YouTube Shorts.**
-Ứng dụng chạy hoàn toàn **cục bộ (local)** trên hệ điều hành Windows qua giao diện web hiện đại, không phát sinh chi phí và không phụ thuộc vào dịch vụ trả phí nào.
+**AI-powered narration synthesizer, standard SRT subtitle generator, and factual claim verification workstation for YouTube Shorts.**  
+Runs completely **locally** on Windows via a responsive modern web UI with zero recurring costs and zero subscription dependencies.
 
 ---
 
-## 1. Giới thiệu tổng quan (Overview)
+## 1. Overview
 
-Công cụ hỗ trợ nhà sáng tạo nội dung YouTube Shorts (chủ đề "sự thật khoa học / fact kỳ thú được kiểm chứng") từ bước lên ý tưởng đến khi có trọn bộ nguyên liệu hoàn chỉnh:
-- **Trợ lý viết kịch bản thông minh (Gemini AI)**: Dựng khung kịch bản (Outline) từ chủ đề/thời lượng mục tiêu (60-180s), gợi ý đoạn tiếp theo, hoặc trau chuốt lại bản nháp theo phong cách audio narration lôi cuốn, có câu hook mạnh ở 5 giây đầu.
-- **Tự động gắn nhịp điệu (Auto-Pace)**: Chèn các thẻ nhịp điệu kể chuyện (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) giúp giọng đọc trầm bổng, giữ chân người xem.
-- **Bảng kiểm chứng sự thật & trích dẫn nguồn (Fact Check)**: Bóc tách từng luận điểm thực tế, phân loại chính xác thành 2 nhãn (**ĐÃ CHỨNG MINH** kèm link tài liệu uy tín / **CHƯA RÕ**), cho phép chỉnh sửa câu an toàn (Safe rewrite) hoặc ghi đè nhãn thủ công.
-- **Tổng hợp giọng đọc chất lượng cao (TTS Engine)**:
-  - Mặc định sử dụng giọng nam chuẩn tiếng Anh qua `edge-tts` (miễn phí, giọng đọc tự nhiên như người thật).
-  - Tích hợp cơ chế **tự động fallback offline với Kokoro TTS**: khi mất mạng Internet, hệ thống tự động chuyển sang mô hình cục bộ mà không làm gián đoạn công việc.
-  - Tự động chuẩn hóa âm lượng theo tiêu chuẩn phát thanh truyền hình **EBU R128 (-16 LUFS)**.
-- **Tạo phụ đề chuẩn SRT (Subtitles)**: Trích xuất mốc thời gian chi tiết từng từ bằng `faster-whisper`, tự động nhóm thành từng cụm câu tự nhiên từ 5 đến 8 từ trên mỗi dòng phụ đề.
-- **Xuất gói thành phẩm (Export Package)**: Xuất trực tiếp vào thư mục dự án gồm:
-  1. `narration.mp3`: Giọng đọc hoàn chỉnh đã chèn khoảng lặng chuẩn và cân bằng âm lượng.
-  2. `subtitles.srt`: File phụ đề chuẩn SRT để nạp vào CapCut, Premiere, DaVinci Resolve.
-  3. `sources.txt`: Danh sách nguồn dẫn chứng được định dạng sẵn để dán ngay vào phần mô tả (Description) của YouTube.
+This application streamlines the entire creation workflow for YouTube Shorts creators specializing in verified science facts and narrative storytelling:
+- **Intelligent Scriptwriting Assistant (Gemini AI)**: Generate structured script outlines from a topic and target duration (60s–180s), draft continuous follow-up paragraphs, or rewrite drafts into punchy, speakable narration with a compelling 5-second hook.
+- **Dynamic Storytelling Pacing (Auto-Pace & Manual Markup)**: Embed expressive narration pacing tags (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`, `[deep]`, `[shock]`, `[urgent]`, `[solemn]`, `[loud]`) to deliver captivating auditory rhythm and audience retention.
+- **Scientific Fact-Checking & Citation Panel**: Parse individual atomic claims from the script and verify them against academic and institutional sources into two clear categories:
+  - **PROVEN ("ĐÃ CHỨNG MINH")**: Verified by consensus or peer-reviewed literature, linked to reputable reference URLs (Nature, Science, NOAA, Wikipedia).
+  - **UNCLEAR ("CHƯA RÕ")**: Disputed, anecdotal, or lacking documentation, offering a 1-click **Safe Rewrite** button to rephrase with scientific caution.
+- **Studio-Quality TTS Engine**:
+  - Primary provider: Microsoft Edge Neural TTS with natural English male voices (free, human-like cadence).
+  - Built-in **automatic offline fallback to Kokoro TTS**: seamlessly switches to local on-device neural voice generation during network dropouts without interrupting your session.
+  - Automatic broadcast loudness normalization adhering to **EBU R128 (-16 LUFS)** standards.
+  - Complete audio post-processing FX chain: male vocal EQ, dynamic compression, de-esser, acoustic reflection, and true peak control.
+- **Word-Level Captions & SRT Export**: Powered by `faster-whisper`, generating word-level precision timestamps grouped into natural spoken phrases (5–8 words per subtitle line).
+- **Export Package**: Directly archives all assets into the project directory:
+  1. `narration.mp3`: Normalized narration audio with accurate silence gaps and FX enhancement.
+  2. `subtitles.srt`: Subtitle file ready for instant import into CapCut, Adobe Premiere Pro, or DaVinci Resolve.
+  3. `sources.txt`: Formatted citation and verification summary ready to paste into your YouTube video description.
 
 ---
 
-## 2. Yêu cầu hệ thống & Cài đặt tiên quyết (Prerequisites)
+## 2. System Requirements & Prerequisites
 
-1. **Hệ điều hành**: Windows 10 hoặc 11 (64-bit), tối thiểu 8 GB RAM (khuyến nghị 16 GB).
-2. **Python**: Phiên bản **3.11** trở lên (Khuyến nghị Python 3.11 - 3.13).
-   - Tải bộ cài chính thức tại: [python.org/downloads](https://www.python.org/downloads/)
-   - *Lưu ý quan trọng*: Trong trình cài đặt, hãy tích chọn ô **"Add python.exe to PATH"**.
-3. **FFmpeg** (Bắt buộc để ghép âm thanh, tạo khoảng lặng và chuẩn hóa loudness EBU R128):
-   - Mở **PowerShell** hoặc Command Prompt trên Windows và chạy lệnh sau qua Windows Package Manager:
+1. **Operating System**: Windows 10 or Windows 11 (64-bit), minimum 8 GB RAM (16 GB recommended).
+2. **Python**: Version **3.11** or newer (Python 3.11–3.13 recommended).
+   - Download the official installer at: [python.org/downloads](https://www.python.org/downloads/)
+   - *Important*: Ensure you check the box **"Add python.exe to PATH"** during setup.
+3. **FFmpeg** (Required for audio concatenation, silence generation, and EBU R128 loudness normalization):
+   - Open **PowerShell** or Command Prompt and install via Windows Package Manager:
      ```powershell
      winget install Gyan.FFmpeg
      ```
-   - Sau khi cài xong, mở một cửa sổ terminal mới và gõ lệnh sau để kiểm tra:
+   - Verify the installation in a new terminal window:
      ```powershell
      ffmpeg -version
      ```
-     *(Hệ thống đã tích hợp sẵn cơ chế tự động quét tìm FFmpeg trong thư mục WinGet nên không cần cài đặt PATH thủ công).*
-4. **Khóa Google Gemini API Key** (Miễn phí 100%):
-   - Truy cập [Google AI Studio](https://aistudio.google.com/) và bấm **Get API key**.
-   - Tạo một API key miễn phí mới và sao chép mã khóa.
+     *(The application includes automatic path scanning for WinGet packages, so manual PATH editing is not required).*
+4. **Google Gemini API Key** (100% Free Tier):
+   - Visit [Google AI Studio](https://aistudio.google.com/) and click **Get API key**.
+   - Create a free API key and copy it.
 
 ---
 
-## 3. Cấu hình môi trường
+## 3. Environment Configuration
 
-1. **Tạo file `.env`**:
-   - Sao chép file `.env.example` thành file `.env` trong cùng thư mục (hoặc để `start.bat` tự tạo):
+1. **Setup `.env` File**:
+   - Copy `.env.example` to `.env` in the project root (or let `start.bat` initialize it automatically):
      ```cmd
      copy .env.example .env
      ```
-   - Mở file `.env` bằng Notepad hoặc VS Code và dán khóa API của bạn:
+   - Open `.env` in any editor and enter your Gemini API key:
      ```env
-     GEMINI_API_KEY=AIzaSy...khoa_api_cua_ban_o_day
+     GEMINI_API_KEY=AIzaSy...your_gemini_api_key_here
      ```
-2. **Cấu hình tùy chọn trong `config.yaml`**:
-   - `gemini.model`: Model AI xử lý kịch bản (mặc định: `gemini-flash-lite-latest` với dự phòng tự động sang `gemini-3.5-flash-lite`).
-   - `tts.voice`: Giọng đọc nam tiếng Anh bị khóa cho kênh (mặc định: `en-US-ChristopherNeural`).
-   - `tts.fallback_provider`: Nhà cung cấp offline dự phòng (mặc định: `kokoro`).
-   - `pacing_presets`: Tùy chỉnh tốc độ đọc cơ sở và độ dài khoảng lặng mặc định (`mystery`, `hype`, `calm`).
+2. **Configuration in `config.yaml`**:
+   - `gemini.model`: AI model for scriptwriting (default: `gemini-flash-lite-latest` with automatic fallback to `gemini-3.5-flash-lite`).
+   - `tts.voice`: Locked English male voice identifier (default: `en-US-ChristopherNeural`).
+   - `tts.fallback_provider`: Offline TTS provider fallback (default: `kokoro`).
+   - `pacing_presets`: Baseline speaking rates, pitch, and sentence pause configurations (`mystery`, `hype`, `calm`).
+   - `audio_enhancements`: Toggles for vocal post-processing (`compression`, `male_eq`, `deesser`, `reverb`, `loudnorm`).
 
 ---
 
-## 4. Khởi chạy ứng dụng (Quick Start)
+## 4. Quick Start
 
-Chỉ cần **nhấp đúp chuột vào file `start.bat`** (hoặc chạy từ cửa sổ dòng lệnh):
+Simply **double-click `start.bat`** (or execute from PowerShell / Command Prompt):
 ```cmd
 start.bat
 ```
 
-File thực thi này sẽ tự động:
-1. Tạo môi trường ảo Python (`venv`) nếu chưa tồn tại.
-2. Cài đặt toàn bộ thư viện cần thiết từ `requirements.txt`.
-3. Kiểm tra xem FFmpeg đã có trên máy hay chưa.
-4. Tự động tạo file `.env` mẫu nếu bạn chưa có.
-5. Khởi chạy máy chủ FastAPI và tự động mở trình duyệt web tại địa chỉ:
+The launcher will automatically:
+1. Initialize a Python virtual environment (`venv`) if not already present.
+2. Install all required dependencies from `requirements.txt`.
+3. Validate that FFmpeg is accessible.
+4. Auto-generate the `.env` configuration file if missing.
+5. Launch the FastAPI server and open your default browser at:
    ```
    http://127.0.0.1:8000
    ```
 
 ---
 
-## 5. Hướng dẫn sử dụng chi tiết (Workflow)
+## 5. User Workflow Guide
 
-### Bước 1: Quản lý dự án
-- Bấm **+ Dự án mới** ở thanh bên trái (Sidebar).
-- Đặt tiêu đề cho dự án ở góc trên bên trái. Hệ thống sẽ tự động lưu lại kịch bản (Autosave) sau mỗi vài giây khi bạn gõ.
-- Mỗi dự án được lưu trữ riêng biệt tại `projects/<project_id>/project.json`.
+### Step 1: Project Management
+- Click **+ New Project** on the left sidebar.
+- Set a project title in the top navigation bar. The editor autosaves changes automatically every 1.5 seconds.
+- Projects are stored independently in `projects/<project_id>/project.json`.
 
-### Bước 2: Soạn thảo hoặc sáng tạo kịch bản với Trợ lý Gemini AI
-- **Dựng khung kịch bản (Dựng khung từ ý tưởng)**: Nhập chủ đề bạn muốn làm (ví dụ: *"Greenland sharks live 400 years"*), chọn thời lượng mục tiêu (60s - 180s). AI sẽ dựng ngay bản nháp hoàn chỉnh có hook, thân bài và cái kết bất ngờ.
-- **Viết lại bản nháp (Viết lại bản nháp)**: Trau chuốt lại câu từ ngắn gọn, tăng tính tò mò, giữ trọn vẹn sự thật mà không bịa số liệu.
-- **Gợi ý đoạn tiếp theo**: AI gợi ý 3 phương án viết tiếp từ vị trí hiện tại; bấm vào phương án ưng ý để chèn ngay vào kịch bản.
+### Step 2: Script Drafting with Gemini AI
+- **Outline Builder**: Input your chosen topic (e.g., *"Greenland sharks live 400 years"*) and target duration (60s–180s) to produce a structured draft with an attention-grabbing hook.
+- **Rewrite Draft**: Polish conversational rhythm, tighten word choice, and heighten suspense while safeguarding factual integrity.
+- **Suggest Next Paragraphs**: Receive 3 dynamic follow-up paragraph alternatives to extend your narrative smoothly.
 
-### Bước 3: Đặt nhịp điệu kể chuyện (Pacing Markup)
-Bạn có thể tự gõ hoặc bấm nút **"⚡ Tự thêm nhịp"** để AI phân tích cấu trúc kịch bản và chèn nhịp tự động:
-- `[fast]nội dung[/fast]`: Đọc nhanh hơn (+12%) cho câu mở đầu lôi cuốn hoặc chuỗi sự kiện dồn dập.
-- `[slow]nội dung[/slow]`: Đọc chậm lại (-15%) khi chuẩn bị tiết lộ bí mật hoặc tình tiết hồi hộp.
-- `[pause 0.5]`: Nghỉ đúng 0.5 giây (hoặc bất kỳ số giây nào như `[pause 1.0]`) trước khi đưa ra sự thật chấn động.
-- `*từ ngữ*`: Nhấn giọng (emphasis), tăng nhẹ cao độ và âm lượng.
-- `[whisper]nội dung[/whisper]`: Giọng thì thầm bí ẩn.
-- Bấm **"🔊 Nghe thử"** bất cứ lúc nào để nghe thử đoạn văn bản đang bôi đen hoặc đoạn hiện tại.
+### Step 3: Storytelling Pacing & Audition
+- Use the **Quick Pacing Toolbar** or click **"⚡ Auto-Pace"** to let AI analyze script semantics and insert expressive pacing markup:
+  - `[fast]content[/fast]`: Accelerated rate (+12%) for opening hooks and fast-paced sequences.
+  - `[slow]content[/slow]`: Decelerated rate (-15%) for mystery build-up and tension.
+  - `[pause 0.5]`: Exact silence duration in seconds before critical reveals.
+  - `*word*`: Vocal emphasis with higher pitch and subtle pre-pause.
+  - `[whisper]content[/whisper]`: Intimate whispered delivery (-30% volume, -4Hz pitch).
+  - `[deep]content[/deep]`, `[shock]content[/shock]`, `[urgent]content[/urgent]`, `[solemn]content[/solemn]`, `[loud]content[/loud]`: Extended emotional styles.
+- Click **"🔊 Preview"** on the in-editor audition bar to listen to either the current paragraph or the full script with active audio FX and pacing.
 
-### Bước 4: Bóc tách & Kiểm chứng sự thật (Fact Check)
-- Mở bảng bên phải, bấm **"🔍 Bóc tách & Kiểm chứng"**.
-- Hệ thống sẽ trích xuất từng luận điểm và phân loại:
-  - **ĐÃ CHỨNG MINH** (Huy hiệu xanh lá): Đi kèm tóm tắt bằng chứng khoa học và liên kết tài liệu uy tín (Nature, Science, Wikipedia...).
-  - **CHƯA RÕ** (Huy hiệu vàng): Những luận điểm chưa có cơ sở rõ ràng. Bạn có thể bấm **"🛡️ Sửa câu này cho an toàn"** để AI viết lại câu văn chính xác, tránh thông tin sai lệch.
-- Có thể thêm liên kết nguồn tùy chỉnh bằng ô `+ Thêm link nguồn`, hoặc thay đổi nhãn thủ công theo ý muốn.
+### Step 4: Fact-Checking & Safe Rewriting
+- Open the right sidebar and click **"🔍 Verify Claims"**.
+- The AI isolates checkable atomic statements and classifies them:
+  - **PROVEN (Green Badge)**: Accompanied by evidence summaries and citations.
+  - **UNCLEAR (Yellow Badge)**: Unsubstantiated claims. Click **"🛡️ Safe Rewrite"** to rephrase into cautious, scientifically accurate statements.
+- Add custom reference URLs or manually toggle claim statuses as needed.
 
-### Bước 5: Xuất Audio, Phụ đề & Nguồn tham khảo
-- Bấm **"📦 Xuất Audio & Phụ đề"**.
-- Nếu dự án còn luận điểm "CHƯA RÕ", hộp thoại cảnh báo an toàn sẽ xuất hiện nhắc nhở bạn xác nhận trước khi tiếp tục.
-- Hệ thống thực hiện 3 bước:
-  1. Tổng hợp giọng đọc TTS và ghép các đoạn khoảng lặng, chuẩn hóa âm lượng.
-  2. Chạy `faster-whisper` trích xuất phụ đề và căn nhóm 5-8 từ mỗi dòng `.srt`.
-  3. Tạo file `sources.txt` chứa toàn bộ tài liệu kiểm chứng.
-- Khi hoàn tất, bạn có thể tải về trực tiếp từng file (`narration.mp3`, `subtitles.srt`, `sources.txt`) hoặc bấm **"📂 Mở thư mục dự án"** để lấy file đưa vào phần mềm dựng video.
+### Step 5: Exporting Narration, Subtitles & Sources
+- Click **"📦 Export Audio & Subtitles"**.
+- Review the narration via the pre-export audition player.
+- The pipeline executes:
+  1. Segmented TTS audio synthesis, silence insertion, and EBU R128 normalization.
+  2. Subtitle transcription via `faster-whisper` (5–8 words per phrase in `.srt`).
+  3. Generation of `sources.txt` containing verified citations.
+- Download the generated files individually or click **"📂 Open Project Folder"** to import assets directly into your video editing software.
 
 ---
 
-## 6. Cấu hình giọng đọc Offline (Kokoro TTS Fallback)
+## 6. Offline TTS Fallback (Kokoro ONNX)
 
-Nếu bạn cần làm việc ở nơi không có kết nối Internet:
-1. Tải 2 file mô hình Kokoro ONNX:
-   - File trọng số mô hình: `kokoro-v0_19.onnx` (~300MB)
-   - File giọng: `voices.json`
-2. Tạo thư mục `assets/kokoro/` và đặt 2 file trên vào thư mục này:
+To enable zero-network offline narration fallback:
+1. Obtain the Kokoro ONNX model weights and voice configuration:
+   - Weights: `kokoro-v0_19.onnx` (~300MB)
+   - Voice mappings: `voices.json`
+2. Place both files in the `assets/kokoro/` directory:
    ```
    assets/
      kokoro/
        kokoro-v0_19.onnx
        voices.json
    ```
-3. Khi mất kết nối mạng hoặc server EdgeTTS không phản hồi, hệ thống sẽ tự động chuyển sang đọc bằng Kokoro TTS offline với giọng nam đã cấu hình (`am_adam`, `bm_daniel`, ...).
+3. Whenever network connectivity drops or the primary cloud TTS endpoint is unreachable, narration generation automatically switches to Kokoro TTS without breaking the pipeline.
 
 ---
 
-## 7. Xử lý sự cố thường gặp (Troubleshooting)
+## 7. Troubleshooting
 
-- **Lỗi: 'python' is not recognized as an internal or external command**:
-  - Gỡ và cài lại Python từ [python.org](https://www.python.org/downloads/), chú ý tích chọn ô **"Add python.exe to PATH"** ở màn hình cài đặt đầu tiên.
-- **Thanh trạng thái báo đỏ: "⚠️ Thiếu FFmpeg"**:
-  - Mở PowerShell và chạy lệnh: `winget install Gyan.FFmpeg`.
-  - Khởi động lại ứng dụng bằng cách đóng cửa sổ dòng lệnh và chạy lại `start.bat`.
-- **Thanh trạng thái báo vàng: "⚠️ Thiếu GEMINI_API_KEY"**:
-  - Mở file `.env` và kiểm tra xem đã có dòng `GEMINI_API_KEY=AIzaSy...` hay chưa.
-  - Đảm bảo không có dấu ngoặc kép hoặc khoảng trắng thừa quanh khóa API.
-- **Lỗi: "Rate limit 429 / Quota exhausted" khi gọi Gemini**:
-  - Hệ thống đã tích hợp cơ chế tự động thử lại (retry với exponential backoff). Nếu vẫn quá tải, bạn chỉ cần chờ khoảng 30 đến 60 giây để gói miễn phí của Google hồi phục lại hạn ngạch.
-- **Lỗi: "open() got an unexpected keyword argument 'metadata_errors'" khi tạo SRT**:
-  - Sự cố không tương thích giữa `av 14+` và `faster-whisper` đã được mã nguồn xử lý tự động qua bộ vá tương thích ngược trong `captions.py`.
-- **Chạy kiểm thử toàn bộ hệ thống**:
-  - Để kiểm tra toàn bộ 35 unit test và integration test, mở terminal trong thư mục dự án và chạy:
+- **Error: 'python' is not recognized as an internal or external command**:
+  - Reinstall Python from [python.org](https://www.python.org/downloads/) and ensure you check **"Add python.exe to PATH"**.
+- **Status Indicator: "⚠️ Missing FFmpeg"**:
+  - Run `winget install Gyan.FFmpeg` in PowerShell and restart `start.bat`.
+- **Status Indicator: "⚠️ Missing GEMINI_API_KEY"**:
+  - Verify that your `.env` file contains `GEMINI_API_KEY=AIzaSy...` without quotes or trailing spaces.
+- **Rate Limit 429 / Quota Exhaustion**:
+  - Exponential backoff retries are built-in. If the quota is temporarily depleted, pause for 30–60 seconds to allow the free quota window to replenish.
+- **Run Full Automated Test Suite**:
+  - Execute all unit and integration tests from PowerShell:
     ```powershell
     .\venv\Scripts\python.exe -m unittest discover tests
     ```

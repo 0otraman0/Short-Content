@@ -1,4 +1,4 @@
-﻿# PLAN.md - Implementation Tasks
+# PLAN.md - Implementation Tasks
 
 Owner roles: Planner, Builder, Reviewer.
 Rules: One task at a time. Builder touches ONLY the files listed for that task. Next task starts only after previous test passes.
@@ -23,7 +23,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Status**: done
 - **How to test**: Run server, open web UI, verify status API.
 
-### T0.3: Windows Launcher `start.bat` & Vietnamese Setup Guide
+### T0.3: Windows Launcher `start.bat` & Setup Guide
 - **Goal**: Create `start.bat` to automate venv creation, requirements installation, FFmpeg verification, server launch, and browser opening. Create `README.md`.
 - **Files**: `start.bat`, `README.md`
 - **Requirements**: C3, R7.1
@@ -71,13 +71,13 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Status**: done
 - **How to test**: Run test synthesis on marked-up script; inspect audio for pauses and loudness normalization.
 
-### T2.3: TTS Integration & "Nghe thá»­" UI Button
-- **Goal**: Add API endpoint `/api/tts/preview` and UI button "Nghe thá»­" to synthesize and play selected paragraph in browser. Add voice selection modal.
+### T2.3: TTS Integration & Preview Audio UI Button
+- **Goal**: Add API endpoint `/api/tts/preview` and UI button "Preview Audio" to synthesize and play selected paragraph in browser. Add voice selection modal.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.6, R2.7, R2.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Highlight text, click "Nghe thá»­", verify in-browser playback.
+- **How to test**: Highlight text, click "Preview Audio", verify in-browser playback.
 
 ---
 
@@ -92,7 +92,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Transcribe test audio with `captions.py`, verify `.srt` output format, timing syntax, and line word-count constraint (5-8 words per block).
 
 ### T3.2: Export Pipeline & UI Integration (Audio + SRT + Sources)
-- **Goal**: Update `main.py` and UI to replace video rendering with project export: endpoint `POST /api/projects/{id}/export` producing `narration.mp3` (or `.wav`), `subtitles.srt`, and `sources.txt` inside `projects/<id>/`. Update UI: change "Táº¡o video" to "Xuáº¥t Audio & Phá»¥ Ä‘á»", display progress modal, and offer direct download links for the exported files. Remove legacy video render endpoints and `render.py`.
+- **Goal**: Update `main.py` and UI to replace video rendering with project export: endpoint `POST /api/projects/{id}/export` producing `narration.mp3` (or `.wav`), `subtitles.srt`, and `sources.txt` inside `projects/<id>/`. Update UI: change "Render Video" to "Export Audio & Subtitles", display progress modal, and offer direct download links for the exported files. Remove legacy video render endpoints and `render.py`.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`, `tests/test_export_pipeline.py`
 - **Requirements**: R5.1, R5.2, R5.4, R5.5, R5.6, R5.7
 - **Owner**: Builder
@@ -112,7 +112,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Run standalone test script calling Gemini API to verify response formatting and error handling.
 
 ### T4.2: Writing Assistant UI Side Panel
-- **Goal**: Add UI panel and endpoints for Gemini assistant: "Gá»£i Ã½ Ä‘oáº¡n tiáº¿p theo", "Viáº¿t láº¡i bÃ i Ä‘ang dá»Ÿ" (with before/after diff preview), and "Dá»±ng khung tá»« Ä‘áº§u", each with "ghi chÃº cho AI" input box.
+- **Goal**: Add UI panel and endpoints for Gemini assistant: "Suggest Next Paragraphs", "Rewrite Draft" (with before/after diff preview), and "Outline Topic", each with an AI guidance note input box.
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R3.1, R3.2, R3.3, R3.4
 - **Owner**: Builder
@@ -120,7 +120,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Test each assistant action in UI, check before/after diff dialog, and accept suggested text into editor.
 
 ### T4.3: Auto-Pace Feature
-- **Goal**: Implement "Tá»± thÃªm nhá»‹p (auto-pace)" button and endpoint using Gemini to insert pacing markup (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) based on narrative structure. Provide before/after review dialog.
+- **Goal**: Implement "Auto-Pace" button and endpoint using Gemini to insert pacing markup (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) based on narrative structure. Provide before/after review dialog.
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.8
 - **Owner**: Builder
@@ -132,7 +132,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 ## Phase 5: Fact Check Panel & Source Export (R4)
 
 ### T5.1: Fact Extraction & Grounded Verification
-- **Goal**: Create `factcheck.py` to extract checkable atomic claims from script. Verify claims using Gemini with Google Search grounding (or fallback prompt). Classify claims into exactly two labels: "ÄÃƒ CHá»¨NG MINH" (with source URLs and evidence) or "CHÆ¯A RÃ•" (with reason).
+- **Goal**: Create `factcheck.py` to extract checkable atomic claims from script. Verify claims using Gemini with Google Search grounding (or fallback prompt). Classify claims into exactly two labels: "ĐÃ CHỨNG MINH" (PROVEN, with source URLs and evidence) or "CHƯA RÕ" (UNCLEAR, with reason).
 - **Files**: `factcheck.py`, `requirements.txt`
 - **Requirements**: R4.1, R4.2, R4.3, R4.4
 - **Owner**: Builder
@@ -140,15 +140,15 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Run factcheck on sample script; verify parsed JSON list of claims, labels, source URLs, and summaries.
 
 ### T5.2: Fact Check UI Panel & Claim Rewriting
-- **Goal**: Implement Fact Check side panel in UI: green/yellow badges, click claim to highlight sentence in script editor, "Sá»­a cÃ¢u nÃ y cho an toÃ n" button next to "CHÆ¯A RÃ•" claims, manual label override, and source URL editing.
+- **Goal**: Implement Fact Check side panel in UI: green/yellow badges, click claim to highlight sentence in script editor, "Safe Rewrite" button next to "CHƯA RÕ" claims, manual label override, and source URL editing.
 - **Files**: `static/index.html`, `static/app.js`, `main.py`
 - **Requirements**: R4.5, R4.6, R4.7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Click "Kiá»ƒm chá»©ng" in UI, click claims to verify text highlighting, edit claim label/URL, and test sentence rewriting.
+- **How to test**: Click "Fact Check" in UI, click claims to verify text highlighting, edit claim label/URL, and test sentence rewriting.
 
 ### T5.3: Pre-Export Safety Check & `sources.txt` Export
-- **Goal**: In export pipeline, trigger confirmation dialog if any claims remain "CHÆ¯A RÃ•". Save claim metadata in `project.json` and export `sources.txt` formatted for YouTube description inside the project folder.
+- **Goal**: In export pipeline, trigger confirmation dialog if any claims remain "CHƯA RÕ". Save claim metadata in `project.json` and export `sources.txt` formatted for YouTube description inside the project folder.
 - **Files**: `main.py`, `static/app.js`
 - **Requirements**: R4.8, R4.9
 - **Owner**: Builder
@@ -165,18 +165,18 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Requirements**: Tech stack (Kokoro fallback), C2
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Disconnect network or mock edge-tts failure; verify speech synthesis succeeds using local Kokoro model.
+- **How to test**: Disable network/simulate failure; verify narration falls back to Kokoro TTS and produces valid audio.
 
-### T6.2: Vietnamese Error Handling & Diagnostics
-- **Goal**: Add friendly, actionable Vietnamese error handling throughout the application (FFmpeg missing, Gemini API key missing, network errors, rate limit handling with retry count).
-- **Files**: `main.py`, `gemini_client.py`, `static/app.js`
+### T6.2: Actionable Error Handling & Status Diagnostics
+- **Goal**: Add friendly, localized error messages for Gemini API failures (rate limits, key invalid, network errors), FFmpeg missing check on `/api/status`, and clear UI alerts.
+- **Files**: `gemini_client.py`, `main.py`, `static/app.js`
 - **Requirements**: R5.7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Test error states and verify descriptive Vietnamese alerts appear in UI.
+- **How to test**: Trigger 429 / bad API key; verify friendly banner appears in UI with guidance.
 
-### T6.3: Complete Documentation & Final Verification
-- **Goal**: Finalize `README.md` with complete installation instructions and troubleshooting guide. Update `CHANGELOG.md`. Conduct end-to-end user workflow test from script to exported audio, .srt, and sources.txt.
+### T6.3: Documentation & Full Workflow Verification
+- **Goal**: Review `README.md` and verify end-to-end user workflow: idea -> outline -> script -> pacing -> fact check -> audio + SRT + sources export.
 - **Files**: `README.md`, `CHANGELOG.md`
 - **Requirements**: R7.1, R7.3, Definition of Done
 - **Owner**: Builder
@@ -188,162 +188,149 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 ## Phase 7: Export History & Multi-Job Audio Storage (R5.8, R5.9)
 
 ### T7.1: Backend Job-isolated Export Storage & Endpoints
-- **Goal**: LÆ°u thÃ nh pháº©m má»—i láº§n xuáº¥t vÃ o `projects/<id>/exports/<job_id>/` (narration.mp3, subtitles.srt, sources.txt, metadata.json), ghi nháº­n vÃ o `project.json`. Bá»• sung API láº¥y danh sÃ¡ch exports vÃ  stream/download theo tá»«ng job_id Ä‘á»™c láº­p.
+- **Goal**: Save output assets for every export into `projects/<id>/exports/<job_id>/` (`narration.mp3`, `subtitles.srt`, `sources.txt`, `metadata.json`), and record job details in `project.json`. Provide API endpoints to list exports and download files per job independently.
 - **Files**: `main.py`, `tests/test_export_pipeline.py`
 - **Requirements**: R5.8
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Cháº¡y test xuáº¥t 2 job liÃªn tiáº¿p, kiá»ƒm tra 2 thÆ° má»¥c job Ä‘á»™c láº­p tá»“n táº¡i, API tráº£ vá» Ä‘Ãºng audio tá»«ng job.
+- **How to test**: Run test creating two consecutive export jobs; verify both independent directories exist and API retrieves each job's audio correctly.
 
 ### T7.2: Export History UI & Audio Playback per Job
-- **Goal**: ThÃªm giao diá»‡n danh sÃ¡ch "Lá»‹ch sá»­ xuáº¥t" trong UI, cho phÃ©p nghe láº¡i audio cá»§a tá»«ng job, xem thá»i gian xuáº¥t, Ä‘á»™ dÃ i vÃ  táº£i riÃªng tá»«ng file cá»§a job Ä‘Ã³.
+- **Goal**: Add "Export History" modal in web UI allowing users to replay past audio exports, view export timestamp and duration, and download individual files per job.
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R5.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Má»Ÿ trÃ¬nh duyá»‡t, xuáº¥t thá»­ 2 láº§n, kiá»ƒm tra danh sÃ¡ch hiá»ƒn thá»‹ Ä‘á»§ 2 job vÃ  báº¥m nghe láº¡i tá»«ng job Ä‘á»™c láº­p.
+- **How to test**: Open browser, perform two test exports, verify the modal lists both jobs, and verify audio playback for each job independently.
 
 ---
 
 ## Phase 8: Narration Expressiveness & Audio Enhancement (R2.6, R2.11, R2.12, R3.4)
 
 ### T8.1: Coalesced Segment Parsing & Speakability Gemini Prompts
-- **Goal**: Cáº£i tiáº¿n `pacing.py` Ä‘á»ƒ tá»•ng há»£p á»Ÿ cáº¥p Ä‘á»™ cÃ¢u/Ä‘oáº¡n tá»± nhiÃªn, chá»‰ tÃ¡ch khi cÃ³ tháº» markup hoáº·c pause tÆ°á»ng minh. Cáº­p nháº­t `gemini_client.py` vá»›i 4 quy táº¯c speakability (xen káº½ Ä‘á»™ dÃ i cÃ¢u, dáº¥u ngáº¯t nhá»‹p, Ä‘áº·t fact á»Ÿ cuá»‘i cÃ¢u, viáº¿t sá»‘ thÃ nh chá»¯).
+- **Goal**: Upgrade `pacing.py` to synthesize speech at sentence/paragraph level by default, splitting only upon explicit markup tags or pauses. Update `gemini_client.py` with 4 speakability rules (alternating sentence lengths, punctuation rhythm breaks, punchline/fact placed at the end, spelling ambiguous numbers as words).
 - **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`, `tests/test_gemini.py`
 - **Requirements**: R2.6, R3.4
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Cháº¡y test kiá»ƒm tra Ä‘oáº¡n vÄƒn báº£n khÃ´ng tháº» giá»¯ nguyÃªn 1 segment; kiá»ƒm tra prompt Gemini chá»©a Ä‘áº§y Ä‘á»§ 4 quy táº¯c speakability.
+- **How to test**: Run test verifying plain text sentences remain single cohesive segments; check Gemini prompt contains all 4 speakability guidelines.
 
 ### T8.2: Audio Post-Processing Chain with On/Off Toggles
-- **Goal**: TÃ­ch há»£p chuá»—i filter FFmpeg trong `tts.py` gá»“m light compression, male EQ, de-esser, light reverb, loudness normalization vá»›i cÃ¡c cÃ´ng táº¯c báº­t/táº¯t Ä‘á»c tá»« `config.yaml` vÃ  tham sá»‘ hÃ m.
+- **Goal**: Integrate FFmpeg filter chain in `tts.py` including light compression, male EQ, de-esser, acoustic reflection, and EBU R128 loudness normalization with configurable toggles in `config.yaml`.
 - **Files**: `tts.py`, `config.yaml`, `tests/test_tts.py`
 - **Requirements**: R2.12
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Cháº¡y test xuáº¥t audio vá»›i tá»«ng cáº¥u hÃ¬nh báº­t/táº¯t filter, kiá»ƒm tra Ã¢m thanh Ä‘áº§u ra há»£p lá»‡ vÃ  Ä‘áº¡t chuáº©n loudness.
+- **How to test**: Run test exporting audio with various filter toggle combinations; verify output audio integrity and loudness compliance.
 
 ### T8.3: Paragraph Regeneration, Multi-Take Selector & UI Toggles
-- **Goal**: ThÃªm nÃºt "Táº¡o láº¡i" cho tá»«ng Ä‘oáº¡n ká»‹ch báº£n, lÆ°u tá»‘i Ä‘a 4 takes Ä‘á»ƒ nghe thá»­ vÃ  chá»n báº£n Æ°ng Ã½ nháº¥t; thÃªm báº£ng cÃ´ng táº¯c báº­t/táº¯t audio post-processing trÃªn giao diá»‡n.
+- **Goal**: Add "Regenerate" button for individual script paragraphs, storing up to 4 takes to audition and select the best version. Add audio post-processing toggles modal in UI.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.11, R2.12
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Báº¥m "Táº¡o láº¡i" trÃªn 1 Ä‘oáº¡n ká»‹ch báº£n, táº¡o thá»­ 3-4 takes, nghe láº¡i tá»«ng take vÃ  chá»n; chuyá»ƒn Ä‘á»•i cÃ¡c cÃ´ng táº¯c audio enhancement vÃ  xuáº¥t thá»­.
+- **How to test**: Click "Regenerate" on a paragraph, generate 3-4 takes, audition and select active take; toggle audio enhancement settings and test audio export.
 
 ---
 
 ## Phase 9: Pre-Export Narration Audition & Pacing Review (R2.9, R5.10)
 
 ### T9.1: In-Editor Paragraph & Full Script Audio Audition Bar
-- **Goal**: NÃ¢ng cáº¥p chá»©c nÄƒng Ä‘á»c thá»­ trong trÃ¬nh soáº¡n tháº£o, cho phÃ©p nghe thá»­ Ä‘oáº¡n vÄƒn báº£n hiá»‡n táº¡i hoáº·c toÃ n bá»™ ká»‹ch báº£n vá»›i Ä‘áº§y Ä‘á»§ hiá»‡u á»©ng nhá»‹p Ä‘iá»‡u (pause, slow, fast, emphasis) vÃ  Audio FX; cáº£i tiáº¿n thanh nghe thá»­ cÃ³ timeline vÃ  thá»i lÆ°á»£ng thá»±c.
+- **Goal**: Upgrade in-editor audio audition bar to allow listening to either the active paragraph or full script with all active pacing tags (pause, slow, fast, emphasis) and Audio FX. Provide timeline and real duration indicator.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Viáº¿t ká»‹ch báº£n cÃ³ cÃ¡c tháº» [slow], [pause], *emphasis*, báº¥m "Äá»c thá»­" vÃ  kiá»ƒm tra thanh player phÃ¡t Ä‘Ãºng Ã¢m thanh nháº¥n nhÃ¡ vÃ  thá»i lÆ°á»£ng thá»±c táº¿.
+- **How to test**: Write script with `[slow]`, `[pause]`, `*emphasis*`, click preview buttons, verify player reproduces correct cadence and exact duration.
 
 ### T9.2: Pre-Export Audition & Pacing Validation in Export Flow
-- **Goal**: TÃ­ch há»£p nÃºt "Äá»c thá»­ trÆ°á»›c khi xuáº¥t" vÃ o Modal Xuáº¥t Audio & Phá»¥ Ä‘á», cho phÃ©p ngÆ°á»i dÃ¹ng nghe duyá»‡t toÃ n bá»™ audio trÆ°á»›c khi báº¥m xuáº¥t chÃ­nh thá»©c.
+- **Goal**: Embed pre-export audition review player into the Export modal, allowing creators to validate complete audio pacing before triggering export.
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R5.10
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Má»Ÿ modal xuáº¥t, báº¥m "Äá»c thá»­ trÆ°á»›c khi xuáº¥t", nghe kiá»ƒm tra toÃ n bÃ i rá»“i má»›i báº¥m "Tiáº¿n hÃ nh xuáº¥t".
+- **How to test**: Open export modal, click "Audition Audio", verify playback of the entire narration before committing to export.
 
 ---
 
 ## Phase 10: Extended Pacing Tags & Quick Pacing Toolbar (R2.13, R1.4)
 
 ### T10.1: Extended Pacing Markup Parser & Gemini Auto-Pace Upgrade
-- **Goal**: Má»Ÿ rá»™ng há»‡ thá»‘ng nhá»‹p Ä‘iá»‡u thÃªm 5 tháº» má»›i: `[deep]` (giá»ng tráº§m ma má»‹ -6Hz, -8%), `[shock]` (giá»ng giáº­t gÃ¢n, ngáº¡c nhiÃªn +6Hz, +15%), `[urgent]` (dá»“n dáº­p, Ä‘áº¿m ngÆ°á»£c +22%), `[solemn]` (láº¯ng Ä‘á»ng, trang nghiÃªm -20%, -3Hz), `[loud]` (to vang, cáº£nh bÃ¡o +30% vol). NÃ¢ng cáº¥p prompt `auto_pace` trong `gemini_client.py` Ä‘á»ƒ AI tá»± Ä‘á»™ng phá»‘i há»£p Ä‘áº§y Ä‘á»§ 10 tháº» nhá»‹p Ä‘iá»‡u.
+- **Goal**: Expand pacing markup with 5 additional emotional styles: `[deep]` (mysterious bass: -6Hz, -8%), `[shock]` (revelation & surprise: +6Hz, +15%), `[urgent]` (ticking clock urgency: +22%), `[solemn]` (reflective closing: -20%, -3Hz), `[loud]` (alarm & warning: +30% vol). Upgrade `auto_pace` prompt in `gemini_client.py` to coordinate all 10 pacing tags dynamically.
 - **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`
 - **Requirements**: R2.8, R2.13
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Viáº¿t unit test trong `tests/test_pacing.py` xÃ¡c minh tá»«ng tháº» má»›i Ä‘Æ°á»£c parse thÃ nh Ä‘Ãºng `SpeechSegment` vá»›i rate, pitch, volume tÆ°Æ¡ng á»©ng. Test passed.
+- **How to test**: Write unit test in `tests/test_pacing.py` verifying each new tag parses into accurate `SpeechSegment` with corresponding rate, pitch, and volume.
 
 ### T10.2: Quick Pacing Toolbar & UI Cheatsheet Upgrade
-- **Goal**: NÃ¢ng cáº¥p Cheatsheet Ä‘áº§y Ä‘á»§ 10 tháº» nhá»‹p Ä‘iá»‡u vÃ  bá»• sung thanh nÃºt báº¥m chÃ¨n nhanh (Quick Pacing Toolbar) trÃªn khung soáº¡n tháº£o: ngÆ°á»i dÃ¹ng bÃ´i Ä‘en cÃ¢u/tá»« vÃ  báº¥m chÃ¨n nhanh tháº» nhá»‹p.
+- **Goal**: Upgrade cheatsheet with all 10 pacing tags and add Quick Pacing Toolbar above the editor: users highlight text and click buttons to instantly wrap markup tags.
 - **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
 - **Requirements**: R1.4, R2.13
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: BÃ´i Ä‘en má»™t Ä‘oáº¡n text trong editor, báº¥m cÃ¡c nÃºt chÃ¨n nhá»‹p, kiá»ƒm tra tháº» Ä‘Æ°á»£c bá»c chÃ­nh xÃ¡c quanh text Ä‘Ã£ chá»n. Test passed.
+- **How to test**: Highlight text in editor, click toolbar buttons, verify selected text is wrapped accurately with pacing tags.
 
 ---
 
 ## Phase 11: Project Management Enhancement (Rename Project - R6.1)
 
 ### T11.1: Project Renaming on Top Bar and Sidebar List
-- **Goal**: Há»— trá»£ Ä‘á»•i tÃªn dá»± Ã¡n linh hoáº¡t: (1) ThÃªm icon sá»­a tÃªn `âœï¸` vÃ  xá»­ lÃ½ Enter/blur lÆ°u ngay trÃªn thanh Top Bar; (2) ThÃªm nÃºt `âœï¸ (Äá»•i tÃªn)` trÃªn tá»«ng dá»± Ã¡n á»Ÿ Sidebar Ä‘á»ƒ Ä‘á»•i tÃªn nhanh chÃ³ng.
+- **Goal**: Support flexible project renaming: (1) Interactive rename button `✏️` and Enter/blur instant save on Top Navigation Bar; (2) Rename button `✏️` on each sidebar project item.
 - **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
 - **Requirements**: R6.1
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Äá»•i tÃªn dá»± Ã¡n tá»« Ã´ Top Bar hoáº·c nÃºt `âœï¸` á»Ÿ Sidebar, kiá»ƒm tra tÃªn má»›i Ä‘Æ°á»£c lÆ°u vÃ o `project.json` vÃ  hiá»ƒn thá»‹ Ä‘á»“ng bá»™ á»Ÿ cáº£ hai vá»‹ trÃ­. Test passed.
-
+- **How to test**: Rename project from Top Bar or Sidebar `✏️` button; verify updated title persists in `project.json` and synchronizes across UI.
 
 ---
 
 ## Phase 12: Refactoring to 3-Layer Architecture
 
 ### T12.1: Data Access & Infrastructure Layer
-- **Goal**: Xây dựng tầng 3 (Data Access & Infrastructure): tách logic file I/O dự án vào 
-epositories/project_repository.py; tách EdgeTTS/Kokoro providers vào infrastructure/tts_providers.py, FFmpeg filters vào infrastructure/ffmpeg_processor.py, whisper engine vào infrastructure/whisper_adapter.py.
-- **Files**: 
-epositories/__init__.py, 
-epositories/project_repository.py, infrastructure/__init__.py, infrastructure/tts_providers.py, infrastructure/ffmpeg_processor.py, infrastructure/whisper_adapter.py
+- **Goal**: Build Layer 3 (Data Access & Infrastructure): extract project file I/O into `repositories/project_repository.py`; extract EdgeTTS/Kokoro providers into `infrastructure/tts_providers.py`, FFmpeg filters into `infrastructure/ffmpeg_processor.py`, and faster-whisper engine into `infrastructure/whisper_adapter.py`.
+- **Files**: `repositories/__init__.py`, `repositories/project_repository.py`, `infrastructure/__init__.py`, `infrastructure/tts_providers.py`, `infrastructure/ffmpeg_processor.py`, `infrastructure/whisper_adapter.py`
 - **Requirements**: R6.1, R6.2, R2.12, R5.3
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Import infrastructure/repositories; check locked voice, enhancements, project CRUD. All OK.
 
 ### T12.2: Business Logic Layer (Services)
-- **Goal**: Xây dựng tầng 2 (Services): tổ chức các dịch vụ nghiệp vụ độc lập vào services/ (project_service.py, 	ts_service.py, gemini_service.py, actcheck_service.py, export_service.py). Facade pattern giữ root modules tương thích.
-- **Files**: services/__init__.py, services/project_service.py, services/tts_service.py, services/gemini_service.py, services/factcheck_service.py, services/export_service.py
+- **Goal**: Build Layer 2 (Services): organize independent business logic into `services/` (`project_service.py`, `tts_service.py`, `gemini_service.py`, `factcheck_service.py`, `export_service.py`).
+- **Files**: `services/__init__.py`, `services/project_service.py`, `services/tts_service.py`, `services/gemini_service.py`, `services/factcheck_service.py`, `services/export_service.py`
 - **Requirements**: R1-R6
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Import tất cả services; verify enhancements keys, GeminiService methods. All OK.
+- **How to test**: Import all services; verify enhancement keys and GeminiService methods. All OK.
 
 ### T12.3: Presentation Layer & Routers
-- **Goal**: Xây dựng tầng 1 (Presentation / Routers): phân tách các endpoints từ main.py sang 
-outers/ (5 router file), tinh gọn main.py thành bootstrap loader (~120 dòng).
-- **Files**: 
-outers/__init__.py, 
-outers/projects_router.py, 
-outers/tts_router.py, 
-outers/gemini_router.py, 
-outers/factcheck_router.py, 
-outers/export_router.py, main.py
+- **Goal**: Build Layer 1 (Presentation / Routers): extract all endpoints from `main.py` into `routers/` (5 router files), refactoring `main.py` into a lightweight ~120-line bootstrap application loader.
+- **Files**: `routers/__init__.py`, `routers/projects_router.py`, `routers/tts_router.py`, `routers/gemini_router.py`, `routers/factcheck_router.py`, `routers/export_router.py`, `main.py`
 - **Requirements**: R1-R6
 - **Owner**: Builder
 - **Status**: done
 - **How to test**: Import main app; verify routes list loads correctly. All OK.
 
 ### T12.4: Verification & Documentation
-- **Goal**: Chạy toàn bộ 55 tests, cập nhật CHANGELOG, DECISIONS, PLAN, STATE.
-- **Files**: 	ests/test_*.py, CHANGELOG.md, DECISIONS.md, PLAN.md, STATE.md
+- **Goal**: Run complete test suite (55 tests), update CHANGELOG, DECISIONS, PLAN, STATE.
+- **Files**: `tests/test_*.py`, `CHANGELOG.md`, `DECISIONS.md`, `PLAN.md`, `STATE.md`
 - **Requirements**: R7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: python -m unittest discover tests -> 55/55 OK.
+- **How to test**: `python -m unittest discover tests` -> 55/55 OK.
 
 ### T12.5: Thin Facades Cleanup for Root Modules
-- **Goal**: Chuyển đổi các module gốc (`gemini_client.py`, `factcheck.py`, `captions.py`, `tts.py`) thành thin facades thuần túy (chỉ re-export); chuyển toàn bộ nghiệp vụ thực tế vào `services/` và `infrastructure/`.
-- **Files**: services/gemini_service.py, services/factcheck_service.py, infrastructure/whisper_adapter.py, gemini_client.py, factcheck.py, captions.py, tts.py
+- **Goal**: Convert legacy root modules (`gemini_client.py`, `factcheck.py`, `captions.py`, `tts.py`) into pure thin facades (re-exports only); relocate all business logic into `services/` and `infrastructure/`.
+- **Files**: `services/gemini_service.py`, `services/factcheck_service.py`, `infrastructure/whisper_adapter.py`, `gemini_client.py`, `factcheck.py`, `captions.py`, `tts.py`
 - **Requirements**: R1-R7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: python -m unittest discover tests -> 55/55 tests passing, zero regression.
+- **How to test**: `python -m unittest discover tests` -> 55/55 tests passing, zero regression.
 
 ### T12.6: Root Directory Cleanup & Test Suite Modernization
-- **Goal**: Di chuyển `pacing.py` sang `services/pacing_service.py`, hiện đại hóa toàn bộ imports trong `tests/` trỏ trực tiếp vào `services/` và `infrastructure/`, xóa hoàn toàn 5 file `.py` ở thư mục gốc (`captions.py`, `factcheck.py`, `gemini_client.py`, `pacing.py`, `tts.py`). Thư mục gốc chỉ còn duy nhất `main.py`.
-- **Files**: services/pacing_service.py, services/tts_service.py, services/__init__.py, tests/test_captions.py, tests/test_factcheck.py, tests/test_gemini.py, tests/test_pacing.py, tests/test_tts.py, tests/test_tts_preview.py
+- **Goal**: Relocate `pacing.py` to `services/pacing_service.py`, modernize all imports across `tests/` to target `services/` and `infrastructure/` directly, and permanently delete the 5 root Python files (`captions.py`, `factcheck.py`, `gemini_client.py`, `pacing.py`, `tts.py`). The project root contains `main.py` as the sole Python entry point.
+- **Files**: `services/pacing_service.py`, `services/tts_service.py`, `services/__init__.py`, `tests/test_captions.py`, `tests/test_factcheck.py`, `tests/test_gemini.py`, `tests/test_pacing.py`, `tests/test_tts.py`, `tests/test_tts_preview.py`
 - **Requirements**: R1-R7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: python -m unittest discover tests (55/55 OK) & python tests/test_tts_preview.py (OK). Root directory has ONLY main.py.
-
-
+- **How to test**: `python -m unittest discover tests` (55/55 OK) & `python tests/test_tts_preview.py` (OK). Root directory contains ONLY `main.py`.
