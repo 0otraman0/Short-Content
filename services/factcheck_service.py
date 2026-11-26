@@ -6,15 +6,40 @@ Contains ALL fact-checking logic (moved from factcheck.py as part of 3-layer cle
 import json
 import re
 from typing import Any, Dict
+from urllib.parse import urlparse
 
 from services.gemini_service import generate_text
 
 
+def _is_valid_url(url: str) -> bool:
+    """P0-2: a source URL is only usable if it is http/https with a host."""
+    try:
+        parsed = urlparse(str(url).strip())
+    except Exception:
+        return False
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc) and " " not in str(url).strip()
+
+
+def _clean_urls(urls) -> list:
+    """Drop invalid/duplicate URLs; keep the first valid occurrence."""
+    seen = set()
+    out = []
+    for u in urls or []:
+        u = str(u).strip()
+        if u and _is_valid_url(u) and u not in seen:
+            seen.add(u)
+            out.append(u)
+    return out
+
+
 def clean_pacing_tags(text: str) -> str:
-    """Remove pacing markup tags for fact-checking while keeping natural text."""
+    """Remove pacing markup tags for fact-checking while keeping natural text.
+
+    P0-2: strip all 10 tags (not just the first 4) plus their closing tags.
+    """
     if not text:
         return ""
-    cleaned = re.sub(r"\[/?(pause(\s+[0-9.]+)?|slow|fast|whisper)\]", " ", text, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\[/?(pause(\s+[0-9.]+)?|slow|fast|whisper|deep|shock|urgent|solemn|loud)\]", " ", text, flags=re.IGNORECASE)
     cleaned = re.sub(r"\*([^*]+)\*", r"\1", cleaned)
     return re.sub(r"\s+", " ", cleaned).strip()
 
@@ -70,11 +95,10 @@ async def extract_and_verify_claims(script: str) -> Dict[str, Any]:
         claims = []
         for i, item in enumerate(parsed):
             cid = item.get("id") or f"claim_{i+1}"
-            label = item.get("label", "CHƯA RÕ")
-            if "ĐÃ" not in label:
-                label = "CHƯA RÕ"
-            else:
-                label = "ĐÃ CHỨNG MINH"
+            # P0-2: exact label match only; any other string is CHƯA RÕ.
+            # The old loose "contains ĐÃ" check promoted long sentences.
+            raw_label = str(item.get("label", "")).strip()
+            label = "ĐÃ CHỨNG MINH" if raw_label == "ĐÃ CHỨNG MINH" else "CHƯA RÕ"
 
             urls = item.get("urls") or []
             if isinstance(urls, str):
@@ -85,7 +109,8 @@ async def extract_and_verify_claims(script: str) -> Dict[str, Any]:
                 "text": str(item.get("text", "")).strip(),
                 "sentence": str(item.get("sentence", "")).strip(),
                 "label": label,
-                "urls": [str(u).strip() for u in urls if u],
+                # P0-2: drop URLs Gemini invented / malformed ones.
+                "urls": _clean_urls(urls),
                 "evidence": str(item.get("evidence", "")).strip(),
             })
 

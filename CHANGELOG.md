@@ -2,6 +2,16 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 14 (P0 fixes, via Muse + GitHub PAT)
+- **P0-1**: `services/pacing_service.py` — `load_presets()` now defaults to `BASE_DIR/config.yaml` when no path is passed, so edits to `pacing_presets` in `config.yaml` actually take effect (previously silently ignored; `tts_service` never passed a path).
+- **P0-2**: `services/factcheck_service.py` — `clean_pacing_tags()` strips all 10 pacing tags (was 4); claim labels now use an exact `== "ĐÃ CHỨNG MINH"` match (was a loose "contains ĐÃ" check); source URLs are validated (http/https + host) and deduplicated, invalid ones dropped.
+- **P0-3**: `repositories/project_repository.py`, `routers/export_router.py`, `routers/tts_router.py` — one shared `_sanitize_id()` now validates `project_id`, `job_id`, `para_key` and `take_id` (400 on traversal); export/take file paths go through `get_export_job_dir()` / `get_take_file()`.
+- **P0-4**: `repositories/project_repository.py` — `save_project()` (and duplicate) now writes `project.json.tmp` + `os.replace()` under a `threading.Lock`, so autosave racing export cannot leave a half-written JSON file.
+- **P0-5**: `infrastructure/whisper_adapter.py` — `transcribe_to_srt()` and `transcribe_and_build_ass()` now reuse the cached `get_whisper_model()`; one model size everywhere (`DEFAULT_WHISPER_MODEL = "base.en"`, was "base" in the cache vs "base.en" in export).
+- **P0-6**: `services/tts_service.py`, `services/export_service.py` — Kokoro fallback now triggers only on network-like errors (`_is_network_error`); other errors re-raise. New `synthesize_narration_with_info()` returns `(path, duration, fallback_used, used_provider)`; `synthesize_narration()` keeps its old 2-tuple return for compatibility. Export metadata/history now records `fallback_used` / `used_provider` so the UI can warn that the voice changed (Kokoro has no pitch/volume, only speed).
+- **Tests**: added `tests/test_p0_fixes.py` (6 tests, one per P0, offline, no model/network). Expected suite: 61 + 6 = 67 tests. **Not run on Muse's machine** — run `python -m pytest` on Windows and verify 67/67 before using; see STATE.md.
+- **Logging rule**: every finished/edited/added/copied action in this commit is logged here, per the user's logging rule.
+
 ## [2026-11-26] - Phase 13
 - **T13.1**: Integrated Topic Suggestion feature from `shorts-topic-integration/` pack. Added local offline topic bank (`data/topics.json`) containing 10 pre-verified scientific facts (ids 07–16), business logic in `services/topic_service.py`, FastAPI endpoints in `routers/topics_router.py`, UI button `#btn-suggest-topics` and `#topics-list` in `static/index.html` via `static/topics.js`. Wired router into `main.py`. Verified 6/6 unit tests in `tests/test_topics.py` and 61/61 overall test suite (zero regressions).
 

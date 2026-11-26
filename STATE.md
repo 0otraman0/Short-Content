@@ -1,11 +1,12 @@
 # Project State (2026-11-26)
 - Scope: YouTube Shorts Narration Tool + Expressiveness & Audio Audition + Topic Suggestions.
-- Git: Branch `main`, Phase 13 (T13.1 Topic Suggestions) complete and verified.
-- Completed: Phases 0-13 (T13.1) ALL DONE (61/61 tests passing across test suite).
+- Git: Branch `main`, Phase 14 (P0 fixes) complete and pushed via Muse + GitHub PAT.
+- Completed: Phases 0-14. Topic Suggestions (Phase 13) were already in the repo when Muse checked on 2026-11-26 (10 topics 07-16, router wired, 61/61 claimed by Antigravity) — Muse did NOT re-add them.
+- P0 fixes (Phase 14): P0-1 presets from config.yaml, P0-2 fact-check tags/URLs/labels, P0-3 id sanitizing, P0-4 atomic project.json writes, P0-5 Whisper cached model, P0-6 network-only Kokoro fallback with fallback_used flag.
 - Architecture: 100% 3-Layer (routers/ | services/ | infrastructure/, repositories/).
 - Root Directory: Clean, ONLY main.py exists at root.
 - Topics Feature: 10 pre-verified facts in data/topics.json, zero API/Gemini dependency.
-- In progress: T13.1 complete, awaiting user manual UI review.
-- Next step: Run start.bat, test clicking "Goi y chu de" in browser, delete integration folder when ready.
-- Verification: 61/61 unit & integration tests passing (6 new + 55 existing).
+- In progress: Phase 14 pushed, awaiting user manual verification.
+- Next step: On Windows, run the full test suite and confirm 67/67 (61 existing + 6 new P0 tests), then run start.bat and test an export. The 6 new P0 tests were NOT run on Muse's machine.
+- Verification: 61/61 claimed for Phase 13 by Antigravity; Phase 14 adds 6 new offline tests in tests/test_p0_fixes.py — full suite NOT run by Muse, must be run locally.
 - Runtime: Windows, Python 3.13 venv, FastAPI on http://127.0.0.1:8000 via start.bat.

@@ -40,10 +40,16 @@ class CaptionChunk:
     end: float
 
 _whisper_model: Optional[WhisperModel] = None
+_whisper_model_size: Optional[str] = None
 
-def get_whisper_model(model_size: str = "base", device: Optional[str] = None) -> WhisperModel:
-    global _whisper_model
-    if _whisper_model is None:
+# P0-5: one model size everywhere. "base" and "base.en" are different
+# models; the export path used base.en while the cache defaulted to base.
+DEFAULT_WHISPER_MODEL = "base.en"
+
+
+def get_whisper_model(model_size: str = DEFAULT_WHISPER_MODEL, device: Optional[str] = None) -> WhisperModel:
+    global _whisper_model, _whisper_model_size
+    if _whisper_model is None or _whisper_model_size != model_size:
         if device is None:
             try:
                 import torch
@@ -55,6 +61,7 @@ def get_whisper_model(model_size: str = "base", device: Optional[str] = None) ->
             _whisper_model = WhisperModel(model_size, device=device, compute_type=compute_type)
         except Exception:
             _whisper_model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        _whisper_model_size = model_size
     return _whisper_model
 
 # ==========================================
@@ -152,12 +159,14 @@ def chunks_to_srt(chunks: List[CaptionChunk]) -> str:
 def transcribe_to_srt(
     audio_path: Path,
     output_srt_path: Path,
-    model_size: str = "base.en",
+    model_size: str = DEFAULT_WHISPER_MODEL,
     device: Optional[str] = None
 ) -> Path:
     """
     Transcribe audio with faster-whisper and export clean .srt subtitle file
     with natural phrases of about 5-8 words per line.
+    P0-5: reuse the cached model from get_whisper_model() instead of
+    loading a second model for every export.
     """
     audio_path = Path(audio_path)
     output_srt_path = Path(output_srt_path)
@@ -165,18 +174,7 @@ def transcribe_to_srt(
     if not audio_path.exists():
         raise FileNotFoundError(f"Không tìm thấy file âm thanh: {audio_path}")
 
-    if device is None:
-        try:
-            import torch
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        except Exception:
-            device = "cpu"
-
-    compute_type = "float16" if device == "cuda" else "int8"
-    try:
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    except Exception:
-        model = WhisperModel(model_size, device="cpu", compute_type="int8")
+    model = get_whisper_model(model_size, device=device)
 
     segments_gen, info = model.transcribe(
         str(audio_path),
@@ -303,7 +301,7 @@ def build_ass_events(
 def transcribe_and_build_ass(
     audio_path: Path,
     output_ass_path: Path,
-    model_size: str = "base.en",
+    model_size: str = DEFAULT_WHISPER_MODEL,
     device: Optional[str] = None
 ) -> Path:
     audio_path = Path(audio_path)
@@ -312,18 +310,8 @@ def transcribe_and_build_ass(
     if not audio_path.exists():
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
-    if device is None:
-        try:
-            import torch
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-        except Exception:
-            device = "cpu"
-
-    compute_type = "float16" if device == "cuda" else "int8"
-    try:
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    except Exception:
-        model = WhisperModel(model_size, device="cpu", compute_type="int8")
+    # P0-5: reuse the cached model here too.
+    model = get_whisper_model(model_size, device=device)
 
     segments_gen, info = model.transcribe(
         str(audio_path),

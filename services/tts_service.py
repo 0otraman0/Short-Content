@@ -27,13 +27,33 @@ from infrastructure.tts_providers import (
 from services.pacing_service import PauseSegment, SpeechSegment, parse_script
 
 
+_NETWORK_ERROR_KEYWORDS = (
+    "connection", "timeout", "getaddrinfo", "network", "offline",
+    "connecterror", "clienterror", "ssl", "dns", "unreachable",
+)
+
+
+def _is_network_error(err: BaseException) -> bool:
+    """P0-6: only network-like failures may fall back to Kokoro.
+
+    A script/voice/config error is a real error and must surface, not
+    silently switch voices. Kokoro also has no pitch/volume control
+    (only speed), so a fallback always loses whisper/deep/shock/emphasis
+    nuance -- the caller must be told via fallback_used.
+    """
+    if isinstance(err, (ConnectionError, TimeoutError, OSError)):
+        return True
+    msg = str(err).lower()
+    return any(k in msg for k in _NETWORK_ERROR_KEYWORDS)
+
+
 class TTSService:
     @staticmethod
     def get_enhancements(config_path: Optional[Path] = None) -> Dict[str, bool]:
         return get_audio_enhancements(config_path)
 
 
-async def synthesize_narration(
+async def synthesize_narration_with_info(
     script: str,
     output_path: Path,
     preset_name: str = "mystery",
@@ -41,11 +61,11 @@ async def synthesize_narration(
     provider: Optional[TTSProvider] = None,
     allow_fallback: bool = True,
     enhancements: Optional[Dict[str, bool]] = None,
-) -> Tuple[Path, float]:
-    """
-    Synthesize complete narration with pacing markup, real pauses, and audio post-processing.
-    Returns (output_path, duration_seconds).
-    Falls back to Kokoro offline TTS on network failure when available.
+) -> Tuple[Path, float, bool, str]:
+    """Same as synthesize_narration, plus (fallback_used, used_provider).
+
+    P0-6: returns whether Kokoro fallback ran, so the UI/export can warn
+    that the voice changed and pacing nuance may differ.
     """
     ensure_ffmpeg()
     output_path = Path(output_path)
@@ -88,9 +108,14 @@ async def synthesize_narration(
             return files
 
         segment_files: List[Path] = []
+        fallback_used = False
+        used_provider = type(active_provider).__name__
         try:
             segment_files = await _synthesize_with_provider(active_provider, chosen_voice)
         except Exception as primary_err:
+            # P0-6: only network errors fall back; other errors re-raise.
+            if not _is_network_error(primary_err):
+                raise primary_err
             kokoro_fallback = KokoroTTSProvider()
             if (
                 allow_fallback
@@ -106,14 +131,42 @@ async def synthesize_narration(
                 segment_files.clear()
                 kokoro_voice = cfg.get("tts", {}).get("kokoro", {}).get("voice", "am_adam")
                 segment_files = await _synthesize_with_provider(kokoro_fallback, kokoro_voice)
+                fallback_used = True
+                used_provider = "KokoroTTSProvider"
             else:
                 raise primary_err
 
         concatenate_and_normalize(segment_files, output_path, enhancements=enhancements)
         duration = get_audio_duration(output_path)
-        return output_path, duration
+        return output_path, duration, fallback_used, used_provider
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+async def synthesize_narration(
+    script: str,
+    output_path: Path,
+    preset_name: str = "mystery",
+    voice: Optional[str] = None,
+    provider: Optional[TTSProvider] = None,
+    allow_fallback: bool = True,
+    enhancements: Optional[Dict[str, bool]] = None,
+) -> Tuple[Path, float]:
+    """Backwards-compatible wrapper: returns (output_path, duration).
+
+    Use synthesize_narration_with_info() when the caller needs to know
+    whether the Kokoro fallback ran (P0-6).
+    """
+    out_path, duration, _, _ = await synthesize_narration_with_info(
+        script=script,
+        output_path=output_path,
+        preset_name=preset_name,
+        voice=voice,
+        provider=provider,
+        allow_fallback=allow_fallback,
+        enhancements=enhancements,
+    )
+    return out_path, duration
 
 
 # Convenience re-export used by export_service

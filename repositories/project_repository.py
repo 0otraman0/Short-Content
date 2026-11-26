@@ -4,8 +4,10 @@ Extracted from main.py as part of 3-Layer Architecture (Phase 12).
 """
 
 import json
+import os
 import re
 import shutil
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -15,12 +17,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECTS_DIR = BASE_DIR / "projects"
 PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
 
+_save_lock = threading.Lock()
+
+
+def _sanitize_id(value: str, label: str) -> str:
+    """P0-3: one shared check for every id that becomes a path segment."""
+    if not isinstance(value, str) or not re.match(r"^[a-zA-Z0-9_-]+$", value):
+        raise ValueError(f"Invalid {label}: {value!r}")
+    return value
+
 
 def _sanitize_project_id(project_id: str) -> str:
     """Validate project ID to prevent path traversal."""
-    if not re.match(r"^[a-zA-Z0-9_-]+$", project_id):
-        raise ValueError(f"Invalid project ID: {project_id!r}")
-    return project_id
+    return _sanitize_id(project_id, "project ID")
+
+
+def _sanitize_job_id(job_id: str) -> str:
+    return _sanitize_id(job_id, "job ID")
+
+
+def _sanitize_para_key(para_key: str) -> str:
+    return _sanitize_id(para_key, "paragraph key")
+
+
+def _sanitize_take_id(take_id: str) -> str:
+    return _sanitize_id(take_id, "take ID")
 
 
 class ProjectRepository:
@@ -34,7 +55,14 @@ class ProjectRepository:
         return self.get_folder(project_id) / "project.json"
 
     def get_export_job_dir(self, project_id: str, job_id: str) -> Path:
+        _sanitize_job_id(job_id)
         return self.get_folder(project_id) / "exports" / job_id
+
+    def get_take_file(self, project_id: str, para_key: str, take_id: str) -> Path:
+        """P0-3: sanitized path to a paragraph take audio file."""
+        _sanitize_para_key(para_key)
+        _sanitize_take_id(take_id)
+        return self.get_folder(project_id) / "takes" / para_key / f"{take_id}.mp3"
 
     # ------------------------------------------------------------------
     # Read
@@ -80,12 +108,20 @@ class ProjectRepository:
     # ------------------------------------------------------------------
 
     def save_project(self, project_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Write project.json to disk. project_data must contain 'id'."""
+        """Write project.json to disk. project_data must contain 'id'.
+
+        P0-4: atomic write (temp file + os.replace) under a lock, so an
+        autosave racing an export cannot leave a half-written JSON file.
+        """
         project_id = project_data["id"]
         folder = self.get_folder(project_id)
         folder.mkdir(parents=True, exist_ok=True)
         json_file = folder / "project.json"
-        json_file.write_text(json.dumps(project_data, ensure_ascii=False, indent=2), encoding="utf-8")
+        payload = json.dumps(project_data, ensure_ascii=False, indent=2)
+        with _save_lock:
+            tmp_file = folder / "project.json.tmp"
+            tmp_file.write_text(payload, encoding="utf-8")
+            os.replace(tmp_file, json_file)
         return project_data
 
     def create_project(self, title: str = "Dự án chưa đặt tên", script: str = "") -> Dict[str, Any]:
@@ -142,7 +178,7 @@ class ProjectRepository:
         }
         new_folder = self.get_folder(new_id)
         new_folder.mkdir(parents=True, exist_ok=True)
-        (new_folder / "project.json").write_text(
-            json.dumps(new_data, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        tmp_file = new_folder / "project.json.tmp"
+        tmp_file.write_text(json.dumps(new_data, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp_file, new_folder / "project.json")
         return new_data

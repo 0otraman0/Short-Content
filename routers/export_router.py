@@ -8,7 +8,7 @@ import uuid
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
 
-from repositories.project_repository import ProjectRepository
+from repositories.project_repository import ProjectRepository, _sanitize_job_id
 from services.export_service import ExportService
 
 router = APIRouter(tags=["export"])
@@ -70,6 +70,10 @@ async def start_export(project_id: str, background_tasks: BackgroundTasks):
 @router.get("/api/projects/{project_id}/export-status/{job_id}")
 async def get_export_status(project_id: str, job_id: str):
     """Poll export progress and status."""
+    try:
+        _sanitize_job_id(job_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Mã tác vụ xuất không hợp lệ.")
     if job_id not in export_jobs:
         raise HTTPException(status_code=404, detail="Không tìm thấy tác vụ xuất.")
     return export_jobs[job_id]
@@ -114,8 +118,13 @@ async def list_project_exports(project_id: str):
 @router.get("/api/projects/{project_id}/exports/{job_id}/audio")
 async def get_job_audio(project_id: str, job_id: str):
     """Stream or download narration.mp3 of a specific export job."""
+    # P0-3: get_export_job_dir() sanitizes job_id (400 on traversal).
+    try:
+        job_dir = _repo.get_export_job_dir(project_id, job_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Mã tác vụ xuất không hợp lệ.")
     folder = _repo.get_folder(project_id)
-    job_audio = folder / "exports" / job_id / "narration.mp3"
+    job_audio = job_dir / "narration.mp3"
     if not job_audio.exists():
         job_audio = folder / "narration.mp3"
         if not job_audio.exists():
@@ -126,8 +135,12 @@ async def get_job_audio(project_id: str, job_id: str):
 @router.get("/api/projects/{project_id}/exports/{job_id}/subtitles")
 async def get_job_subtitles(project_id: str, job_id: str):
     """Download subtitles.srt of a specific export job."""
+    try:
+        job_dir = _repo.get_export_job_dir(project_id, job_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Mã tác vụ xuất không hợp lệ.")
     folder = _repo.get_folder(project_id)
-    job_srt = folder / "exports" / job_id / "subtitles.srt"
+    job_srt = job_dir / "subtitles.srt"
     if not job_srt.exists():
         job_srt = folder / "subtitles.srt"
         if not job_srt.exists():
@@ -138,8 +151,12 @@ async def get_job_subtitles(project_id: str, job_id: str):
 @router.get("/api/projects/{project_id}/exports/{job_id}/sources")
 async def get_job_sources(project_id: str, job_id: str):
     """Download sources.txt of a specific export job."""
+    try:
+        job_dir = _repo.get_export_job_dir(project_id, job_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Mã tác vụ xuất không hợp lệ.")
     folder = _repo.get_folder(project_id)
-    job_sources = folder / "exports" / job_id / "sources.txt"
+    job_sources = job_dir / "sources.txt"
     if not job_sources.exists():
         job_sources = folder / "sources.txt"
         if not job_sources.exists():

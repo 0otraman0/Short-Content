@@ -14,7 +14,7 @@ from infrastructure.ffmpeg_processor import ensure_ffmpeg, get_audio_enhancement
 from infrastructure.tts_providers import get_locked_voice
 from infrastructure.whisper_adapter import transcribe_to_srt
 from repositories.project_repository import ProjectRepository
-from services.tts_service import synthesize_narration
+from services.tts_service import synthesize_narration_with_info
 
 
 class ExportService:
@@ -58,7 +58,9 @@ class ExportService:
 
         audio_file = job_dir / "narration.mp3"
         enhancements = project_data.get("audio_enhancements") or get_audio_enhancements()
-        _, duration = await synthesize_narration(
+        # P0-6: record whether the Kokoro fallback ran, so the UI/history
+        # can warn that the voice changed and pacing nuance may differ.
+        _, duration, fallback_used, used_provider = await synthesize_narration_with_info(
             script=script,
             output_path=audio_file,
             preset_name=preset,
@@ -123,6 +125,8 @@ class ExportService:
             "script_preview": script[:120] + ("..." if len(script) > 120 else ""),
             "pacing_preset": preset,
             "voice": voice,
+            "fallback_used": fallback_used,
+            "used_provider": used_provider,
             "audio_file": "narration.mp3",
             "subtitles_file": "subtitles.srt",
             "sources_file": "sources.txt",
@@ -142,6 +146,8 @@ class ExportService:
             "script_preview": job_meta["script_preview"],
             "pacing_preset": preset,
             "voice": voice,
+            "fallback_used": fallback_used,
+            "used_provider": used_provider,
             "audio_url": f"/api/projects/{project_id}/exports/{job_id}/audio",
             "subtitles_url": f"/api/projects/{project_id}/exports/{job_id}/subtitles",
             "sources_url": f"/api/projects/{project_id}/exports/{job_id}/sources",

@@ -258,8 +258,11 @@ async def select_paragraph_take(project_id: str, paragraph_index: int, take_id: 
 @router.get("/api/projects/{project_id}/takes/{para_key}/{take_id}")
 async def get_take_audio(project_id: str, para_key: str, take_id: str):
     """Serve audio file for a paragraph take."""
-    folder = _repo.get_folder(project_id)
-    take_file = folder / "takes" / para_key / f"{take_id}.mp3"
+    # P0-3: get_take_file() sanitizes para_key/take_id (400 on traversal).
+    try:
+        take_file = _repo.get_take_file(project_id, para_key, take_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Mã đoạn/take không hợp lệ.")
     if not take_file.exists():
         raise HTTPException(status_code=404, detail="Không tìm thấy file âm thanh của Take này.")
     return FileResponse(take_file, media_type="audio/mpeg", filename=f"{take_id}.mp3")

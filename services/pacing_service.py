@@ -9,6 +9,8 @@ import re
 from typing import Dict, List, Optional, Union
 import yaml
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 @dataclass
 class SpeechSegment:
     text: str
@@ -50,7 +52,13 @@ DEFAULT_PRESETS = {
 }
 
 def load_presets(config_path: Optional[Path] = None) -> Dict[str, dict]:
-    """Load pacing presets from config.yaml or fallback to defaults."""
+    """Load pacing presets from config.yaml or fallback to defaults.
+
+    P0-1: when no path is given, read BASE_DIR/config.yaml (the repo's
+    config.yaml) instead of silently returning the in-code defaults.
+    """
+    if config_path is None:
+        config_path = BASE_DIR / "config.yaml"
     if config_path and config_path.exists():
         try:
             cfg = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
