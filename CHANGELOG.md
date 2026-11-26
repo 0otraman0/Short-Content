@@ -2,6 +2,12 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 12
+- **T12.1**: Tạo tầng Infrastructure & Repositories. Tách logic FFmpeg (silence, filter chain, loudnorm) sang `infrastructure/ffmpeg_processor.py`; tách EdgeTTSProvider, KokoroTTSProvider, voice locking sang `infrastructure/tts_providers.py`; tách faster-whisper adapter (PyAV patch, word timings, SRT) sang `infrastructure/whisper_adapter.py`; tách project.json CRUD sang `repositories/project_repository.py`. Commit: T12.1.
+- **T12.2**: Tạo tầng Services (Business Logic). Tạo `services/project_service.py`, `services/tts_service.py` (synthesize_narration pipeline), `services/gemini_service.py` (facade over gemini_client), `services/factcheck_service.py` (facade over factcheck), `services/export_service.py` (end-to-end export: TTS → Whisper → sources.txt → project.json update). Commit: T12.2.
+- **T12.3**: Tạo tầng Presentation (Routers). Tách tất cả API endpoints ra 5 router module: `routers/projects_router.py`, `routers/tts_router.py`, `routers/gemini_router.py`, `routers/factcheck_router.py`, `routers/export_router.py`. Refactor `main.py` còn ~120 dòng (bootstrap loader: app setup, static mount, `/`, `/api/status`). Commit: T12.3.
+- **T12.4**: Xác minh 55/55 tests pass sau refactor. Cập nhật CHANGELOG, DECISIONS, PLAN, STATE. Commit: T12.4.
+
 ## [2026-11-24] - Phase 11
 - **T11.1**: Implemented project renaming feature on both the top navigation title bar and sidebar projects list (R6.1). Added interactive title input focus button `✏️` (`#btn-edit-title`) with immediate save on `Enter` or `blur`, and added a dedicated rename button `✏️` (`.btn-rename`) to each project item in the sidebar triggering prompt-based renaming and immediate synchronization with server and UI. Verified with regression test in `tests/test_ui_layout.py` (9/9 layout tests passing). Test passed.
 

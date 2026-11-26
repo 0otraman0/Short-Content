@@ -1,4 +1,4 @@
-# PLAN.md - Implementation Tasks
+﻿# PLAN.md - Implementation Tasks
 
 Owner roles: Planner, Builder, Reviewer.
 Rules: One task at a time. Builder touches ONLY the files listed for that task. Next task starts only after previous test passes.
@@ -71,13 +71,13 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **Status**: done
 - **How to test**: Run test synthesis on marked-up script; inspect audio for pauses and loudness normalization.
 
-### T2.3: TTS Integration & "Nghe thử" UI Button
-- **Goal**: Add API endpoint `/api/tts/preview` and UI button "Nghe thử" to synthesize and play selected paragraph in browser. Add voice selection modal.
+### T2.3: TTS Integration & "Nghe thá»­" UI Button
+- **Goal**: Add API endpoint `/api/tts/preview` and UI button "Nghe thá»­" to synthesize and play selected paragraph in browser. Add voice selection modal.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.6, R2.7, R2.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Highlight text, click "Nghe thử", verify in-browser playback.
+- **How to test**: Highlight text, click "Nghe thá»­", verify in-browser playback.
 
 ---
 
@@ -92,7 +92,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Transcribe test audio with `captions.py`, verify `.srt` output format, timing syntax, and line word-count constraint (5-8 words per block).
 
 ### T3.2: Export Pipeline & UI Integration (Audio + SRT + Sources)
-- **Goal**: Update `main.py` and UI to replace video rendering with project export: endpoint `POST /api/projects/{id}/export` producing `narration.mp3` (or `.wav`), `subtitles.srt`, and `sources.txt` inside `projects/<id>/`. Update UI: change "Tạo video" to "Xuất Audio & Phụ đề", display progress modal, and offer direct download links for the exported files. Remove legacy video render endpoints and `render.py`.
+- **Goal**: Update `main.py` and UI to replace video rendering with project export: endpoint `POST /api/projects/{id}/export` producing `narration.mp3` (or `.wav`), `subtitles.srt`, and `sources.txt` inside `projects/<id>/`. Update UI: change "Táº¡o video" to "Xuáº¥t Audio & Phá»¥ Ä‘á»", display progress modal, and offer direct download links for the exported files. Remove legacy video render endpoints and `render.py`.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`, `tests/test_export_pipeline.py`
 - **Requirements**: R5.1, R5.2, R5.4, R5.5, R5.6, R5.7
 - **Owner**: Builder
@@ -112,7 +112,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Run standalone test script calling Gemini API to verify response formatting and error handling.
 
 ### T4.2: Writing Assistant UI Side Panel
-- **Goal**: Add UI panel and endpoints for Gemini assistant: "Gợi ý đoạn tiếp theo", "Viết lại bài đang dở" (with before/after diff preview), and "Dựng khung từ đầu", each with "ghi chú cho AI" input box.
+- **Goal**: Add UI panel and endpoints for Gemini assistant: "Gá»£i Ã½ Ä‘oáº¡n tiáº¿p theo", "Viáº¿t láº¡i bÃ i Ä‘ang dá»Ÿ" (with before/after diff preview), and "Dá»±ng khung tá»« Ä‘áº§u", each with "ghi chÃº cho AI" input box.
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R3.1, R3.2, R3.3, R3.4
 - **Owner**: Builder
@@ -120,7 +120,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Test each assistant action in UI, check before/after diff dialog, and accept suggested text into editor.
 
 ### T4.3: Auto-Pace Feature
-- **Goal**: Implement "Tự thêm nhịp (auto-pace)" button and endpoint using Gemini to insert pacing markup (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) based on narrative structure. Provide before/after review dialog.
+- **Goal**: Implement "Tá»± thÃªm nhá»‹p (auto-pace)" button and endpoint using Gemini to insert pacing markup (`[fast]`, `[slow]`, `[pause]`, `*emphasis*`, `[whisper]`) based on narrative structure. Provide before/after review dialog.
 - **Files**: `gemini_client.py`, `main.py`, `static/index.html`, `static/app.js`
 - **Requirements**: R2.8
 - **Owner**: Builder
@@ -132,7 +132,7 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 ## Phase 5: Fact Check Panel & Source Export (R4)
 
 ### T5.1: Fact Extraction & Grounded Verification
-- **Goal**: Create `factcheck.py` to extract checkable atomic claims from script. Verify claims using Gemini with Google Search grounding (or fallback prompt). Classify claims into exactly two labels: "ĐÃ CHỨNG MINH" (with source URLs and evidence) or "CHƯA RÕ" (with reason).
+- **Goal**: Create `factcheck.py` to extract checkable atomic claims from script. Verify claims using Gemini with Google Search grounding (or fallback prompt). Classify claims into exactly two labels: "ÄÃƒ CHá»¨NG MINH" (with source URLs and evidence) or "CHÆ¯A RÃ•" (with reason).
 - **Files**: `factcheck.py`, `requirements.txt`
 - **Requirements**: R4.1, R4.2, R4.3, R4.4
 - **Owner**: Builder
@@ -140,15 +140,15 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 - **How to test**: Run factcheck on sample script; verify parsed JSON list of claims, labels, source URLs, and summaries.
 
 ### T5.2: Fact Check UI Panel & Claim Rewriting
-- **Goal**: Implement Fact Check side panel in UI: green/yellow badges, click claim to highlight sentence in script editor, "Sửa câu này cho an toàn" button next to "CHƯA RÕ" claims, manual label override, and source URL editing.
+- **Goal**: Implement Fact Check side panel in UI: green/yellow badges, click claim to highlight sentence in script editor, "Sá»­a cÃ¢u nÃ y cho an toÃ n" button next to "CHÆ¯A RÃ•" claims, manual label override, and source URL editing.
 - **Files**: `static/index.html`, `static/app.js`, `main.py`
 - **Requirements**: R4.5, R4.6, R4.7
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Click "Kiểm chứng" in UI, click claims to verify text highlighting, edit claim label/URL, and test sentence rewriting.
+- **How to test**: Click "Kiá»ƒm chá»©ng" in UI, click claims to verify text highlighting, edit claim label/URL, and test sentence rewriting.
 
 ### T5.3: Pre-Export Safety Check & `sources.txt` Export
-- **Goal**: In export pipeline, trigger confirmation dialog if any claims remain "CHƯA RÕ". Save claim metadata in `project.json` and export `sources.txt` formatted for YouTube description inside the project folder.
+- **Goal**: In export pipeline, trigger confirmation dialog if any claims remain "CHÆ¯A RÃ•". Save claim metadata in `project.json` and export `sources.txt` formatted for YouTube description inside the project folder.
 - **Files**: `main.py`, `static/app.js`
 - **Requirements**: R4.8, R4.9
 - **Owner**: Builder
@@ -188,97 +188,98 @@ Rules: One task at a time. Builder touches ONLY the files listed for that task. 
 ## Phase 7: Export History & Multi-Job Audio Storage (R5.8, R5.9)
 
 ### T7.1: Backend Job-isolated Export Storage & Endpoints
-- **Goal**: Lưu thành phẩm mỗi lần xuất vào `projects/<id>/exports/<job_id>/` (narration.mp3, subtitles.srt, sources.txt, metadata.json), ghi nhận vào `project.json`. Bổ sung API lấy danh sách exports và stream/download theo từng job_id độc lập.
+- **Goal**: LÆ°u thÃ nh pháº©m má»—i láº§n xuáº¥t vÃ o `projects/<id>/exports/<job_id>/` (narration.mp3, subtitles.srt, sources.txt, metadata.json), ghi nháº­n vÃ o `project.json`. Bá»• sung API láº¥y danh sÃ¡ch exports vÃ  stream/download theo tá»«ng job_id Ä‘á»™c láº­p.
 - **Files**: `main.py`, `tests/test_export_pipeline.py`
 - **Requirements**: R5.8
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Chạy test xuất 2 job liên tiếp, kiểm tra 2 thư mục job độc lập tồn tại, API trả về đúng audio từng job.
+- **How to test**: Cháº¡y test xuáº¥t 2 job liÃªn tiáº¿p, kiá»ƒm tra 2 thÆ° má»¥c job Ä‘á»™c láº­p tá»“n táº¡i, API tráº£ vá» Ä‘Ãºng audio tá»«ng job.
 
 ### T7.2: Export History UI & Audio Playback per Job
-- **Goal**: Thêm giao diện danh sách "Lịch sử xuất" trong UI, cho phép nghe lại audio của từng job, xem thời gian xuất, độ dài và tải riêng từng file của job đó.
+- **Goal**: ThÃªm giao diá»‡n danh sÃ¡ch "Lá»‹ch sá»­ xuáº¥t" trong UI, cho phÃ©p nghe láº¡i audio cá»§a tá»«ng job, xem thá»i gian xuáº¥t, Ä‘á»™ dÃ i vÃ  táº£i riÃªng tá»«ng file cá»§a job Ä‘Ã³.
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R5.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Mở trình duyệt, xuất thử 2 lần, kiểm tra danh sách hiển thị đủ 2 job và bấm nghe lại từng job độc lập.
+- **How to test**: Má»Ÿ trÃ¬nh duyá»‡t, xuáº¥t thá»­ 2 láº§n, kiá»ƒm tra danh sÃ¡ch hiá»ƒn thá»‹ Ä‘á»§ 2 job vÃ  báº¥m nghe láº¡i tá»«ng job Ä‘á»™c láº­p.
 
 ---
 
 ## Phase 8: Narration Expressiveness & Audio Enhancement (R2.6, R2.11, R2.12, R3.4)
 
 ### T8.1: Coalesced Segment Parsing & Speakability Gemini Prompts
-- **Goal**: Cải tiến `pacing.py` để tổng hợp ở cấp độ câu/đoạn tự nhiên, chỉ tách khi có thẻ markup hoặc pause tường minh. Cập nhật `gemini_client.py` với 4 quy tắc speakability (xen kẽ độ dài câu, dấu ngắt nhịp, đặt fact ở cuối câu, viết số thành chữ).
+- **Goal**: Cáº£i tiáº¿n `pacing.py` Ä‘á»ƒ tá»•ng há»£p á»Ÿ cáº¥p Ä‘á»™ cÃ¢u/Ä‘oáº¡n tá»± nhiÃªn, chá»‰ tÃ¡ch khi cÃ³ tháº» markup hoáº·c pause tÆ°á»ng minh. Cáº­p nháº­t `gemini_client.py` vá»›i 4 quy táº¯c speakability (xen káº½ Ä‘á»™ dÃ i cÃ¢u, dáº¥u ngáº¯t nhá»‹p, Ä‘áº·t fact á»Ÿ cuá»‘i cÃ¢u, viáº¿t sá»‘ thÃ nh chá»¯).
 - **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`, `tests/test_gemini.py`
 - **Requirements**: R2.6, R3.4
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Chạy test kiểm tra đoạn văn bản không thẻ giữ nguyên 1 segment; kiểm tra prompt Gemini chứa đầy đủ 4 quy tắc speakability.
+- **How to test**: Cháº¡y test kiá»ƒm tra Ä‘oáº¡n vÄƒn báº£n khÃ´ng tháº» giá»¯ nguyÃªn 1 segment; kiá»ƒm tra prompt Gemini chá»©a Ä‘áº§y Ä‘á»§ 4 quy táº¯c speakability.
 
 ### T8.2: Audio Post-Processing Chain with On/Off Toggles
-- **Goal**: Tích hợp chuỗi filter FFmpeg trong `tts.py` gồm light compression, male EQ, de-esser, light reverb, loudness normalization với các công tắc bật/tắt đọc từ `config.yaml` và tham số hàm.
+- **Goal**: TÃ­ch há»£p chuá»—i filter FFmpeg trong `tts.py` gá»“m light compression, male EQ, de-esser, light reverb, loudness normalization vá»›i cÃ¡c cÃ´ng táº¯c báº­t/táº¯t Ä‘á»c tá»« `config.yaml` vÃ  tham sá»‘ hÃ m.
 - **Files**: `tts.py`, `config.yaml`, `tests/test_tts.py`
 - **Requirements**: R2.12
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Chạy test xuất audio với từng cấu hình bật/tắt filter, kiểm tra âm thanh đầu ra hợp lệ và đạt chuẩn loudness.
+- **How to test**: Cháº¡y test xuáº¥t audio vá»›i tá»«ng cáº¥u hÃ¬nh báº­t/táº¯t filter, kiá»ƒm tra Ã¢m thanh Ä‘áº§u ra há»£p lá»‡ vÃ  Ä‘áº¡t chuáº©n loudness.
 
 ### T8.3: Paragraph Regeneration, Multi-Take Selector & UI Toggles
-- **Goal**: Thêm nút "Tạo lại" cho từng đoạn kịch bản, lưu tối đa 4 takes để nghe thử và chọn bản ưng ý nhất; thêm bảng công tắc bật/tắt audio post-processing trên giao diện.
+- **Goal**: ThÃªm nÃºt "Táº¡o láº¡i" cho tá»«ng Ä‘oáº¡n ká»‹ch báº£n, lÆ°u tá»‘i Ä‘a 4 takes Ä‘á»ƒ nghe thá»­ vÃ  chá»n báº£n Æ°ng Ã½ nháº¥t; thÃªm báº£ng cÃ´ng táº¯c báº­t/táº¯t audio post-processing trÃªn giao diá»‡n.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.11, R2.12
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Bấm "Tạo lại" trên 1 đoạn kịch bản, tạo thử 3-4 takes, nghe lại từng take và chọn; chuyển đổi các công tắc audio enhancement và xuất thử.
+- **How to test**: Báº¥m "Táº¡o láº¡i" trÃªn 1 Ä‘oáº¡n ká»‹ch báº£n, táº¡o thá»­ 3-4 takes, nghe láº¡i tá»«ng take vÃ  chá»n; chuyá»ƒn Ä‘á»•i cÃ¡c cÃ´ng táº¯c audio enhancement vÃ  xuáº¥t thá»­.
 
 ---
 
 ## Phase 9: Pre-Export Narration Audition & Pacing Review (R2.9, R5.10)
 
 ### T9.1: In-Editor Paragraph & Full Script Audio Audition Bar
-- **Goal**: Nâng cấp chức năng đọc thử trong trình soạn thảo, cho phép nghe thử đoạn văn bản hiện tại hoặc toàn bộ kịch bản với đầy đủ hiệu ứng nhịp điệu (pause, slow, fast, emphasis) và Audio FX; cải tiến thanh nghe thử có timeline và thời lượng thực.
+- **Goal**: NÃ¢ng cáº¥p chá»©c nÄƒng Ä‘á»c thá»­ trong trÃ¬nh soáº¡n tháº£o, cho phÃ©p nghe thá»­ Ä‘oáº¡n vÄƒn báº£n hiá»‡n táº¡i hoáº·c toÃ n bá»™ ká»‹ch báº£n vá»›i Ä‘áº§y Ä‘á»§ hiá»‡u á»©ng nhá»‹p Ä‘iá»‡u (pause, slow, fast, emphasis) vÃ  Audio FX; cáº£i tiáº¿n thanh nghe thá»­ cÃ³ timeline vÃ  thá»i lÆ°á»£ng thá»±c.
 - **Files**: `main.py`, `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R2.9
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Viết kịch bản có các thẻ [slow], [pause], *emphasis*, bấm "Đọc thử" và kiểm tra thanh player phát đúng âm thanh nhấn nhá và thời lượng thực tế.
+- **How to test**: Viáº¿t ká»‹ch báº£n cÃ³ cÃ¡c tháº» [slow], [pause], *emphasis*, báº¥m "Äá»c thá»­" vÃ  kiá»ƒm tra thanh player phÃ¡t Ä‘Ãºng Ã¢m thanh nháº¥n nhÃ¡ vÃ  thá»i lÆ°á»£ng thá»±c táº¿.
 
 ### T9.2: Pre-Export Audition & Pacing Validation in Export Flow
-- **Goal**: Tích hợp nút "Đọc thử trước khi xuất" vào Modal Xuất Audio & Phụ đề, cho phép người dùng nghe duyệt toàn bộ audio trước khi bấm xuất chính thức.
+- **Goal**: TÃ­ch há»£p nÃºt "Äá»c thá»­ trÆ°á»›c khi xuáº¥t" vÃ o Modal Xuáº¥t Audio & Phá»¥ Ä‘á», cho phÃ©p ngÆ°á»i dÃ¹ng nghe duyá»‡t toÃ n bá»™ audio trÆ°á»›c khi báº¥m xuáº¥t chÃ­nh thá»©c.
 - **Files**: `static/index.html`, `static/app.js`, `static/style.css`
 - **Requirements**: R5.10
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Mở modal xuất, bấm "Đọc thử trước khi xuất", nghe kiểm tra toàn bài rồi mới bấm "Tiến hành xuất".
+- **How to test**: Má»Ÿ modal xuáº¥t, báº¥m "Äá»c thá»­ trÆ°á»›c khi xuáº¥t", nghe kiá»ƒm tra toÃ n bÃ i rá»“i má»›i báº¥m "Tiáº¿n hÃ nh xuáº¥t".
 
 ---
 
 ## Phase 10: Extended Pacing Tags & Quick Pacing Toolbar (R2.13, R1.4)
 
 ### T10.1: Extended Pacing Markup Parser & Gemini Auto-Pace Upgrade
-- **Goal**: Mở rộng hệ thống nhịp điệu thêm 5 thẻ mới: `[deep]` (giọng trầm ma mị -6Hz, -8%), `[shock]` (giọng giật gân, ngạc nhiên +6Hz, +15%), `[urgent]` (dồn dập, đếm ngược +22%), `[solemn]` (lắng đọng, trang nghiêm -20%, -3Hz), `[loud]` (to vang, cảnh báo +30% vol). Nâng cấp prompt `auto_pace` trong `gemini_client.py` để AI tự động phối hợp đầy đủ 10 thẻ nhịp điệu.
+- **Goal**: Má»Ÿ rá»™ng há»‡ thá»‘ng nhá»‹p Ä‘iá»‡u thÃªm 5 tháº» má»›i: `[deep]` (giá»ng tráº§m ma má»‹ -6Hz, -8%), `[shock]` (giá»ng giáº­t gÃ¢n, ngáº¡c nhiÃªn +6Hz, +15%), `[urgent]` (dá»“n dáº­p, Ä‘áº¿m ngÆ°á»£c +22%), `[solemn]` (láº¯ng Ä‘á»ng, trang nghiÃªm -20%, -3Hz), `[loud]` (to vang, cáº£nh bÃ¡o +30% vol). NÃ¢ng cáº¥p prompt `auto_pace` trong `gemini_client.py` Ä‘á»ƒ AI tá»± Ä‘á»™ng phá»‘i há»£p Ä‘áº§y Ä‘á»§ 10 tháº» nhá»‹p Ä‘iá»‡u.
 - **Files**: `pacing.py`, `gemini_client.py`, `tests/test_pacing.py`
 - **Requirements**: R2.8, R2.13
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Viết unit test trong `tests/test_pacing.py` xác minh từng thẻ mới được parse thành đúng `SpeechSegment` với rate, pitch, volume tương ứng. Test passed.
+- **How to test**: Viáº¿t unit test trong `tests/test_pacing.py` xÃ¡c minh tá»«ng tháº» má»›i Ä‘Æ°á»£c parse thÃ nh Ä‘Ãºng `SpeechSegment` vá»›i rate, pitch, volume tÆ°Æ¡ng á»©ng. Test passed.
 
 ### T10.2: Quick Pacing Toolbar & UI Cheatsheet Upgrade
-- **Goal**: Nâng cấp Cheatsheet đầy đủ 10 thẻ nhịp điệu và bổ sung thanh nút bấm chèn nhanh (Quick Pacing Toolbar) trên khung soạn thảo: người dùng bôi đen câu/từ và bấm chèn nhanh thẻ nhịp.
+- **Goal**: NÃ¢ng cáº¥p Cheatsheet Ä‘áº§y Ä‘á»§ 10 tháº» nhá»‹p Ä‘iá»‡u vÃ  bá»• sung thanh nÃºt báº¥m chÃ¨n nhanh (Quick Pacing Toolbar) trÃªn khung soáº¡n tháº£o: ngÆ°á»i dÃ¹ng bÃ´i Ä‘en cÃ¢u/tá»« vÃ  báº¥m chÃ¨n nhanh tháº» nhá»‹p.
 - **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
 - **Requirements**: R1.4, R2.13
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Bôi đen một đoạn text trong editor, bấm các nút chèn nhịp, kiểm tra thẻ được bọc chính xác quanh text đã chọn. Test passed.
+- **How to test**: BÃ´i Ä‘en má»™t Ä‘oáº¡n text trong editor, báº¥m cÃ¡c nÃºt chÃ¨n nhá»‹p, kiá»ƒm tra tháº» Ä‘Æ°á»£c bá»c chÃ­nh xÃ¡c quanh text Ä‘Ã£ chá»n. Test passed.
 
 ---
 
 ## Phase 11: Project Management Enhancement (Rename Project - R6.1)
 
 ### T11.1: Project Renaming on Top Bar and Sidebar List
-- **Goal**: Hỗ trợ đổi tên dự án linh hoạt: (1) Thêm icon sửa tên `✏️` và xử lý Enter/blur lưu ngay trên thanh Top Bar; (2) Thêm nút `✏️ (Đổi tên)` trên từng dự án ở Sidebar để đổi tên nhanh chóng.
+- **Goal**: Há»— trá»£ Ä‘á»•i tÃªn dá»± Ã¡n linh hoáº¡t: (1) ThÃªm icon sá»­a tÃªn `âœï¸` vÃ  xá»­ lÃ½ Enter/blur lÆ°u ngay trÃªn thanh Top Bar; (2) ThÃªm nÃºt `âœï¸ (Äá»•i tÃªn)` trÃªn tá»«ng dá»± Ã¡n á»Ÿ Sidebar Ä‘á»ƒ Ä‘á»•i tÃªn nhanh chÃ³ng.
 - **Files**: `static/index.html`, `static/style.css`, `static/app.js`, `tests/test_ui_layout.py`
 - **Requirements**: R6.1
 - **Owner**: Builder
 - **Status**: done
-- **How to test**: Đổi tên dự án từ ô Top Bar hoặc nút `✏️` ở Sidebar, kiểm tra tên mới được lưu vào `project.json` và hiển thị đồng bộ ở cả hai vị trí. Test passed.
+- **How to test**: Äá»•i tÃªn dá»± Ã¡n tá»« Ã´ Top Bar hoáº·c nÃºt `âœï¸` á»Ÿ Sidebar, kiá»ƒm tra tÃªn má»›i Ä‘Æ°á»£c lÆ°u vÃ o `project.json` vÃ  hiá»ƒn thá»‹ Ä‘á»“ng bá»™ á»Ÿ cáº£ hai vá»‹ trÃ­. Test passed.
+
