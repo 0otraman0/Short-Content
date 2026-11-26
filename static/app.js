@@ -1905,10 +1905,8 @@ function setupTabs() {
     });
 }
 
-// Phase 15: Workflow steps, collapsible sidebar/panel, pacing "more" toggle.
-// Steps reuse the existing handlers (no new backend calls): preview clicks
-// #btn-preview-audio, factcheck opens the fact-check tab, export clicks
-// #btn-export-project.
+// Phase 15: Collapsible sidebar/panel, pacing "more" toggle.
+// (The workflow steps bar was removed in Phase 15.2 at the user's request.)
 function setupWorkflowUI() {
     const layout = document.querySelector('.app-layout');
 
@@ -1931,22 +1929,6 @@ function setupWorkflowUI() {
         });
     }
 
-    document.querySelectorAll('.workflow-step').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.workflow-step').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const step = btn.getAttribute('data-step');
-            if (step === 'preview') {
-                if (DOM.btnPreviewAudio) DOM.btnPreviewAudio.click();
-            } else if (step === 'factcheck') {
-                if (layout) layout.classList.remove('panel-collapsed');
-                const tab = document.querySelector('.tab-btn[data-tab="factcheck-tab"]');
-                if (tab) tab.click();
-            } else if (step === 'export') {
-                if (DOM.btnExportProject) DOM.btnExportProject.click();
-            }
-        });
-    });
 }
 
 // ==========================================

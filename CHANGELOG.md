@@ -2,6 +2,10 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 15.2
+- **T15.7**: Removed the workflow steps bar entirely from `static/index.html` at the user's request (the 3-step bar `Nghe thử → Kiểm chứng → Xuất Audio` added in Phase 15/15.1). Also removed the related `.workflow-step` styles from `static/style.css` and the step click handlers from `setupWorkflowUI()` in `static/app.js`; the collapsible sidebar/panel toggles and the pacing "more" toggle in the same function are unchanged. The top bar keeps the existing actions (audio settings, auto-pace, export). Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
+- **Tests**: Ran the 9 layout tests in `tests/test_ui_layout.py` against the edited files; 9/9 passed. Full suite to be re-run on Windows.
+
 ## [2026-11-26] - Phase 15.1
 - **T15.5**: Removed step 1 ("Viết kịch bản") from the workflow bar in `static/index.html`, since writing is the default state of the editor. Renumbered the remaining steps 1–3 (`Nghe thử → Kiểm chứng → Xuất Audio`) and removed the unused `write` branch from `setupWorkflowUI()` in `static/app.js`. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.
 - **T15.6**: Moved topic suggestions to the top of the assistant panel in `static/index.html`. The `#btn-suggest-topics` card and `#topics-list` now sit at the top of `#gemini-tab`, above the AI notes box and the three writing cards (suggest next, rewrite, outline), so the topic list drops down with the full panel height available. Added a `#topics-list` rule in `static/style.css` removing the shared `.claims-list` height cap, so all 10 topics show in full instead of inside a small scrolled box. Verified with the existing layout tests in `tests/test_ui_layout.py`. Test passed.

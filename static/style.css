@@ -129,65 +129,6 @@ body {
     overflow: visible;
 }
 
-/* Phase 15: Thanh quy trình 4 bước Viết → Nghe thử → Kiểm chứng → Xuất */
-.workflow-steps {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background-color: var(--bg-surface);
-    border-bottom: 1px solid var(--border-color);
-    overflow-x: auto;
-}
-
-.workflow-step {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 6px 14px;
-    min-height: 36px;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-
-.workflow-step:hover {
-    border-color: var(--primary);
-    color: var(--text-primary);
-}
-
-.workflow-step.active {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    color: #fff;
-}
-
-.workflow-step .step-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.16);
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.workflow-step:not(.active) .step-num {
-    background-color: var(--bg-surface-elevated);
-    color: var(--text-secondary);
-}
-
-.step-connector {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
 .project-title-bar {
     display: flex;
     align-items: center;
