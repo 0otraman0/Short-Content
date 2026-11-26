@@ -126,7 +126,9 @@ class ProjectRepository:
 
     def create_project(self, title: str = "Dự án chưa đặt tên", script: str = "") -> Dict[str, Any]:
         """Create a new project folder with project.json."""
-        project_id = uuid.uuid4().hex[:12]
+        # Prefix matches the codebase convention (job_*, take_*, preview_*)
+        # and what tests/test_projects.py expects: proj_<12 hex>.
+        project_id = f"proj_{uuid.uuid4().hex[:12]}"
         now = datetime.now().isoformat()
         data = {
             "id": project_id,
@@ -163,7 +165,7 @@ class ProjectRepository:
         data = self.get_project(project_id)
         if data is None:
             raise FileNotFoundError(f"Project {project_id!r} not found.")
-        new_id = uuid.uuid4().hex[:12]
+        new_id = f"proj_{uuid.uuid4().hex[:12]}"
         now = datetime.now().isoformat()
         new_data = {
             **data,

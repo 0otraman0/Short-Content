@@ -2,6 +2,13 @@
 
 All finished tasks and notable updates are logged here.
 
+## [2026-11-26] - Phase 14.1 (fix 2 pre-existing test failures, found by local pytest run)
+- **Result before this fix**: 71 passed, 2 failed (73 total) on the user's Windows run, 2026-11-26. Neither failure was caused by the Phase 14 P0 edits.
+- **test_projects_crud**: project ids had no prefix (`d73cc5dda10d`) while the test expects `proj_*` (create and duplicate). Fixed the code, not the test: `create_project()` and `duplicate_project()` now generate `proj_<12 hex>`, matching the codebase convention (`job_*`, `take_*`, `preview_*`).
+- **test_full_export_pipeline**: Whisper base.en transcribed "Greenland" as "Green and" in the SRT. That is a speech-recognition proper-noun split, not a pipeline bug (TTS audio, SRT format, timing and files were all correct; export completed in 0.0s, duration 9.98s). Fixed the test, not the model: the SRT assertions now require the core phrase "sharks live longer" and accept either "Greenland" or "Green and".
+- **Tests**: expected suite after this fix: 73/73. **Not run on Muse's machine** — run `python -m pytest` on Windows to verify.
+- **Logging rule**: every finished/edited/added/copied action in this commit is logged here, per the user's logging rule.
+
 ## [2026-11-26] - Phase 14 (P0 fixes, via Muse + GitHub PAT)
 - **P0-1**: `services/pacing_service.py` — `load_presets()` now defaults to `BASE_DIR/config.yaml` when no path is passed, so edits to `pacing_presets` in `config.yaml` actually take effect (previously silently ignored; `tts_service` never passed a path).
 - **P0-2**: `services/factcheck_service.py` — `clean_pacing_tags()` strips all 10 pacing tags (was 4); claim labels now use an exact `== "ĐÃ CHỨNG MINH"` match (was a loose "contains ĐÃ" check); source URLs are validated (http/https + host) and deduplicated, invalid ones dropped.
@@ -9,7 +16,7 @@ All finished tasks and notable updates are logged here.
 - **P0-4**: `repositories/project_repository.py` — `save_project()` (and duplicate) now writes `project.json.tmp` + `os.replace()` under a `threading.Lock`, so autosave racing export cannot leave a half-written JSON file.
 - **P0-5**: `infrastructure/whisper_adapter.py` — `transcribe_to_srt()` and `transcribe_and_build_ass()` now reuse the cached `get_whisper_model()`; one model size everywhere (`DEFAULT_WHISPER_MODEL = "base.en"`, was "base" in the cache vs "base.en" in export).
 - **P0-6**: `services/tts_service.py`, `services/export_service.py` — Kokoro fallback now triggers only on network-like errors (`_is_network_error`); other errors re-raise. New `synthesize_narration_with_info()` returns `(path, duration, fallback_used, used_provider)`; `synthesize_narration()` keeps its old 2-tuple return for compatibility. Export metadata/history now records `fallback_used` / `used_provider` so the UI can warn that the voice changed (Kokoro has no pitch/volume, only speed).
-- **Tests**: added `tests/test_p0_fixes.py` (6 tests, one per P0, offline, no model/network). Expected suite: 61 + 6 = 67 tests. **Not run on Muse's machine** — run `python -m pytest` on Windows and verify 67/67 before using; see STATE.md.
+- **Tests**: added `tests/test_p0_fixes.py` (8 test methods covering the 6 P0 issues, offline, no model/network). **Not run on Muse's machine** — run `python -m pytest` on Windows to verify; see STATE.md. (Correction 26/11: the file has 8 test methods, not 6; total suite on the user's machine is 73 tests.)
 - **Logging rule**: every finished/edited/added/copied action in this commit is logged here, per the user's logging rule.
 
 ## [2026-11-26] - Phase 13

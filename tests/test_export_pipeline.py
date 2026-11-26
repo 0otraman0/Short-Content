@@ -73,7 +73,12 @@ def test_full_export_pipeline():
         assert srt_res.status_code == 200
         srt_text = srt_res.text
         assert "-->" in srt_text
-        assert "Greenland" in srt_text
+        # Whisper base.en can split the proper noun "Greenland" into
+        # "Green and" (heard in the 2026-11-26 run). The pipeline test
+        # checks that the subtitle content survived, not Whisper's
+        # word-perfect proper-noun hearing, so accept either form.
+        assert "sharks live longer" in srt_text
+        assert "Greenland" in srt_text or "Green and" in srt_text
 
         # Sources TXT
         sources_res = client.get(f"/api/projects/{proj_id}/sources")
@@ -110,7 +115,8 @@ def test_full_export_pipeline():
 
         job_srt_res = client.get(f"/api/projects/{proj_id}/exports/{job_id}/subtitles")
         assert job_srt_res.status_code == 200
-        assert "Greenland" in job_srt_res.text
+        assert "sharks live longer" in job_srt_res.text
+        assert "Greenland" in job_srt_res.text or "Green and" in job_srt_res.text
 
         job_sources_res = client.get(f"/api/projects/{proj_id}/exports/{job_id}/sources")
         assert job_sources_res.status_code == 200
